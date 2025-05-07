@@ -1,7 +1,7 @@
 """
-project_name appComponent module.
+chiles_daliuge appComponent module.
 
-This is the module of project_name containing DALiuGE application components.
+This is the module of chiles_daliuge containing DALiuGE application components.
 Here you put your main application classes and objects.
 
 Typically a component project will contain multiple components and will
@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 #
 # @par EAGLE_START
 # @param category PythonApp
-# @param[in] param/appclass Application Class/project_name.MyApp/String/readonly/
+# @param[in] param/appclass Application Class/chiles_daliuge.MyApp/String/readonly/
 #     \~English Import direction for application class
 # @param[in] param/dummy Dummy parameter/ /String/readwrite/
 #     \~English Dummy modifyable parameter
