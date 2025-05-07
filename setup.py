@@ -37,7 +37,7 @@ setup(
     long_description=read("README.md"),
     long_description_content_type="text/markdown",
     author="ICRAR",
-    package_dir={"":"src"},
+    package_dir={"":"chiles_daliuge"},
     packages=find_packages(where="src",exclude=["tests", ".github"]),
     install_requires=read_requirements("requirements.txt"),
     entry_points={
