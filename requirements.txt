@@ -1,0 +1,3 @@
+daliuge-engine>=5.0
+daliuge-translator>=5.0
+dlg_paletteGen
