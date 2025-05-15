@@ -17,7 +17,7 @@ process_ms_flag = True
 LOG = logging.getLogger(__name__)
 
 
-db_dir = "/home/00103780/dlg/db"
+db_dir = "/home/00103780/chiles-daliuge/db"
 METADATA_CSV = db_dir+"/Chilies_metadata.csv"
 METADATA_DB = os.path.join(db_dir, "Chilies_metadata.db")
 

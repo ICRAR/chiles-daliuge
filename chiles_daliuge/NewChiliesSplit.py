@@ -17,7 +17,7 @@ process_ms_flag = True
 
 
 
-db_dir = "/home/00103780/dlg/db"
+db_dir = "/home/00103780/chiles-daliuge/db"
 METADATA_CSV = db_dir+"/Chilies_metadata.csv"
 
 METADATA_DB = os.path.join(db_dir, "Chilies_metadata.db")
@@ -31,7 +31,8 @@ def fetch_original_ms(
         source_dir: str,
         year_list: list[str],
         copy_directory: str,
-        process_ms: bool = process_ms_flag
+        trigger_in: bool,
+        process_ms: bool = process_ms_flag,
 ) -> list[str]:
     """
     Fetch measurement sets from a remote directory structure using rclone, track them with metadata in SQLite.
@@ -68,7 +69,7 @@ def fetch_original_ms(
     - Also exports the metadata table to "Chilies_metadata.csv" for inspection.
     """
 
-    verify_db_integrity()
+    #verify_db_integrity()
 
 
     make_directory = True
@@ -530,4 +531,4 @@ def insert_metadata_from_transform(transform_data: list) -> None:
 
 
 #verify_db_integrity()
-#export_metadata_to_csv(METADATA_DB, METADATA_CSV)
+#export_metadata_to_csv(METADATA_DB, METADATA_CSV, trigger)

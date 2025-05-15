@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.INFO)
 
 
 
-db_dir = "/home/00103780/dlg/db"
+db_dir = "/home/00103780/chiles-daliuge/db"
 METADATA_CSV = db_dir+"/Chilies_metadata.csv"
 
 METADATA_DB = os.path.join(db_dir, "Chilies_metadata.db")
@@ -84,7 +84,7 @@ def remove_file_or_directory(filename: str) -> None:
         else:
             shutil.rmtree(filename)
 
-def verify_db_integrity() -> None:
+def verify_db_integrity(db_path: str, trigger_in: bool) -> bool:
     """
     Verify that all file references in the metadata database exist on disk.
 
@@ -96,7 +96,6 @@ def verify_db_integrity() -> None:
     db_path : str, optional
         Full path to the SQLite metadata database. Uses default METADATA_DB if None.
     """
-    db_path = METADATA_DB
 
     if not os.path.exists(db_path):
         LOG.warning(f"Metadata database not found at {db_path}. Skipping integrity check.")
@@ -157,10 +156,11 @@ def verify_db_integrity() -> None:
     conn.commit()
     conn.close()
     LOG.info("Database integrity check completed.")
+    return true
 
 
 
-def export_metadata_to_csv(db_path: str, csv_path: str) -> None:
+def export_metadata_to_csv(db_path: str, csv_path: str, trigger_in: bool) -> None:
     """
     Export the entire 'metadata' table from a SQLite database to a CSV file.
 
