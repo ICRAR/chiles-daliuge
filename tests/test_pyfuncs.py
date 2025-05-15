@@ -1,4 +1,5 @@
 import pytest
+import unittest
 
 from chiles_daliuge.pyfuncs import my_example_multiplier
 
@@ -8,6 +9,7 @@ def test_my_multipler():
     """
 
     assert my_example_multiplier(1, 2, 3) == 6
+
 
 def test_my_multiplier_raises():
     """
