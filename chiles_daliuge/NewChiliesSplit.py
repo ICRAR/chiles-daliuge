@@ -12,19 +12,12 @@ from common import *
 LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-
 process_ms_flag = True
 
-
-
 db_dir = "/home/00103780/chiles-daliuge/db"
-METADATA_CSV = db_dir+"/Chilies_metadata.csv"
+METADATA_CSV = db_dir + "/Chilies_metadata.csv"
 
 METADATA_DB = os.path.join(db_dir, "Chilies_metadata.db")
-
-
-
-
 
 
 def fetch_original_ms(
@@ -69,8 +62,7 @@ def fetch_original_ms(
     - Also exports the metadata table to "Chilies_metadata.csv" for inspection.
     """
 
-    #verify_db_integrity()
-
+    # verify_db_integrity()
 
     make_directory = True
     start_freq = "0944"
@@ -82,7 +74,6 @@ def fetch_original_ms(
 
     conn = sqlite3.connect(METADATA_DB)
     cursor = conn.cursor()
-
 
     result = run(["rclone", "lsf", source_dir, "--dirs-only"], stdout=PIPE, stderr=PIPE, text=True)
     if result.returncode != 0:
@@ -112,7 +103,8 @@ def fetch_original_ms(
                 LOG.warning(f"Skipping {date_path}: {result.stderr}")
                 continue
 
-            ms_dirs = [f"{date_path}{line.strip('/')}" for line in result.stdout.strip().splitlines() if line.endswith(".ms/")]
+            ms_dirs = [f"{date_path}{line.strip('/')}" for line in result.stdout.strip().splitlines() if
+                       line.endswith(".ms/")]
 
             for ms_name in ms_dirs:
                 base_name = os.path.basename(ms_name.strip("/"))
@@ -149,7 +141,6 @@ def fetch_original_ms(
                                         break
                                     except ValueError:
                                         LOG.warning(f"Could not parse size from line: {line}")
-
 
                         LOG.info(f"Size of copied MS: {size} GB.")
                     else:
@@ -311,7 +302,6 @@ def fetch_original_ms(
 #     LOG.info(f"Created final file {outfile_ms}.tar from {outfile_ms}.tar.tmp")
 
 
-
 def split_ms_list(ms_list: list[str], parallel_processes: int) -> list[list[str]]:
     """
     Split a list of measurement set paths into size-balanced sublists.
@@ -360,13 +350,11 @@ def split_ms_list(ms_list: list[str], parallel_processes: int) -> list[list[str]
         end = start + avg + (1 if i < remainder else 0)
         chunk = ms_list[start:end]
         ms_list_list.append(chunk)
-        LOG.debug(f"Chunk {i+1}: {chunk}")
+        LOG.debug(f"Chunk {i + 1}: {chunk}")
         start = end
 
     LOG.debug(f"Final list of chunks: {ms_list_list}")
     return ms_list_list
-
-
 
 
 def split_out_frequencies(
@@ -398,8 +386,6 @@ def split_out_frequencies(
     LOG.info("#" * 60)
     LOG.info(f"Frequencies: {frequencies}")
 
-
-
     conn = sqlite3.connect(METADATA_DB)
     cursor = conn.cursor()
     transform_data_all = []
@@ -416,8 +402,8 @@ def split_out_frequencies(
             continue
 
         for freq_pair in frequencies:
-            freq_start=freq_pair[0]
-            freq_end=freq_pair[1]
+            freq_start = freq_pair[0]
+            freq_end = freq_pair[1]
             outfile_name = generate_hashed_ms_name(
                 ms_name=ms_in,
                 year=str(year),
@@ -478,9 +464,10 @@ def split_out_frequencies(
 
                 try:
                     if len(spw_range):
-                        transform_data = [ms_in_path, outfile, spw_range, output_directory, outfile_name_tar, base_name, str(year), str(freq_start), str(freq_end)]
+                        transform_data = [ms_in_path, outfile, spw_range, output_directory, outfile_name_tar, base_name,
+                                          str(year), str(freq_start), str(freq_end)]
                         transform_data_all.append(transform_data)
-                        #do_ms_transform(ms_in_path, outfile, spw_range, [freq_pair])
+                        # do_ms_transform(ms_in_path, outfile, spw_range, [freq_pair])
                     else:
                         LOG.warning("*********\nmstransform spw out of range:\n***********")
                         continue
@@ -488,13 +475,14 @@ def split_out_frequencies(
                     LOG.exception("*********\nmstransform exception:\n***********")
                     continue
 
-
     conn.close()
     LOG.info(f"transform_data_all: {transform_data_all}")
     return transform_data_all
 
+
 def stringify_transform_data(transform_data: list):
     return str([str(x) for x in transform_data])
+
 
 def insert_metadata_from_transform(transform_data: list) -> None:
     """
@@ -529,6 +517,5 @@ def insert_metadata_from_transform(transform_data: list) -> None:
     conn.commit()
     LOG.info(f"Appended {outfile_name_tar} to metadata DB.")
 
-
-#verify_db_integrity()
-#export_metadata_to_csv(METADATA_DB, METADATA_CSV, trigger)
+# verify_db_integrity()
+# export_metadata_to_csv(METADATA_DB, METADATA_CSV, trigger)
