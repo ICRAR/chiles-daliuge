@@ -3,21 +3,20 @@ from pathlib import Path
 from pprint import pformat
 import sys
 import os
+import ast
 from subprocess import run, PIPE
 from casatasks import mstransform
 from casatools import ms, imager
 from typing import List
-from common import *
+import chiles_daliuge
+from chiles_daliuge.common import *
+import logging
+import sqlite3
 
 LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 process_ms_flag = True
-
-db_dir = "/home/00103780/chiles-daliuge/db"
-METADATA_CSV = db_dir + "/Chilies_metadata.csv"
-
-METADATA_DB = os.path.join(db_dir, "Chilies_metadata.db")
 
 
 def fetch_original_ms(
@@ -25,6 +24,7 @@ def fetch_original_ms(
         year_list: list[str],
         copy_directory: str,
         trigger_in: bool,
+        METADATA_DB: str,
         process_ms: bool = process_ms_flag,
 ) -> list[str]:
     """
@@ -70,7 +70,6 @@ def fetch_original_ms(
     bandwidth = int(end_freq) - int(start_freq)
     name_list = []
 
-    initialize_metadata_environment(db_dir)
 
     conn = sqlite3.connect(METADATA_DB)
     cursor = conn.cursor()
@@ -161,7 +160,7 @@ def fetch_original_ms(
                 name_list.append(str(dlg_name))
 
     # Export database table to CSV
-    export_metadata_to_csv(METADATA_DB, METADATA_CSV)
+    #export_metadata_to_csv(METADATA_DB, METADATA_CSV)
     LOG.info(f"Complete fetch_original_ms list: {name_list}")
     return name_list
 
@@ -361,6 +360,7 @@ def split_out_frequencies(
         ms_in_list: List[str],
         output_directory: str,
         frequencies: List[List[int]],
+        METADATA_DB: str,
         process_ms: bool = process_ms_flag
 ) -> List:
     """
@@ -484,38 +484,53 @@ def stringify_transform_data(transform_data: list):
     return str([str(x) for x in transform_data])
 
 
-def insert_metadata_from_transform(transform_data: list) -> None:
+def insert_metadata_from_transform(transform_data: str, METADATA_DB: str) -> None:
     """
     Insert metadata for a transformed measurement set into the database.
 
     Parameters
     ----------
-    transform_data : list
-        A list containing the following elements:
-        [ms_in_path, outfile, spw_range, output_directory, outfile_name_tar,
-         base_name, year, freq_start, freq_end]
+    transform_data : str
+        A string containing a Python-style list:
+        "['ms_in_path', 'outfile', 'spw_range', 'output_directory', 'outfile_name_tar', 'base_name', 'year', 'freq_start', 'freq_end']"
+
+    METADATA_DB : str
+        Path to the SQLite database file.
     """
-    conn = sqlite3.connect(METADATA_DB)
-    cursor = conn.cursor()
+    try:
+        # Safely evaluate the string into a Python list
+        data_list = ast.literal_eval(transform_data)
+        if not isinstance(data_list, list) or len(data_list) != 9:
+            raise ValueError("transform_data must be a list of 9 elements")
+    except Exception as e:
+        raise ValueError(f"Invalid transform_data format: {e}")
+
+    LOG.info(f"transform_data: {data_list}")
+
     (
         ms_in_path, outfile, spw_range, output_directory,
         outfile_name_tar, base_name, year, freq_start, freq_end
-    ) = transform_data
+    ) = data_list
 
     outfile_tar = os.path.join(output_directory, outfile_name_tar)
     size_bytes = os.path.getsize(outfile_tar) if os.path.exists(outfile_tar) else 0
     size = round(float(size_bytes / (1024 * 1024 * 1024)), 3)
     bandwidth = int(freq_end) - int(freq_start)
 
+    conn = sqlite3.connect(METADATA_DB)
+    cursor = conn.cursor()
     cursor.execute("""
-        INSERT INTO metadata (dir_path, dlg_name, base_name, year, start_freq, end_freq, bandwidth, size)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO metadata (
+            dir_path, dlg_name, base_name, year,
+            start_freq, end_freq, bandwidth, size
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         output_directory, outfile_name_tar, base_name, year,
         freq_start, freq_end, bandwidth, size
     ))
     conn.commit()
+    conn.close()
+
     LOG.info(f"Appended {outfile_name_tar} to metadata DB.")
 
-# verify_db_integrity()
-# export_metadata_to_csv(METADATA_DB, METADATA_CSV, trigger)
+

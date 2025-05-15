@@ -2,15 +2,17 @@
 from typing import List
 from pprint import pformat
 import sys
-from common import *
+from chiles_daliuge.common import *
 import json
 import shlex
+import sqlite3
+import logging
 
 # CASA imports
 from casatasks import mstransform
 from casatools import ms
 
-from NewChiliesSplit import insert_metadata_from_transform
+#from chiles_daliuge.NewChiliesSplit import insert_metadata_from_transform
 
 # Set up logging
 LOG = logging.getLogger("ms_transform")
@@ -33,6 +35,7 @@ def do_ms_transform(transform_data: List[str]) -> None:
     list
         The same list as input (transform_data), unchanged.
     """
+
     (
         ms_in, outfile_ms, spw_range, output_directory,
         outfile_name_tar, base_name, year, freq_start, freq_end
@@ -171,8 +174,9 @@ def main(transform_data: list) -> None:
         [ms_in, outfile_ms, spw_range, output_directory, outfile_name_tar,
          base_name, year, freq_start, freq_end]
     """
+    LOG.info(f"transform_data: {transform_data}")
     do_ms_transform(transform_data)
-    insert_metadata_from_transform(transform_data)
+    #NewChiliesSplit.insert_metadata_from_transform(transform_data)
 
 
 if __name__ == "__main__":

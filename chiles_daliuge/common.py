@@ -16,12 +16,6 @@ logging.basicConfig(level=logging.INFO)
 
 
 
-db_dir = "/home/00103780/chiles-daliuge/db"
-METADATA_CSV = db_dir+"/Chilies_metadata.csv"
-
-METADATA_DB = os.path.join(db_dir, "Chilies_metadata.db")
-
-
 def get_list_frequency_groups(frequency_width: int, minimum_frequency: int, maximum_frequency: int) -> list[list[int]]:
     """
     Generate frequency ranges based on the given width and bounds.
@@ -156,7 +150,8 @@ def verify_db_integrity(db_path: str, trigger_in: bool) -> bool:
     conn.commit()
     conn.close()
     LOG.info("Database integrity check completed.")
-    return true
+    verified = True
+    return verified
 
 
 
@@ -372,24 +367,27 @@ def generate_hashed_ms_name(
     return f"{prefix}{hash_str}.ms"
 
 
-def initialize_metadata_environment(copy_directory: str) -> None:
+def initialize_metadata_environment(db_path: str) -> bool:
     """
-    Ensure the metadata database, table, and output directory exist.
+    Ensure the metadata database and metadata table exist.
 
     Parameters
     ----------
-    copy_directory : str
-        The directory where measurement sets or placeholders will be stored.
+    db_path : str
+        Full path to the SQLite database file.
 
     Notes
     -----
     - Creates the SQLite database file and metadata table if not present.
-    - Creates the `copy_directory` if it does not exist.
+    - Creates the parent directory of `db_path` if it does not exist.
     """
-    if not os.path.exists(copy_directory):
-        os.makedirs(copy_directory, exist_ok=True)
+    # Ensure parent directory exists
+    parent_dir = os.path.dirname(db_path)
+    if not os.path.exists(parent_dir):
+        os.makedirs(parent_dir, exist_ok=True)
 
-    conn = sqlite3.connect(METADATA_DB)
+    # Connect to the DB and create table if needed
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS metadata (
@@ -405,4 +403,6 @@ def initialize_metadata_environment(copy_directory: str) -> None:
     """)
     conn.commit()
     conn.close()
+    initialized = True
+    return initialized
 
