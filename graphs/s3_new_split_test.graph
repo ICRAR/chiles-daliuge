@@ -12,7 +12,7 @@
                     "fields": {
                         "f15821c5-b739-438d-9f34-1364cd6f90cd": {
                             "comment": "",
-                            "value": 30
+                            "value": 2
                         }
                     }
                 },
@@ -20,7 +20,7 @@
                     "fields": {
                         "a8eb9773-42f1-471f-81a3-c547024b80f4": {
                             "comment": "",
-                            "value": 10
+                            "value": 2
                         }
                     }
                 }
@@ -294,7 +294,7 @@
         "generatorCommitHash": "459eaa752c5bb5709ef7564e184f38a50c980bf3",
         "generatorName": "EAGLE",
         "generatorVersion": "v6.6.0",
-        "lastModifiedDatetime": 1747277800.007936,
+        "lastModifiedDatetime": 1747278226.498286,
         "lastModifiedEmail": "",
         "lastModifiedName": "",
         "numLGNodes": 30,
@@ -867,7 +867,7 @@
                     "readonly": false,
                     "type": "String",
                     "usage": "NoPort",
-                    "value": "chilies_dailuge.NewChiliesSplit.get_list_frequency_groups"
+                    "value": "chilies-dailuge.NewChiliesSplit.get_list_frequency_groups"
                 },
                 {
                     "defaultValue": "",
@@ -1092,7 +1092,7 @@
                     "readonly": false,
                     "type": "String",
                     "usage": "NoPort",
-                    "value": "chilies_dailuge.NewChiliesSplit.split_out_frequencies"
+                    "value": "chilies-dailuge.NewChiliesSplit.split_out_frequencies"
                 },
                 {
                     "defaultValue": "",
@@ -1900,7 +1900,7 @@
                     "readonly": false,
                     "type": "String",
                     "usage": "NoPort",
-                    "value": "chilies_dailuge.chiliesNewChiliesSplit.fetch_original_ms"
+                    "value": "chilies-dailuge.chiliesNewChiliesSplit.fetch_original_ms"
                 },
                 {
                     "defaultValue": "",
@@ -3382,7 +3382,7 @@
                     "readonly": false,
                     "type": "String",
                     "usage": "NoPort",
-                    "value": "chilies_dailuge.NewChiliesSplit.verify_db_integrity"
+                    "value": "chilies-dailuge.NewChiliesSplit.verify_db_integrity"
                 },
                 {
                     "defaultValue": "",
@@ -3830,7 +3830,7 @@
                     "readonly": false,
                     "type": "String",
                     "usage": "NoPort",
-                    "value": "chilies_dailuge.NewChiliesSplit.export_metadata_to_csv"
+                    "value": "chilies-dailuge.NewChiliesSplit.export_metadata_to_csv"
                 },
                 {
                     "defaultValue": "",
@@ -4523,7 +4523,7 @@
                     "readonly": false,
                     "type": "String",
                     "usage": "NoPort",
-                    "value": "chilies_dailuge.NewChiliesSplit.verify_db_integrity"
+                    "value": "chilies-dailuge.NewChiliesSplit.verify_db_integrity"
                 },
                 {
                     "defaultValue": "",
@@ -5207,8 +5207,8 @@
             "parentId": "ef6b13df-3551-4b7e-be2b-562c1cdf272e",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": 84.64817047972734,
-            "y": -0.21235448110199684
+            "x": 69.99702489886705,
+            "y": -79.81691213710967
         },
         {
             "category": "Memory",
