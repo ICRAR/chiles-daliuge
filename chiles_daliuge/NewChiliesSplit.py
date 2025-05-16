@@ -8,7 +8,6 @@ from subprocess import run, PIPE
 from casatasks import mstransform
 from casatools import ms, imager
 from typing import List
-import chiles_daliuge
 from chiles_daliuge.common import *
 import logging
 import sqlite3
@@ -478,9 +477,26 @@ def split_out_frequencies(
                     continue
 
     conn.close()
-    #LOG.info(f"transform_data_all: {transform_data_all}")
+    LOG.info(f"transform_data_all: {transform_data_all}")
     return transform_data_all
 
+def ensure_list_then_destringify(arg_or_list) -> list[str]:
+    """
+    If input is a stringified list, evaluate it to a list first,
+    then pass it to destringify_data(). If it's already a list, pass it directly.
+    """
+    if isinstance(arg_or_list, str):
+        try:
+            parsed = ast.literal_eval(arg_or_list)
+            if not isinstance(parsed, list):
+                raise ValueError("Parsed string is not a list")
+            return destringify_data(parsed)
+        except Exception as e:
+            raise ValueError(f"Failed to parse transform_data string: {e}")
+    elif isinstance(arg_or_list, list):
+        return destringify_data(arg_or_list)
+    else:
+        raise TypeError("Expected str or list[str] for transform_data")
 
 
 def insert_metadata_from_transform(transform_data: str, METADATA_DB: str) -> None:
@@ -496,15 +512,16 @@ def insert_metadata_from_transform(transform_data: str, METADATA_DB: str) -> Non
     METADATA_DB : str
         Path to the SQLite database file.
     """
+    LOG.info(f"transform_data before destringing: {transform_data}")
     try:
         # Safely evaluate the string into a Python list
-        data_list = ast.literal_eval(transform_data)
+        data_list = ensure_list_then_destringify(transform_data)
         if not isinstance(data_list, list) or len(data_list) != 9:
             raise ValueError("transform_data must be a list of 9 elements")
     except Exception as e:
         raise ValueError(f"Invalid transform_data format: {e}")
 
-    LOG.info(f"transform_data: {data_list}")
+    LOG.info(f"transform_data after destringing: {data_list}")
 
     (
         ms_in_path, outfile, spw_range, output_directory,
