@@ -12,8 +12,27 @@ LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
+def stringify_data(data: list):
+    stringified_data = str([str(x) for x in data])
+    LOG.info(f"stringified_data: {stringified_data}")
+    return stringified_data
 
 
+def destringify_data(args: list[str]) -> list[str]:
+    """
+    Clean transform arguments by:
+    - Stripping leading/trailing whitespace
+    - Removing unexpected brackets and commas
+    - Ensuring all elements are clean strings
+    """
+    cleaned = []
+    for i, arg in enumerate(args):
+        if i == 0:
+            arg = arg.lstrip("[").strip()
+        if i == len(args) - 1:
+            arg = arg.rstrip("]").strip()
+        cleaned.append(arg.strip().rstrip(","))
+    return cleaned
 
 
 def get_list_frequency_groups(frequency_width: int, minimum_frequency: int, maximum_frequency: int) -> list[list[int]]:

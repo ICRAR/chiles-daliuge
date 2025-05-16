@@ -466,7 +466,9 @@ def split_out_frequencies(
                     if len(spw_range):
                         transform_data = [ms_in_path, outfile, spw_range, output_directory, outfile_name_tar, base_name,
                                           str(year), str(freq_start), str(freq_end)]
-                        transform_data_all.append(transform_data)
+
+                        transform_data_string = stringify_data(transform_data)
+                        transform_data_all.append(transform_data_string)
                         # do_ms_transform(ms_in_path, outfile, spw_range, [freq_pair])
                     else:
                         LOG.warning("*********\nmstransform spw out of range:\n***********")
@@ -476,12 +478,9 @@ def split_out_frequencies(
                     continue
 
     conn.close()
-    LOG.info(f"transform_data_all: {transform_data_all}")
+    #LOG.info(f"transform_data_all: {transform_data_all}")
     return transform_data_all
 
-
-def stringify_transform_data(transform_data: list):
-    return str([str(x) for x in transform_data])
 
 
 def insert_metadata_from_transform(transform_data: str, METADATA_DB: str) -> None:

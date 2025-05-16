@@ -139,27 +139,27 @@ def do_ms_transform(transform_data: List[str]) -> None:
     os.rename(f"{outfile_ms}.tar.tmp", f"{outfile_ms}.tar")
     LOG.info(f"Created final file {outfile_ms}.tar from {outfile_ms}.tar.tmp")
 
-def clean_transform_data(args: list[str]) -> list[str]:
-    """
-    Clean transform arguments by:
-    - Stripping leading/trailing whitespace
-    - Removing unexpected brackets and commas
-    - Ensuring all elements are clean strings
-    """
-    cleaned = []
-
-    for i, arg in enumerate(args):
-        # Remove leading [ on the first arg
-        if i == 0:
-            arg = arg.lstrip("[").strip()
-        # Remove trailing ] on the last arg
-        if i == len(args) - 1:
-            arg = arg.rstrip("]").strip()
-
-        # Remove trailing commas and whitespace
-        cleaned.append(arg.strip().rstrip(","))
-
-    return cleaned
+# def clean_transform_data(args: list[str]) -> list[str]:
+#     """
+#     Clean transform arguments by:
+#     - Stripping leading/trailing whitespace
+#     - Removing unexpected brackets and commas
+#     - Ensuring all elements are clean strings
+#     """
+#     cleaned = []
+#
+#     for i, arg in enumerate(args):
+#         # Remove leading [ on the first arg
+#         if i == 0:
+#             arg = arg.lstrip("[").strip()
+#         # Remove trailing ] on the last arg
+#         if i == len(args) - 1:
+#             arg = arg.rstrip("]").strip()
+#
+#         # Remove trailing commas and whitespace
+#         cleaned.append(arg.strip().rstrip(","))
+#
+#     return cleaned
 
 
 
@@ -186,7 +186,7 @@ if __name__ == "__main__":
 
     try:
         raw_args = sys.argv[1:]
-        transform_data = clean_transform_data(raw_args)
+        transform_data = destringify_data(raw_args)
         main(transform_data)
     except Exception as e:
         print(json.dumps({"status": "error", "message": str(e)}), file=sys.stderr)
