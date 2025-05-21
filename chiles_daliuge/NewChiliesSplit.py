@@ -17,6 +17,17 @@ logging.basicConfig(level=logging.INFO)
 
 process_ms_flag = True
 
+def log_input(x_in):
+    LOG.info(f"Input: {x_in}")
+    LOG.info(f"Input type: {type(x_in)}")
+
+    try:
+        size = len(x_in)
+    except TypeError:
+        size = "N/A (not a sized object)"
+
+    LOG.info(f"Input size: {size}")
+
 
 def fetch_original_ms(
         source_dir: str,
