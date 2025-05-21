@@ -11,22 +11,12 @@ from typing import List
 from chiles_daliuge.common import *
 import logging
 import sqlite3
+import numpy as np
 
 LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 process_ms_flag = True
-
-def log_input(x_in):
-    LOG.info(f"Input: {x_in}")
-    LOG.info(f"Input type: {type(x_in)}")
-
-    try:
-        size = len(x_in)
-    except TypeError:
-        size = "N/A (not a sized object)"
-
-    LOG.info(f"Input size: {size}")
 
 
 def fetch_original_ms(
@@ -489,7 +479,8 @@ def split_out_frequencies(
 
     conn.close()
     LOG.info(f"transform_data_all: {transform_data_all}")
-    return transform_data_all
+    return np.array(transform_data_all, dtype=str)
+
 
 def ensure_list_then_destringify(arg_or_list) -> list[str]:
     """

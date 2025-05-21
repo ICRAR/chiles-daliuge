@@ -109,67 +109,69 @@ def verify_db_integrity(db_path: str, trigger_in: bool) -> bool:
     db_path : str, optional
         Full path to the SQLite metadata database. Uses default METADATA_DB if None.
     """
+    verified = False
+    if(trigger_in):
+        if not os.path.exists(db_path):
+            LOG.warning(f"Metadata database not found at {db_path}. Skipping integrity check.")
+            return False
 
-    if not os.path.exists(db_path):
-        LOG.warning(f"Metadata database not found at {db_path}. Skipping integrity check.")
-        return
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
 
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
+        # Get all columns in order
+        cursor.execute("PRAGMA table_info(metadata);")
+        columns = [col[1] for col in cursor.fetchall()]
 
-    # Get all columns in order
-    cursor.execute("PRAGMA table_info(metadata);")
-    columns = [col[1] for col in cursor.fetchall()]
+        # Identify fixed + dynamic columns
+        fixed_columns = ["dir_path", "dlg_name", "base_name", "year", "start_freq", "end_freq", "bandwidth", "size"]
+        dynamic_columns = [col for col in columns if col not in fixed_columns]
 
-    # Identify fixed + dynamic columns
-    fixed_columns = ["dir_path", "dlg_name", "base_name", "year", "start_freq", "end_freq", "bandwidth", "size"]
-    dynamic_columns = [col for col in columns if col not in fixed_columns]
+        # Fetch all rows
+        select_cols = ["rowid", "dir_path", "dlg_name"] + dynamic_columns
+        query = f"SELECT {', '.join(select_cols)} FROM metadata"
+        cursor.execute(query)
 
-    # Fetch all rows
-    select_cols = ["rowid", "dir_path", "dlg_name"] + dynamic_columns
-    query = f"SELECT {', '.join(select_cols)} FROM metadata"
-    cursor.execute(query)
+        rows = cursor.fetchall()
 
-    rows = cursor.fetchall()
+        for row in rows:
+            rowid = row[0]
+            dir_path = row[1]
+            dlg_name = row[2]
+            dynamic_values = dict(zip(dynamic_columns, row[3:]))
 
-    for row in rows:
-        rowid = row[0]
-        dir_path = row[1]
-        dlg_name = row[2]
-        dynamic_values = dict(zip(dynamic_columns, row[3:]))
+            existing_files = []
 
-        existing_files = []
+            # Check dlg_name
+            dlg_path = os.path.join(dir_path, dlg_name)
+            if os.path.exists(dlg_path):
+                existing_files.append(dlg_name)
 
-        # Check dlg_name
-        dlg_path = os.path.join(dir_path, dlg_name)
-        if os.path.exists(dlg_path):
-            existing_files.append(dlg_name)
+            # Check dynamic fields
+            missing_fields = []
+            for col, val in dynamic_values.items():
+                if val is None or val.strip() == "":
+                    continue
+                full_path = os.path.join(dir_path, val)
+                if os.path.exists(full_path):
+                    existing_files.append(val)
+                else:
+                    missing_fields.append(col)
 
-        # Check dynamic fields
-        missing_fields = []
-        for col, val in dynamic_values.items():
-            if val is None or val.strip() == "":
-                continue
-            full_path = os.path.join(dir_path, val)
-            if os.path.exists(full_path):
-                existing_files.append(val)
+            if not existing_files:
+                # No valid files → delete entire row
+                cursor.execute("DELETE FROM metadata WHERE rowid = ?", (rowid,))
+                LOG.info(f"Deleted row {rowid}: no existing files found.")
             else:
-                missing_fields.append(col)
+                # Clear individual missing fields
+                for col in missing_fields:
+                    cursor.execute(f"UPDATE metadata SET {col} = NULL WHERE rowid = ?", (rowid,))
+                    LOG.info(f"Cleared column {col} in row {rowid}: file not found.")
 
-        if not existing_files:
-            # No valid files → delete entire row
-            cursor.execute("DELETE FROM metadata WHERE rowid = ?", (rowid,))
-            LOG.info(f"Deleted row {rowid}: no existing files found.")
-        else:
-            # Clear individual missing fields
-            for col in missing_fields:
-                cursor.execute(f"UPDATE metadata SET {col} = NULL WHERE rowid = ?", (rowid,))
-                LOG.info(f"Cleared column {col} in row {rowid}: file not found.")
+        conn.commit()
+        conn.close()
+        LOG.info("Database integrity check completed.")
+        verified = True
 
-    conn.commit()
-    conn.close()
-    LOG.info("Database integrity check completed.")
-    verified = True
     return verified
 
 
@@ -199,7 +201,7 @@ def export_metadata_to_csv(db_path: str, csv_path: str, trigger_in: bool) -> Non
     LOG.info(f"Export complete.")
 
 
-def add_column_if_missing(column_name: str, column_type: str = "TEXT") -> None:
+def add_column_if_missing(db_path: str, column_name: str, column_type: str = "TEXT") -> None:
     """
     Add a new column to the metadata table if it does not already exist.
 
@@ -215,7 +217,7 @@ def add_column_if_missing(column_name: str, column_type: str = "TEXT") -> None:
     - If the column already exists, the function does nothing.
     - This modifies the existing `metadata` table schema.
     """
-    conn = sqlite3.connect(METADATA_DB)
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
     # Fetch existing column names
@@ -231,7 +233,24 @@ def add_column_if_missing(column_name: str, column_type: str = "TEXT") -> None:
     conn.close()
 
 
+def log_input(x_in):
+    LOG.info(f"Input: {x_in}")
+    LOG.info(f"Input type: {type(x_in)}")
+
+    try:
+        size = len(x_in)
+    except TypeError:
+        size = "N/A (not a sized object)"
+
+    LOG.info(f"Input size: {size}")
+
+def trigger_db(x_in):
+    x_out = True
+    return x_out
+
+
 def update_metadata_column(
+        db_path: str,
         dlg_name: str,
         year: str,
         start_freq: str,
@@ -262,7 +281,7 @@ def update_metadata_column(
     - Only updates the row if an exact match is found.
     - Raises ValueError if the column does not exist.
     """
-    conn = sqlite3.connect(METADATA_DB)
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
     # Validate that the column exists
