@@ -12,7 +12,7 @@
                     "fields": {
                         "f15821c5-b739-438d-9f34-1364cd6f90cd": {
                             "comment": "",
-                            "value": 1
+                            "value": 2
                         }
                     }
                 },
@@ -475,6 +475,14 @@
             "loop_aware": "0",
             "to": "8d9d9d9d-9c6e-48cf-8dc9-5fb00e1cd4bf",
             "toPort": "9ba77806-cabc-4287-868d-e4410e29b0d5"
+        },
+        {
+            "closesLoop": false,
+            "from": "b2ffcdc5-bf55-4817-8172-002f2388c9ee",
+            "fromPort": "a9ef7fc0-bd42-422a-9ec9-b3007e0472d4",
+            "loop_aware": "0",
+            "to": "79e97cc8-6cb0-45af-9dbf-3f84a86e48ff",
+            "toPort": "094fa046-1c2d-447f-90b0-05f9c62195f2"
         }
     ],
     "modelData": {
@@ -486,7 +494,7 @@
         "generatorCommitHash": "459eaa752c5bb5709ef7564e184f38a50c980bf3",
         "generatorName": "EAGLE",
         "generatorVersion": "v6.6.0",
-        "lastModifiedDatetime": 1747894193.259779,
+        "lastModifiedDatetime": 1747900838.604731,
         "lastModifiedEmail": "",
         "lastModifiedName": "",
         "numLGNodes": 45,
@@ -1254,7 +1262,7 @@
                     "readonly": false,
                     "type": "Integer",
                     "usage": "NoPort",
-                    "value": 960
+                    "value": 1420
                 }
             ],
             "id": "ad6cb4d6-4a00-4e63-950b-f0d688350738",
@@ -8368,6 +8376,21 @@
                     "type": "Boolean",
                     "usage": "NoPort",
                     "value": false
+                },
+                {
+                    "defaultValue": "",
+                    "description": "",
+                    "encoding": "pickle",
+                    "id": "094fa046-1c2d-447f-90b0-05f9c62195f2",
+                    "name": "trigger_in",
+                    "options": [],
+                    "parameterType": "ComponentParameter",
+                    "positional": false,
+                    "precious": false,
+                    "readonly": false,
+                    "type": "Event",
+                    "usage": "InputPort",
+                    "value": ""
                 }
             ],
             "id": "79e97cc8-6cb0-45af-9dbf-3f84a86e48ff",
