@@ -24,24 +24,7 @@ LOG = logging.getLogger(__name__)
 
 
 
-def fd2radec(fd):
-    """Given a field direction return the string that is good for FIXVIS and friends"""
-    qa = quanta()
-    ra = qa.time(fd["m0"])[0]
-    dec = qa.angle(fd["m1"])[0]
-    dec = dec.split(".")
-    ra = ra.split(":")
-    ra = [int(ra[0]), int(ra[1]), int(ra[2])]
-    dec = [int(dec[0]), int(dec[1]), int(dec[2]), np.mod(float(dec[2]), 1)]
-    return "J2000 %02dh%02dm%06.4f %02dd%02dm%02d%0.4f" % (
-        ra[0],
-        ra[1],
-        ra[2],
-        dec[0],
-        dec[1],
-        dec[2],
-        dec[3],
-    )
+
 
 
 
@@ -669,13 +652,10 @@ def do_uvsub(names_list, source_dir, wall_time, sky_model_tar_file,
 
                 uv_sub_name = generate_hashed_ms_name(str(tar_file_split), year, str(freq_start), str(freq_end))
 
-
                 output_measurement_set = join(
                     source_dir, uv_sub_name
                 )
-                #if exists(f"{output_measurement_set}.tar"):
-                #    LOG.info(f"Skipping {output_measurement_set}")
-                #    continue
+
                 LOG.info("uv_sub_name:",uv_sub_name)
                 uv_sub_tar = f"{uv_sub_name}.tar"
                 LOG.info("uv_sub_tar:",uv_sub_tar)
@@ -722,7 +702,7 @@ def extract_and_update_uvsub_metadata(stringified_input: str) -> None:
         if not isinstance(parsed, list) or len(parsed) < 6:
             raise ValueError("Input must be a stringified list with at least 6 elements")
 
-        cleaned = clean_uvsub_data(parsed)
+        cleaned = destringify_data(parsed)
 
         # Extract the last 6 elements
         split_name, year, freq_st, freq_en, uv_sub_name, uv_sub_tar = cleaned[-6:]

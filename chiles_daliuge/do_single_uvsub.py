@@ -7,16 +7,52 @@ import json
 import shlex
 import sqlite3
 import logging
-
+from os import makedirs, rename, listdir
+import pylab as pl
 # CASA imports
+
+from casaplotms import plotms
 from casatasks import mstransform
 from casatools import ms
-
+from casatasks import uvsub, statwt, split, phaseshift
+from casatools import imager, ms, table, quanta, image
+from typing import Union, List, Tuple
 #from chiles_daliuge.NewChiliesSplit import insert_metadata_from_transform
 
 # Set up logging
 LOG = logging.getLogger("ms_transform")
 logging.basicConfig(level=logging.INFO)
+
+def time_convert(mytime, myunit="s"):
+    if type(mytime).__name__ != "list":
+        mytime = [mytime]
+    my_timestr = []
+    for time in mytime:
+        qa = quanta()
+        q1 = qa.quantity(time, myunit)
+        time1 = qa.time(q1, form="ymd")
+        my_timestr.append(time1)
+    return my_timestr
+
+
+def fd2radec(fd):
+    """Given a field direction return the string that is good for FIXVIS and friends"""
+    qa = quanta()
+    ra = qa.time(fd["m0"])[0]
+    dec = qa.angle(fd["m1"])[0]
+    dec = dec.split(".")
+    ra = ra.split(":")
+    ra = [int(ra[0]), int(ra[1]), int(ra[2])]
+    dec = [int(dec[0]), int(dec[1]), int(dec[2]), np.mod(float(dec[2]), 1)]
+    return "J2000 %02dh%02dm%06.4f %02dd%02dm%02d%0.4f" % (
+        ra[0],
+        ra[1],
+        ra[2],
+        dec[0],
+        dec[1],
+        dec[2],
+        dec[3],
+    )
 
 def rejig_paths(taylor_terms: List[str],
                 outliers: List[str],
@@ -69,7 +105,7 @@ def rejig_paths(taylor_terms: List[str],
 
 def do_single_uvsub(
         taylor_terms, outliers, channel_average, produce_qa, w_projection_planes,
-        data_dir, in_ms, out_measurement_set, sky_model_location, spectral_window,
+        data_dir, in_ms, output_measurement_set, sky_model_location, spectral_window,
         split_name, year, freq_st, freq_en, uv_sub_name, uv_sub_tar
 ):
 
@@ -77,7 +113,7 @@ def do_single_uvsub(
         taylor_terms, outliers, sky_model_location, spectral_window
     )
 
-    out_ms = basename(out_measurement_set)
+    out_ms = basename(output_measurement_set)
 
     out_rot_data = "no"  # Keep a version of the subtracted data
     sub_uzero = True  # False #or True
@@ -481,9 +517,9 @@ def do_single_uvsub(
     create_tar_file(output_measurement_set, suffix="temp")
 
     # Clean up the measurement sets
-    if exists(measurement_set):
-        LOG.info(f"Removing {measurement_set}")
-        remove_file_directory(measurement_set)
+    if exists(f"{output_measurement_set}.tar"):
+        LOG.info(f"Removing {output_measurement_set}.tar")
+        remove_file_directory(f"Removing {output_measurement_set}.tar")
 
     rename(
         f"{output_measurement_set}.tar.temp",
@@ -494,31 +530,16 @@ def do_single_uvsub(
 
 
 
-
 def main(uvsub_data: list) -> None:
     LOG.info(f"uvsub_data: {uvsub_data}")
-    # Now do_single_uvsub() can use this list
-    # You may still want to parse taylor_terms/outliers from strings to actual lists here
     do_single_uvsub(uvsub_data)
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python do_single_uvsub.py '<stringified_uvsub_list>'", file=sys.stderr)
-        sys.exit(1)
-
     try:
-        # Step 1: Convert the single string argument to a list
-        parsed_list = ast.literal_eval(sys.argv[1])
-
-        if not isinstance(parsed_list, list) or len(parsed_list) != 16:
-            raise ValueError("Expected a stringified list of 16 elements")
-
-        # Step 2: Clean the parsed elements
-        uvsub_data = destringify_data(parsed_list)
-
+        raw_args = sys.argv[1:]
+        uvsub_data = destringify_data(raw_args)
         main(uvsub_data)
-
     except Exception as e:
         print(json.dumps({"status": "error", "message": str(e)}), file=sys.stderr)
         sys.exit(1)
