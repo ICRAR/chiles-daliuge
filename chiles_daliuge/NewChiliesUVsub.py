@@ -618,7 +618,7 @@ def time_convert(mytime: Union[float, int, str, List[Union[float, int, str]]],
 
 
 def do_uvsub(names_list, source_dir, wall_time, sky_model_tar_file,
-    taylor_terms, outliers, channel_average, produce_qa, w_projection_planes, process_files
+    taylor_terms, outliers, channel_average, produce_qa, w_projection_planes, METADATA_DB: str
 ):
     verify_db_integrity()
     start_time = datetime.now()
@@ -627,6 +627,8 @@ def do_uvsub(names_list, source_dir, wall_time, sky_model_tar_file,
     sky_model_location = None
 
     add_column_if_missing("uv_sub_name")
+
+    uvsub_data_all = []
 
     with tempfile.TemporaryDirectory(
             dir=source_dir, prefix="__SKY_TEMP__"
@@ -695,13 +697,15 @@ def do_uvsub(names_list, source_dir, wall_time, sky_model_tar_file,
                     spectral_window, split_name, year, freq_st, freq_en, "uv_sub_name", uv_sub_tar
                 ]
 
-                return stringify_data(combined_data)
+                uvsub_data_all.append(stringify_data(combined_data))
 
                 #update_metadata_column(split_name, year, freq_st, freq_en, uv_sub_name, uv_sub_tar)
 
 
     #verify_db_integrity()
-    LOG.info("All Done with uvsub!!!")
+    LOG.info(f"uvsub_data_all: {uvsub_data_all}")
+    return np.array(uvsub_data_all, dtype=str)
+    LOG.info("All Done with stringifying uvsub data!!!")
 
 def extract_and_update_uvsub_metadata(stringified_input: str) -> None:
     """

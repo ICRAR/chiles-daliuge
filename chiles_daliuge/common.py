@@ -7,6 +7,7 @@ import shutil
 import hashlib
 import sqlite3
 from os.path import isdir
+import numpy as np
 
 LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -244,9 +245,33 @@ def log_input(x_in):
 
     LOG.info(f"Input size: {size}")
 
+
+LOG = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
+
 def trigger_db(x_in):
-    x_out = True
-    return x_out
+    """
+    Return False if the first element of the input array is a string.
+    Return True otherwise.
+    """
+    LOG.info(f"Received input: {x_in}")
+    LOG.info(f"Type: {type(x_in)}")
+
+    if isinstance(x_in, np.ndarray):
+        LOG.info(f"Input is a NumPy array with size {x_in.size}")
+        if x_in.size > 0:
+            first_element = x_in[0]
+            LOG.info(f"First element: {first_element}")
+            LOG.info(f"First element type: {type(first_element)}")
+            result = not isinstance(first_element, str)
+            LOG.info(f"Inverted result: {result}")
+            return result
+        else:
+            LOG.info("Array is empty. Returning True.")
+            return True
+    else:
+        LOG.info("Input is not a NumPy array. Returning True.")
+        return True
 
 
 def update_metadata_column(
