@@ -20,7 +20,7 @@
                     "fields": {
                         "a8eb9773-42f1-471f-81a3-c547024b80f4": {
                             "comment": "",
-                            "value": 2
+                            "value": 3
                         }
                     }
                 }
@@ -494,7 +494,7 @@
         "generatorCommitHash": "459eaa752c5bb5709ef7564e184f38a50c980bf3",
         "generatorName": "EAGLE",
         "generatorVersion": "v6.6.0",
-        "lastModifiedDatetime": 1747962719.680015,
+        "lastModifiedDatetime": 1747966212.110365,
         "lastModifiedEmail": "",
         "lastModifiedName": "",
         "numLGNodes": 45,
@@ -1057,8 +1057,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "repositoryUrl": "",
             "subject": null,
-            "x": 127.64869094264691,
-            "y": -351.6586396133081
+            "x": 129.5802151010966,
+            "y": -353.5901637717578
         },
         {
             "category": "PyFuncApp",
