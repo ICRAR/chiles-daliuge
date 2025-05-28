@@ -480,7 +480,7 @@ def insert_metadata_from_transform(transform_data: str, METADATA_DB: str) -> Non
     LOG.info(f"transform_data after destringing: {data_list}")
 
     (
-        ms_in_path, outfile, spw_range, output_directory,
+        ms_in_path, outfile, output_directory,
         outfile_name_tar, base_name, year, freq_start, freq_end
     ) = data_list
 
