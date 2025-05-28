@@ -178,7 +178,7 @@ def do_uvsub(names_list, source_dir, sky_model_tar_file,
 ):
     sky_model_location = None
 
-    add_column_if_missing("uv_sub_name")
+    add_column_if_missing(METADATA_DB,"uv_sub_name")
 
     uvsub_data_all = []
 
@@ -206,9 +206,9 @@ def do_uvsub(names_list, source_dir, sky_model_tar_file,
         uv_sub_name = generate_hashed_ms_name(str(tar_file_split), year, str(freq_start), str(freq_end))
 
 
-        LOG.info("uv_sub_name:",uv_sub_name)
+        LOG.info(f"uv_sub_name: {uv_sub_name}")
         uv_sub_tar = f"{uv_sub_name}.tar"
-        LOG.info("uv_sub_tar:",uv_sub_tar)
+        LOG.info(f"uv_sub_tar: {uv_sub_tar}")
         cursor = conn.cursor()
         cursor.execute("SELECT 1 FROM metadata WHERE uv_sub_name = ?", (uv_sub_tar,))
         if cursor.fetchone():

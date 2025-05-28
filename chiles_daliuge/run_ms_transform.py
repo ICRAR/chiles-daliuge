@@ -15,7 +15,7 @@ from casatools import ms
 #from chiles_daliuge.NewChiliesSplit import insert_metadata_from_transform
 
 # Set up logging
-LOG = logging.getLogger("ms_transform")
+LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 

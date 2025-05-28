@@ -21,7 +21,7 @@ from typing import Union, List, Tuple
 #from chiles_daliuge.NewChiliesSplit import insert_metadata_from_transform
 
 # Set up logging
-LOG = logging.getLogger("ms_transform")
+LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 def time_convert(mytime, myunit="s"):
@@ -512,12 +512,7 @@ def do_single_uvsub(
                     pl.xlabel("Channel")  # Freq. (MHz)')
                     pl.ylabel("Weight Sigma")
                     pl.legend(["Max Weight/100", "Median Weight"])
-                    pl.savefig(
-                        join(
-                            png_directory,
-                            in_ms.rsplit("/")[-1] + "_lg_weight.png",
-                            )
-                    )
+                    pl.savefig(join(png_directory,in_ms.rsplit("/")[-1] + "_lg_weight.png",))
 
         except Exception:
             LOG.exception("*********\nUVSub exception: \n***********")
@@ -555,16 +550,21 @@ def do_single_uvsub(
 
 
 def main(uvsub_data: list) -> None:
-    LOG.info(f"uvsub_data: {uvsub_data}")
-    do_single_uvsub(uvsub_data)
-
+    LOG.info(f"uvsub_data (parsed): {uvsub_data}")
+    do_single_uvsub(*uvsub_data)
 
 if __name__ == "__main__":
     try:
         raw_args = sys.argv[1:]
-        uvsub_data = destringify_data(raw_args)
+        LOG.info(f"raw_args before destringifying: {raw_args}")
+
+        uvsub_data = destringify_data_uvsub(raw_args)  # This should already return final list
+        LOG.info(f"uvsub_data going to function: {uvsub_data}")
+
         main(uvsub_data)
+
     except Exception as e:
+        LOG.exception("Failed to run uvsub job")
         print(json.dumps({"status": "error", "message": str(e)}), file=sys.stderr)
         sys.exit(1)
 

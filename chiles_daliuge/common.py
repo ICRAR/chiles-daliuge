@@ -8,6 +8,8 @@ import hashlib
 import sqlite3
 from os.path import isdir
 import numpy as np
+import json
+
 
 LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -18,6 +20,59 @@ def stringify_data(data: list):
     LOG.info(f"stringified_data: {stringified_data}")
     return stringified_data
 
+def convert_type(s):
+    s = s.strip().strip('"').strip("'")
+    if s == "None":
+        return None
+    elif s.isdigit():
+        return int(s)
+    try:
+        return float(s)
+    except ValueError:
+        return s
+
+
+def destringify_data_uvsub(args: list[str]) -> list:
+    """
+    Manually clean and split command-line args into Python-native types,
+    especially parsing the first few list-like arguments from strings.
+    Returns a flat list suitable for argument unpacking.
+    """
+    # Join and strip outer brackets
+    full_str = " ".join(args).strip()
+    if full_str.startswith("[") and full_str.endswith("]"):
+        full_str = full_str[1:-1]
+
+    # Now split top-level comma-separated values, being careful with quoted strings
+    raw_parts = full_str.split(", ")
+
+    parsed_args = []
+    temp_buffer = ""
+    inside_list = False
+
+    for part in raw_parts:
+        part = part.strip()
+        # Start of a list
+        if part.startswith('["') and not inside_list:
+            inside_list = True
+            temp_buffer = part
+        elif inside_list:
+            temp_buffer += ", " + part
+            if part.endswith('"]'):
+                # Finish list
+                inside_list = False
+                try:
+                    parsed_args.append(json.loads(temp_buffer.replace("'", '"')))
+                except Exception:
+                    parsed_args.append(temp_buffer)  # fallback
+                temp_buffer = ""
+        else:
+            # Not a list, parse individual type
+            parsed_args.append(convert_type(part))
+
+    return parsed_args
+                         
+                         
 
 def destringify_data(args: list[str]) -> list[str]:
     """
