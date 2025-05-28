@@ -389,7 +389,7 @@
         "generatorCommitHash": "459eaa752c5bb5709ef7564e184f38a50c980bf3",
         "generatorName": "EAGLE",
         "generatorVersion": "v6.6.0",
-        "lastModifiedDatetime": 1748411338.761274,
+        "lastModifiedDatetime": 1748414710.68685,
         "lastModifiedEmail": "",
         "lastModifiedName": "",
         "numLGNodes": 39,
@@ -1066,7 +1066,7 @@
                     "readonly": false,
                     "type": "Integer",
                     "usage": "NoPort",
-                    "value": 952
+                    "value": 968
                 }
             ],
             "id": "21c49861-78ea-4aad-8ce8-caccbb51fb1d",
@@ -1844,7 +1844,7 @@
                     "readonly": false,
                     "type": "Integer",
                     "usage": "NoPort",
-                    "value": 1
+                    "value": 2
                 }
             ],
             "id": "f8e48658-8294-4c35-8854-ea27752317b9",
@@ -2831,7 +2831,7 @@
                     "readonly": false,
                     "type": "Integer",
                     "usage": "NoPort",
-                    "value": 3
+                    "value": 5
                 }
             ],
             "id": "efb14612-3fc8-4079-bfb1-888be7ec5855",
@@ -3592,8 +3592,8 @@
             "parentId": "efb14612-3fc8-4079-bfb1-888be7ec5855",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -157.66439542798574,
-            "y": 62.04474397966927
+            "x": -34.54070645435489,
+            "y": 82.32393981062022
         },
         {
             "category": "PyFuncApp",
@@ -3824,8 +3824,8 @@
             "parentId": "efb14612-3fc8-4079-bfb1-888be7ec5855",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -234.82871648334248,
-            "y": 169.9656414781088
+            "x": -218.89506261616663,
+            "y": 180.10523939358433
         },
         {
             "category": "Memory",

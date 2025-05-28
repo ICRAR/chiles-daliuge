@@ -4,15 +4,12 @@ from pprint import pformat
 import sys
 from chiles_daliuge.common import *
 import json
-import shlex
-import sqlite3
 import logging
 
 # CASA imports
 from casatasks import mstransform
-from casatools import ms
+from casatools import ms, imager
 
-#from chiles_daliuge.NewChiliesSplit import insert_metadata_from_transform
 
 # Set up logging
 LOG = logging.getLogger(__name__)
@@ -37,107 +34,144 @@ def do_ms_transform(transform_data: List[str]) -> None:
     """
 
     (
-        ms_in, outfile_ms, spw_range, output_directory,
+        ms_in, outfile_ms, output_directory,
         outfile_name_tar, base_name, year, freq_start, freq_end
     ) = transform_data
 
-    for suffix in ["", ".tmp", ".tar"]:
-        path = f"{outfile_ms}{suffix}"
-        if os.path.exists(path):
-            LOG.info(f"Removing: {path}")
-            remove_file_or_directory(path)
+    CHANNEL_WIDTH = 15625.0  # Hz
 
-    LOG.info(f"ms_in: {ms_in}")
-    LOG.info(f"outfile_ms: {outfile_ms}")
-    LOG.info(f"spw_range: {spw_range}")
+    LOG.info(f"Working on: {outfile_ms} with freq {freq_start} and {freq_end}.")
 
-    if len(spw_range.split(",")) == 1:
-        # Single spectral window
-        mstransform(
-            vis=ms_in,
-            outputvis=outfile_ms,
-            regridms=True,
-            restfreq="1420.405752MHz",
-            mode="channel",
-            outframe="TOPO",
-            interpolation="linear",
-            veltype="radio",
-            width=1,
-            spw=spw_range,
-            combinespws=False,
-            nspw=0,
-            createmms=False,
-            datacolumn="data",
-            numsubms=1
-        )
-    else:
-        # Multi-SPW
-        tmp_spws = [entry.split(":")[0] for entry in spw_range.split(",")]
-        outfile_tmp = outfile_ms.replace(".ms", ".ms.tmp")
-        LOG.info(f"outfile_tmp: {outfile_tmp}")
-
-        if os.path.exists(outfile_tmp):
-            shutil.rmtree(outfile_tmp)
-
-        # Step 1: combine SPWs
-        mstransform(
-            vis=ms_in,
-            outputvis=outfile_tmp,
-            regridms=True,
-            restfreq="1420.405752MHz",
-            mode="channel",
-            outframe="TOPO",
-            interpolation="linear",
-            veltype="radio",
-            width=1,
-            spw=",".join(tmp_spws),
-            combinespws=True,
-            nspw=0,
-            createmms=False,
-            datacolumn="data",
-            numsubms=1
-        )
-
-        # Step 2: extract channels from combined SPW
-        tmp1_start = int(spw_range.split("~")[0].split(":")[1])
-        nchans_per_spw = int(spw_range.split(",")[0].split("~")[1]) - tmp1_start
-        total_nchans = nchans_per_spw * len(tmp_spws)
-        spw_final = f"*:{tmp1_start}~{tmp1_start + total_nchans}"
-
-        mstransform(
-            vis=outfile_tmp,
-            outputvis=outfile_ms,
-            regridms=True,
-            restfreq="1420.405752MHz",
-            mode="channel",
-            outframe="TOPO",
-            interpolation="linear",
-            veltype="radio",
-            width=1,
-            spw=spw_final,
-            combinespws=False,
-            nspw=0,
-            createmms=False,
-            datacolumn="data",
-        )
-
-        if os.path.exists(outfile_tmp):
-            shutil.rmtree(outfile_tmp)
-
-    # Log SPW info
-    ms_ = ms()
-    ms_.open(thems=outfile_ms)
-    LOG.info(
-        f"Created File: {outfile_ms}\n"
-        f"Spectral Window Range: {spw_range}\n"
-        f"Spectral Window Info: {pformat(ms_.getspectralwindowinfo(), indent=2)}\n"
+    im = imager()
+    LOG.info(f"ms_in_path: {ms_in}")
+    im.selectvis(vis=ms_in)
+    selinfo = im.advisechansel(
+        freqstart=int(freq_start) * 1e6,
+        freqend=int(freq_end) * 1e6,
+        freqstep=CHANNEL_WIDTH,
+        freqframe="BARY",
     )
-    ms_.close()
+    LOG.info(f"advisechansel result: {selinfo}")
+    spw_range = ""
+    for n in range(len(selinfo["ms_0"]["spw"])):
+        spw_range += (
+            f"{selinfo['ms_0']['spw'][n]}:"
+            f"{selinfo['ms_0']['start'][n]}~"
+            f"{selinfo['ms_0']['start'][n] + selinfo['ms_0']['nchan'][n]}"
+        )
+        if (n + 1) < len(selinfo["ms_0"]["spw"]):
+            spw_range += ","
+    im.close()
 
-    # Archive output
-    create_tar_file(outfile_ms, suffix="tmp")
-    os.rename(f"{outfile_ms}.tar.tmp", f"{outfile_ms}.tar")
-    LOG.info(f"Created final file {outfile_ms}.tar from {outfile_ms}.tar.tmp")
+    LOG.info(f"spw_range: {spw_range}, width_freq: {CHANNEL_WIDTH}")
+    if spw_range.startswith("-1") or spw_range.endswith("-1"):
+        LOG.warning(f"The spw_range is {spw_range} which is outside the spectral window")
+        return
+
+
+    if len(spw_range):
+        for suffix in ["", ".tmp", ".tar"]:
+            path = f"{outfile_ms}{suffix}"
+            if os.path.exists(path):
+                LOG.info(f"Removing: {path}")
+                remove_file_or_directory(path)
+
+        LOG.info(f"ms_in: {ms_in}")
+        LOG.info(f"outfile_ms: {outfile_ms}")
+        LOG.info(f"spw_range: {spw_range}")
+
+        if len(spw_range.split(",")) == 1:
+            # Single spectral window
+            mstransform(
+                vis=ms_in,
+                outputvis=outfile_ms,
+                regridms=True,
+                restfreq="1420.405752MHz",
+                mode="channel",
+                outframe="TOPO",
+                interpolation="linear",
+                veltype="radio",
+                width=1,
+                spw=spw_range,
+                combinespws=False,
+                nspw=0,
+                createmms=False,
+                datacolumn="data",
+                numsubms=1
+            )
+        else:
+            # Multi-SPW
+            tmp_spws = [entry.split(":")[0] for entry in spw_range.split(",")]
+            outfile_tmp = outfile_ms.replace(".ms", ".ms.tmp")
+            LOG.info(f"outfile_tmp: {outfile_tmp}")
+
+            if os.path.exists(outfile_tmp):
+                shutil.rmtree(outfile_tmp)
+
+            # Step 1: combine SPWs
+            mstransform(
+                vis=ms_in,
+                outputvis=outfile_tmp,
+                regridms=True,
+                restfreq="1420.405752MHz",
+                mode="channel",
+                outframe="TOPO",
+                interpolation="linear",
+                veltype="radio",
+                width=1,
+                spw=",".join(tmp_spws),
+                combinespws=True,
+                nspw=0,
+                createmms=False,
+                datacolumn="data",
+                numsubms=1
+            )
+
+            # Step 2: extract channels from combined SPW
+            tmp1_start = int(spw_range.split("~")[0].split(":")[1])
+            nchans_per_spw = int(spw_range.split(",")[0].split("~")[1]) - tmp1_start
+            total_nchans = nchans_per_spw * len(tmp_spws)
+            spw_final = f"*:{tmp1_start}~{tmp1_start + total_nchans}"
+
+            mstransform(
+                vis=outfile_tmp,
+                outputvis=outfile_ms,
+                regridms=True,
+                restfreq="1420.405752MHz",
+                mode="channel",
+                outframe="TOPO",
+                interpolation="linear",
+                veltype="radio",
+                width=1,
+                spw=spw_final,
+                combinespws=False,
+                nspw=0,
+                createmms=False,
+                datacolumn="data",
+            )
+
+            if os.path.exists(outfile_tmp):
+                shutil.rmtree(outfile_tmp)
+
+        # Log SPW info
+        ms_ = ms()
+        ms_.open(thems=outfile_ms)
+        LOG.info(
+            f"Created File: {outfile_ms}\n"
+            f"Spectral Window Range: {spw_range}\n"
+            f"Spectral Window Info: {pformat(ms_.getspectralwindowinfo(), indent=2)}\n"
+        )
+        ms_.close()
+
+        # Archive output
+        create_tar_file(outfile_ms, suffix="tmp")
+        os.rename(f"{outfile_ms}.tar.tmp", f"{outfile_ms}.tar")
+        LOG.info(f"Created final file {outfile_ms}.tar from {outfile_ms}.tar.tmp")
+    else:
+        LOG.warning("*********\nmstransform spw out of range:\n***********")
+        return
+
+
 
 # def clean_transform_data(args: list[str]) -> list[str]:
 #     """
@@ -180,8 +214,8 @@ def main(transform_data: list) -> None:
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 10:
-        print("Usage: python run_ms_transform.py <ms_in> <ms_out> <spw_range> <out_dir> <tar_name> <base_name> <year> <freq_start> <freq_end>", file=sys.stderr)
+    if len(sys.argv) != 9:
+        print("Usage: python run_ms_transform.py <ms_in> <ms_out> <out_dir> <tar_name> <base_name> <year> <freq_start> <freq_end>", file=sys.stderr)
         sys.exit(1)
 
     try:
@@ -189,7 +223,7 @@ if __name__ == "__main__":
         transform_data = destringify_data(raw_args)
         main(transform_data)
     except Exception as e:
-        print(json.dumps({"status": "error", "message": str(e)}), file=sys.stderr)
+        LOG.error(json.dumps({"status": "error", "message": str(e)}))
         sys.exit(1)
 
 

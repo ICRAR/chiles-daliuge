@@ -5,8 +5,7 @@ import sys
 import os
 import ast
 from subprocess import run, PIPE
-from casatasks import mstransform
-from casatools import ms, imager
+
 from typing import List
 from chiles_daliuge.common import *
 import logging
@@ -381,7 +380,7 @@ def split_out_frequencies(
     metadata_db_path : str
         Path to the SQLite database storing metadata info.
     """
-    CHANNEL_WIDTH = 15625.0  # Hz
+    #CHANNEL_WIDTH = 15625.0  # Hz
     LOG.info("#" * 60)
     LOG.info("#" * 60)
     LOG.info(f"Frequencies: {frequencies}")
@@ -414,7 +413,7 @@ def split_out_frequencies(
             outfile_name_tar = f"{outfile_name}.tar"
             outfile = os.path.join(output_directory, outfile_name)
 
-            outfile_tar = os.path.join(output_directory, outfile_name_tar)
+            #outfile_tar = os.path.join(output_directory, outfile_name_tar)
 
             ms_in_path = os.path.join(output_directory, ms_in)
             # Check if already exists in DB
@@ -424,58 +423,13 @@ def split_out_frequencies(
                 LOG.info(f"Skipping {outfile_name_tar}, already in metadata DB.")
                 continue
 
-            if not process_ms:
 
-                LOG.info(f"Working on: {outfile_tar} with freq {freq_start} and {freq_end}.")
-                LOG.info(f"ms_in_path: {ms_in_path}")
+            transform_data = [ms_in_path, outfile, output_directory, outfile_name_tar, base_name,
+                              str(year), str(freq_start), str(freq_end)]
 
-                os.makedirs(os.path.dirname(outfile_tar), exist_ok=True)
-                Path(f"{outfile_tar}").touch()
-                LOG.info(f"Created placeholder file: {outfile_tar}")
+            transform_data_string = stringify_data(transform_data)
+            transform_data_all.append(transform_data_string)
 
-            else:
-                LOG.info(f"Working on: {outfile} with freq {freq_start} and {freq_end}.")
-
-                im = imager()
-                LOG.info(f"ms_in_path: {ms_in_path}")
-                im.selectvis(vis=ms_in_path)
-                selinfo = im.advisechansel(
-                    freqstart=freq_start * 1e6,
-                    freqend=freq_end * 1e6,
-                    freqstep=CHANNEL_WIDTH,
-                    freqframe="BARY",
-                )
-                LOG.info(f"advisechansel result: {selinfo}")
-                spw_range = ""
-                for n in range(len(selinfo["ms_0"]["spw"])):
-                    spw_range += (
-                        f"{selinfo['ms_0']['spw'][n]}:"
-                        f"{selinfo['ms_0']['start'][n]}~"
-                        f"{selinfo['ms_0']['start'][n] + selinfo['ms_0']['nchan'][n]}"
-                    )
-                    if (n + 1) < len(selinfo["ms_0"]["spw"]):
-                        spw_range += ","
-                im.close()
-
-                LOG.info(f"spw_range: {spw_range}, width_freq: {CHANNEL_WIDTH}")
-                if spw_range.startswith("-1") or spw_range.endswith("-1"):
-                    LOG.warning(f"The spw_range is {spw_range} which is outside the spectral window")
-                    continue
-
-                try:
-                    if len(spw_range):
-                        transform_data = [ms_in_path, outfile, spw_range, output_directory, outfile_name_tar, base_name,
-                                          str(year), str(freq_start), str(freq_end)]
-
-                        transform_data_string = stringify_data(transform_data)
-                        transform_data_all.append(transform_data_string)
-                        # do_ms_transform(ms_in_path, outfile, spw_range, [freq_pair])
-                    else:
-                        LOG.warning("*********\nmstransform spw out of range:\n***********")
-                        continue
-                except Exception:
-                    LOG.exception("*********\nmstransform exception:\n***********")
-                    continue
 
     conn.close()
     LOG.info(f"transform_data_all: {transform_data_all}")
