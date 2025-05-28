@@ -472,8 +472,8 @@ def insert_metadata_from_transform(transform_data: str, METADATA_DB: str) -> Non
     try:
         # Safely evaluate the string into a Python list
         data_list = ensure_list_then_destringify(transform_data)
-        if not isinstance(data_list, list) or len(data_list) != 9:
-            raise ValueError("transform_data must be a list of 9 elements")
+        if not isinstance(data_list, list) or len(data_list) != 8:
+            raise ValueError("transform_data must be a list of 8 elements")
     except Exception as e:
         raise ValueError(f"Invalid transform_data format: {e}")
 
