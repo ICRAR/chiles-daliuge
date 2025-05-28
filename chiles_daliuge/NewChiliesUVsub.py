@@ -10,7 +10,7 @@ from casatools import imager, ms, table, quanta, image
 from typing import Union, List, Tuple
 import ast
 from pathlib import Path
-from common import *
+from chiles_daliuge.common import *
 
 process_ms_flag = True
 
@@ -97,8 +97,6 @@ def fetch_split_ms(
     list of str
         Matching dlg_name values.
     """
-    verify_db_integrity()
-
     freq_set = {tuple(freq_pair) for freq_pair in frequencies}
 
     query = """
@@ -178,7 +176,6 @@ def time_convert(mytime: Union[float, int, str, List[Union[float, int, str]]],
 def do_uvsub(names_list, source_dir, sky_model_tar_file,
     taylor_terms, outliers, channel_average, produce_qa, w_projection_planes, METADATA_DB
 ):
-    verify_db_integrity()
     sky_model_location = None
 
     add_column_if_missing("uv_sub_name")
@@ -229,44 +226,6 @@ def do_uvsub(names_list, source_dir, sky_model_tar_file,
         uvsub_data_all.append(stringify_data(combined_data))
 
 
-
-
-    #verify_db_integrity()
     LOG.info(f"uvsub_data_all: {uvsub_data_all}")
     LOG.info("All Done with stringifying uvsub data!!!")
     return np.array(uvsub_data_all, dtype=str)
-
-
-# def extract_and_update_uvsub_metadata(stringified_input: str) -> None:
-#     """
-#     Parse a stringified list, clean it, and call update_metadata_column
-#     with the last six elements.
-#
-#     Parameters
-#     ----------
-#     stringified_input : str
-#         A string that represents a list of at least 6 items
-#     """
-#     try:
-#         parsed = ast.literal_eval(stringified_input)
-#         if not isinstance(parsed, list) or len(parsed) < 6:
-#             raise ValueError("Input must be a stringified list with at least 6 elements")
-#
-#         cleaned = destringify_data(parsed)
-#
-#         # Extract the last 6 elements
-#         split_name, year, freq_st, freq_en, uv_sub_name, uv_sub_tar = cleaned[-6:]
-#
-#         LOG.info("Calling update_metadata_column with:")
-#         LOG.info(f"  split_name: {split_name}")
-#         LOG.info(f"  year: {year}")
-#         LOG.info(f"  freq_st: {freq_st}")
-#         LOG.info(f"  freq_en: {freq_en}")
-#         LOG.info(f"  uv_sub_name: {uv_sub_name}")
-#         LOG.info(f"  uv_sub_tar: {uv_sub_tar}")
-#
-#         update_metadata_column(split_name, year, freq_st, freq_en, uv_sub_name, uv_sub_tar)
-#
-#     except Exception as e:
-#         LOG.error(f"Failed to extract and update metadata: {e}")
-#         raise
