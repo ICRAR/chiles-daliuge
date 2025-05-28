@@ -60,7 +60,8 @@ def copy_sky_model(sky_model_source: Union[str, bytes], temporary_directory: str
 def fetch_split_ms(
         year_list: List[str],
         frequencies: List[List[int]],
-        db_path: str
+        db_path: str,
+        trigger_in: bool,
 ) -> List[str]:
     """
     Fetch dlg_name values from the metadata DB where year is in year_list and
