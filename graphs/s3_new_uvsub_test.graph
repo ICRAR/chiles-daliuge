@@ -287,7 +287,7 @@
             "closesLoop": false,
             "from": "3816c944-c0e2-4b93-a3de-59ecdd9a34d9",
             "fromPort": "19a556eb-6392-4504-8844-1e1e064f5a5b",
-            "loop_aware": "0",
+            "loop_aware": "1",
             "to": "ac3740ec-9e89-49f7-97d5-d10f6a4a5d86",
             "toPort": "6883eebf-1468-45fe-9318-935fb13caab6"
         },
@@ -365,7 +365,7 @@
         "generatorCommitHash": "459eaa752c5bb5709ef7564e184f38a50c980bf3",
         "generatorName": "EAGLE",
         "generatorVersion": "v6.6.0",
-        "lastModifiedDatetime": 1748399566.995159,
+        "lastModifiedDatetime": 1748406029.503752,
         "lastModifiedEmail": "",
         "lastModifiedName": "",
         "numLGNodes": 37,
@@ -2792,7 +2792,7 @@
                     "readonly": false,
                     "type": "Integer",
                     "usage": "NoPort",
-                    "value": 1
+                    "value": 3
                 }
             ],
             "id": "efb14612-3fc8-4079-bfb1-888be7ec5855",
@@ -2812,8 +2812,8 @@
             "parentId": "f8e48658-8294-4c35-8854-ea27752317b9",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -231.27814071470146,
-            "y": -107.14973807324907
+            "x": -179.66451509456715,
+            "y": -101.3223932451694
         },
         {
             "category": "BashShellApp",
@@ -5965,8 +5965,8 @@
             "parentId": "f8e48658-8294-4c35-8854-ea27752317b9",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -564.7284883435968,
-            "y": -38.20968241139368
+            "x": -596.3626459817441,
+            "y": -39.874638076559314
         },
         {
             "category": "Branch",
@@ -6167,8 +6167,8 @@
             "parentId": "f8e48658-8294-4c35-8854-ea27752317b9",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -558.6462255284445,
-            "y": -199.51813784448396
+            "x": -607.2321010976643,
+            "y": -235.6105025530473
         },
         {
             "category": "Memory",
@@ -6317,8 +6317,8 @@
             "parentId": "f8e48658-8294-4c35-8854-ea27752317b9",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -531.5009619065322,
-            "y": -127.90026722186755
+            "x": -562.0406551214703,
+            "y": -137.61744233571147
         },
         {
             "category": "Memory",
@@ -6617,8 +6617,8 @@
             "parentId": "f8e48658-8294-4c35-8854-ea27752317b9",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -493.8319541763685,
-            "y": -315.1698996163413
+            "x": -523.8518832468076,
+            "y": -326.1029561409137
         },
         {
             "category": "Memory",

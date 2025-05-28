@@ -1,35 +1,12 @@
-from os.path import isdir
 import tempfile
-from datetime import datetime, timedelta
-from os import makedirs, rename, listdir
-import numpy as np
-import pylab as pl
-from casaplotms import plotms
-from casatasks import uvsub, statwt, split, phaseshift
-from casatools import imager, ms, table, quanta, image
-from typing import Union, List, Tuple
-import ast
-from pathlib import Path
+from casatools import quanta
+from typing import Union, List
 from chiles_daliuge.common import *
 
 process_ms_flag = True
 
 
 LOG = logging.getLogger(__name__)
-
-
-# db_dir = "/home/00103780/chiles-daliuge/db"
-# METADATA_CSV = db_dir+"/Chilies_metadata.csv"
-# METADATA_DB = os.path.join(db_dir, "Chilies_metadata.db")
-
-
-
-
-
-
-
-
-
 
 def copy_sky_model(sky_model_source: Union[str, bytes], temporary_directory: str) -> str:
     """
@@ -40,7 +17,8 @@ def copy_sky_model(sky_model_source: Union[str, bytes], temporary_directory: str
     sky_model_source : str or bytes
         Path to the `.tar` archive or a directory containing the sky model.
         If a `.tar` file, it will be extracted.
-        If a directory, it will be copied directly.
+        If a directory, it will be copied as a subdirectory of the temporary directory.
+
     temporary_directory : str
         Path to the directory where the sky model should be placed.
 
@@ -52,20 +30,25 @@ def copy_sky_model(sky_model_source: Union[str, bytes], temporary_directory: str
     Notes
     -----
     - If the input is a .tar file, assumes it is uncompressed.
-    - For directories, performs a full recursive copy.
+    - For directories, copies the directory itself (not just its contents).
     """
     if isinstance(sky_model_source, str) and sky_model_source.endswith(".tar"):
         LOG.info(f"Untarring {sky_model_source} to {temporary_directory}")
         untar_file(sky_model_source, temporary_directory, gz=False)
+        return temporary_directory
     elif os.path.isdir(sky_model_source):
         LOG.info(f"Copying directory {sky_model_source} to {temporary_directory}")
-        if os.path.exists(temporary_directory):
-            shutil.rmtree(temporary_directory)
-        shutil.copytree(sky_model_source, temporary_directory)
+        basename = os.path.basename(os.path.abspath(sky_model_source))
+        dest_path = os.path.join(temporary_directory, basename)
+
+        if os.path.exists(dest_path):
+            shutil.rmtree(dest_path)
+
+        shutil.copytree(sky_model_source, dest_path)
+        return dest_path
     else:
         raise ValueError(f"Invalid sky model input: {sky_model_source} is neither a .tar file nor a directory.")
 
-    return temporary_directory
 
 
 # def copy_region_files(region_file_tar_file, temporary_directory):
@@ -220,7 +203,7 @@ def do_uvsub(names_list, source_dir, sky_model_tar_file,
         combined_data = [
             taylor_terms, outliers, channel_average, produce_qa, w_projection_planes,
             source_dir,  sky_model_location,
-            split_name, year, freq_st, freq_en, "uv_sub_name", METADATA_DB
+            split_name, year, freq_st, freq_en, uv_sub_name, METADATA_DB
         ]
 
         uvsub_data_all.append(stringify_data(combined_data))

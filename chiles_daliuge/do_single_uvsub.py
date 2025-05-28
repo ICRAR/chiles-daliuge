@@ -55,53 +55,33 @@ def fd2radec(fd):
         dec[3],
     )
 
+
+
 def rejig_paths(taylor_terms: List[str],
                 outliers: List[str],
                 sky_model_location: str,
                 spectral_window: int) -> Tuple[List[str], List[str]]:
     """
     Construct full file paths for Taylor term and outlier models using the given spectral window.
-
-    Parameters
-    ----------
-    taylor_terms : list of str
-        List of template paths for Taylor term models, each containing a `{0}` placeholder
-        for the spectral window number.
-        Example: ["LSM/epoch1gt4k_si_spw_{0}.model.tt0", ...]
-    outliers : list of str
-        List of template paths for outlier models, each containing a `{0}` placeholder
-        for the spectral window number.
-        Example: ["LSM/Outliers/Outlier_1.0,8.spw_{0}.model", ...]
-    sky_model_location : str
-        Path to the sky model base directory (e.g., a tar-extracted folder path or root directory).
-    spectral_window : int
-        The spectral window ID used to format the `{0}` placeholders in the file paths.
-
-    Returns
-    -------
-    tuple of (list of str, list of str)
-        Two lists containing the full file paths to the Taylor term and outlier models, respectively.
-
-    Example
-    -------
-    >>> rejig_paths(
-            ["LSM/epoch1gt4k_si_spw_{0}.model.tt0"],
-            ["LSM/Outliers/Outlier_1.0,8.spw_{0}.model"],
-            "/tmp/sky_model_untar",
-            3
-        )
-    (["/tmp/sky_model_untar/LSM/epoch1gt4k_si_spw_3.model.tt0"],
-     ["/tmp/sky_model_untar/LSM/Outliers/Outlier_1.0,8.spw_3.model"])
     """
+
+    def normalize(path_template: str) -> str:
+        # Remove leading "LSM/" if sky_model_location already ends with LSM
+        if os.path.basename(os.path.normpath(sky_model_location)) == "LSM" and path_template.startswith("LSM/"):
+            return path_template[len("LSM/"):]
+        return path_template
+
     taylor_terms_ = [
-        join(sky_model_location, taylor_term.format(spectral_window))
-        for taylor_term in taylor_terms
+        join(sky_model_location, normalize(t.format(spectral_window)))
+        for t in taylor_terms
     ]
     outliers_ = [
-        join(sky_model_location, outlier.format(spectral_window))
-        for outlier in outliers
+        join(sky_model_location, normalize(o.format(spectral_window)))
+        for o in outliers
     ]
     return taylor_terms_, outliers_
+
+
 
 
 def do_single_uvsub(
