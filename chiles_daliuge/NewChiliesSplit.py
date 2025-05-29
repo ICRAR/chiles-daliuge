@@ -163,143 +163,6 @@ def fetch_original_ms(
     LOG.info(f"Complete fetch_original_ms list: {name_list}")
     return name_list
 
-
-# def do_ms_transform(ms_in: str, outfile_ms: str, spw_range: str, frequencies: List[List[int]]) -> None:
-#     """
-#     Performs a frequency-based transformation (splitting and regridding) of a Measurement Set (MS)
-#     and outputs the result to a new MS. Handles both single and multi-IF (spectral window) cases.
-#
-#     Steps:
-#     - Checks and removes any previously created output files or intermediate temporary files.
-#     - Uses CASA's `mstransform` to extract and optionally combine specific spectral windows.
-#     - If multiple spectral windows are involved, creates an intermediate MS with combined SPWs,
-#       then extracts the desired channels into the final output.
-#     - Logs the spectral window structure of the output MS.
-#     - Creates a tar archive of the resulting MS and marks it as completed using a `.tar` file, where as incomplete tar files have _tmp as suffix.
-#
-#     Parameters
-#     ----------
-#     ms_in : str
-#         Path to the input Measurement Set to be processed.
-#     outfile_ms : str
-#         Output path (without `.tar`) where the processed MS and its tar archive will be stored.
-#     spw_range : str
-#         Spectral window range string, e.g., "0:10~50" or "0:10~50,1:20~60".
-#     frequencies : list of [int, int]
-#         Frequency range (in MHz) used in the current processing step. Used only for logging.
-#
-#     Returns
-#     -------
-#     None
-#     """
-#     # if exists(outfile_ms):
-#     #     LOG.info(f"Removing: {outfile_ms}") # should not get here as check on DB exists before call of this function
-#     #     remove_file_or_directory(outfile_ms)
-#
-#
-#     for suffix in ["", ".tmp", ".tar"]:
-#         path = f"{outfile_ms}{suffix}"
-#         if exists(path):
-#             LOG.info(f"Removing: {path}")
-#             remove_file_or_directory(path)
-#
-#
-#     LOG.info(f"ms_in: {ms_in}")
-#     LOG.info(f"outfile_ms: {outfile_ms}")
-#     LOG.info(f"spw_range: {spw_range}")
-#
-#     if len(spw_range.split(",")) == 1:
-#         # Single spectral window
-#         mstransform(
-#             vis=ms_in,
-#             outputvis=outfile_ms,
-#             regridms=True,
-#             restfreq="1420.405752MHz",
-#             mode="channel",
-#             outframe="TOPO",
-#             interpolation="linear",
-#             veltype="radio",
-#             width=1,
-#             spw=spw_range,
-#             combinespws=False,
-#             nspw=0,
-#             createmms=False,
-#             datacolumn="data",
-#             numsubms=1
-#         )
-#     else:
-#         # Multiple spectral windows - process in two steps
-#         tmp_spws = [entry.split(":")[0] for entry in spw_range.split(",")]
-#         outfile_tmp = outfile_ms.replace(".ms",".ms.tmp")
-#         LOG.info(f"outfile_tmp: {outfile_tmp}")
-#
-#         if exists(outfile_tmp):
-#             shutil.rmtree(outfile_tmp)
-#
-#         # First step: combine SPWs
-#         mstransform(
-#             vis=ms_in,
-#             outputvis=outfile_tmp,
-#             regridms=True,
-#             restfreq="1420.405752MHz",
-#             mode="channel",
-#             outframe="TOPO",
-#             interpolation="linear",
-#             veltype="radio",
-#             width=1,
-#             spw=",".join(tmp_spws),
-#             combinespws=True,
-#             nspw=0,
-#             createmms=False,
-#             datacolumn="data",
-#             numsubms=1
-#         )
-#
-#         # Second step: extract desired channels from combined SPW
-#         tmp1_start = int(spw_range.split("~")[0].split(":")[1])
-#         #nchan = int(spw_range.split("~")[1])
-#         nchans_per_spw = int(spw_range.split(",")[0].split("~")[1]) - tmp1_start
-#         total_nchans = nchans_per_spw * len(tmp_spws)
-#
-#         spw_final = f"*:{tmp1_start}~{tmp1_start + total_nchans}"
-#         mstransform(
-#             vis=outfile_tmp,
-#             outputvis=outfile_ms,
-#             regridms=True,
-#             restfreq="1420.405752MHz",
-#             mode="channel",
-#             outframe="TOPO",
-#             interpolation="linear",
-#             veltype="radio",
-#             width=1,
-#             spw=spw_final,
-#             combinespws=False,
-#             nspw=0,
-#             createmms=False,
-#             datacolumn="data",
-#         )
-#
-#         if exists(outfile_tmp):
-#             shutil.rmtree(outfile_tmp)
-#             remove_file_or_directory(path)
-#
-#     # Log spectral window information
-#     ms_ = ms()
-#     ms_.open(thems=outfile_ms)
-#     LOG.info(
-#         f"Created File: {outfile_ms}\n"
-#         f"Frequency: {frequencies}\n"
-#         f"Spectral Window Range: {spw_range}\n"
-#         f"Spectral Window Info: {pformat(ms_.getspectralwindowinfo(), indent=2)}\n"
-#     )
-#     ms_.close()
-#
-#     # Archive the result
-#     create_tar_file(outfile_ms, suffix="tmp")
-#     rename(f"{outfile_ms}.tar.tmp", f"{outfile_ms}.tar")
-#     LOG.info(f"Created final file {outfile_ms}.tar from {outfile_ms}.tar.tmp")
-
-
 def split_ms_list(ms_list: list[str], parallel_processes: int) -> list[list[str]]:
     """
     Split a list of measurement set paths into size-balanced sublists.
@@ -421,14 +284,14 @@ def split_out_frequencies(
             cursor.execute("SELECT 1 FROM metadata WHERE dlg_name = ?", (outfile_name_tar,))
             if cursor.fetchone():
                 LOG.info(f"Skipping {outfile_name_tar}, already in metadata DB.")
-                continue
 
+            else:
+                transform_data = [ms_in_path, outfile, output_directory, outfile_name_tar, base_name,
+                                  str(year), str(freq_start), str(freq_end)]
 
-            transform_data = [ms_in_path, outfile, output_directory, outfile_name_tar, base_name,
-                              str(year), str(freq_start), str(freq_end)]
-
-            transform_data_string = stringify_data(transform_data)
-            transform_data_all.append(transform_data_string)
+                transform_data_string = stringify_data(transform_data)
+                transform_data_all.append(transform_data_string)
+                LOG.info(f"Queueing {outfile_name_tar} for processing.")
 
 
     conn.close()

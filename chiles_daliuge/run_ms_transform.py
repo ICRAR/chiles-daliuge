@@ -43,7 +43,7 @@ def do_ms_transform(transform_data: List[str]) -> None:
     LOG.info(f"Working on: {outfile_ms} with freq {freq_start} and {freq_end}.")
 
     im = imager()
-    LOG.info(f"ms_in_path: {ms_in}")
+    #LOG.info(f"ms_in_path: {ms_in}")
     im.selectvis(vis=ms_in)
     selinfo = im.advisechansel(
         freqstart=int(freq_start) * 1e6,
@@ -51,7 +51,7 @@ def do_ms_transform(transform_data: List[str]) -> None:
         freqstep=CHANNEL_WIDTH,
         freqframe="BARY",
     )
-    LOG.info(f"advisechansel result: {selinfo}")
+    #LOG.info(f"advisechansel result: {selinfo}")
     spw_range = ""
     for n in range(len(selinfo["ms_0"]["spw"])):
         spw_range += (
@@ -169,7 +169,8 @@ def do_ms_transform(transform_data: List[str]) -> None:
         LOG.info(f"Created final file {outfile_ms}.tar from {outfile_ms}.tar.tmp")
     else:
         LOG.warning("*********\nmstransform spw out of range:\n***********")
-        return
+
+    return
 
 
 

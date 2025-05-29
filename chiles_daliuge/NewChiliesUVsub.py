@@ -10,7 +10,7 @@ LOG = logging.getLogger(__name__)
 
 def copy_sky_model(sky_model_source: Union[str, bytes], temporary_directory: str) -> str:
     """
-    Extract or copy the sky model to a temporary directory.
+    Extract or copy the sky model to a temporary directory, preserving symbolic links as relative links.
 
     Parameters
     ----------
@@ -26,16 +26,26 @@ def copy_sky_model(sky_model_source: Union[str, bytes], temporary_directory: str
     -------
     str
         Path to the temporary directory containing the sky model.
-
-    Notes
-    -----
-    - If the input is a .tar file, assumes it is uncompressed.
-    - For directories, copies the directory itself (not just its contents).
     """
+    def make_symlinks_relative(target_dir: str):
+        for root, dirs, files in os.walk(target_dir):
+            for name in dirs + files:
+                full_path = os.path.join(root, name)
+                if os.path.islink(full_path):
+                    link_target = os.readlink(full_path)
+                    # Only rewrite absolute symlinks that are within the original source tree
+                    if os.path.isabs(link_target):
+                        abs_target_path = os.path.realpath(link_target)
+                        if abs_target_path.startswith(os.path.realpath(sky_model_source)):
+                            rel_target_path = os.path.relpath(abs_target_path, start=os.path.dirname(full_path))
+                            os.remove(full_path)
+                            os.symlink(rel_target_path, full_path)
+
     if isinstance(sky_model_source, str) and sky_model_source.endswith(".tar"):
         LOG.info(f"Untarring {sky_model_source} to {temporary_directory}")
         untar_file(sky_model_source, temporary_directory, gz=False)
         return temporary_directory
+
     elif os.path.isdir(sky_model_source):
         LOG.info(f"Copying directory {sky_model_source} to {temporary_directory}")
         basename = os.path.basename(os.path.abspath(sky_model_source))
@@ -44,8 +54,10 @@ def copy_sky_model(sky_model_source: Union[str, bytes], temporary_directory: str
         if os.path.exists(dest_path):
             shutil.rmtree(dest_path)
 
-        shutil.copytree(sky_model_source, dest_path)
+        shutil.copytree(sky_model_source, dest_path, symlinks=True)
+        make_symlinks_relative(dest_path)
         return dest_path
+
     else:
         raise ValueError(f"Invalid sky model input: {sky_model_source} is neither a .tar file nor a directory.")
 
@@ -212,4 +224,4 @@ def do_uvsub(names_list, source_dir, sky_model_tar_file,
 
     LOG.info(f"uvsub_data_all: {uvsub_data_all}")
     LOG.info("All Done with stringifying uvsub data!!!")
-    return np.array(uvsub_data_all, dtype=str)
+    return np.array(uvsub_data_all, dtype=str), sky_model_location
