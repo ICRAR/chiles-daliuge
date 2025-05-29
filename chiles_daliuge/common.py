@@ -11,7 +11,7 @@ import numpy as np
 import json
 
 
-LOG = logging.getLogger(__name__)
+LOG = logging.getLogger(f"dlg.{__name__}")
 logging.basicConfig(level=logging.INFO)
 
 
@@ -124,7 +124,7 @@ def get_list_frequency_groups(frequency_width: int, minimum_frequency: int, maxi
     ]
     return result
 
-def remove_file_or_directory(filename: str) -> None:
+def remove_file_or_directory(filename: str, trigger) -> None:
     """
     Remove a file or directory if it exists.
 
@@ -136,22 +136,32 @@ def remove_file_or_directory(filename: str) -> None:
     ----------
     filename : str
         Path to the file or directory to be removed.
+    trigger : any
+        Just to make it wait
 
     Returns
     -------
     None
-
-    Notes
-    -----
-    - Uses `os.remove()` for files.
-    - Uses `shutil.rmtree()` for directories.
-    - If the path does not exist, the function does nothing.
     """
+    filename = str(filename)
+
+    if not filename or filename == "None":
+        LOG.warning(f"Skipping removal: invalid filename input ('{filename}').")
+        return
+
     if exists(filename):
-        if isfile(filename):
-            os.remove(filename)
-        else:
-            shutil.rmtree(filename)
+        try:
+            if isfile(filename):
+                LOG.info(f"[{trigger}] Removing file: {filename}")
+                os.remove(filename)
+            else:
+                LOG.info(f"[{trigger}] Removing directory: {filename}")
+                shutil.rmtree(filename)
+            LOG.info(f"[{trigger}] Successfully removed: {filename}")
+        except Exception as e:
+            LOG.error(f"[{trigger}] Failed to remove {filename}: {e}")
+    else:
+        LOG.info(f"[{trigger}] Nothing to remove, path does not exist: {filename}")
 
 def verify_db_integrity(db_path: str, trigger_in: bool) -> bool:
     """
@@ -380,6 +390,42 @@ def update_metadata_column(
 
     conn.commit()
     conn.close()
+
+
+def remove_temp_dir(trigger_in: bool, base_dir: str, prefix="__SKY_TEMP__"):
+    """
+    Removes all temporary directories in the given base directory that start with a specific prefix.
+
+    Parameters
+    ----------
+    base_dir : str
+        The directory in which to search for temp directories.
+    prefix : str
+        The prefix of temp directories to be deleted.
+
+    Returns
+    -------
+    None
+    """
+    if trigger_in:
+        LOG.info(f"Scanning for temp dirs in: {base_dir} with prefix: {prefix}")
+
+        if not os.path.exists(base_dir):
+            LOG.warning(f"Base directory does not exist: {base_dir}")
+            return
+
+        count = 0
+        for entry in os.listdir(base_dir):
+            full_path = os.path.join(base_dir, entry)
+            if os.path.isdir(full_path) and entry.startswith(prefix):
+                try:
+                    shutil.rmtree(full_path)
+                    LOG.info(f"Removed temp directory: {full_path}")
+                    count += 1
+                except Exception as e:
+                    LOG.error(f"Failed to remove {full_path}: {e}")
+
+        LOG.info(f"Completed removal. Total directories removed: {count}")
 
 def remove_file_directory(path_name):
     if isdir(path_name):

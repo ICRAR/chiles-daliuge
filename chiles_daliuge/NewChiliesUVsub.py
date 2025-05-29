@@ -25,7 +25,7 @@ def copy_sky_model(sky_model_source: Union[str, bytes], temporary_directory: str
     Returns
     -------
     str
-        Path to the temporary directory containing the sky model.
+        Path to the destination directory containing the sky model.
     """
     def make_symlinks_relative(target_dir: str):
         for root, dirs, files in os.walk(target_dir):
@@ -44,7 +44,17 @@ def copy_sky_model(sky_model_source: Union[str, bytes], temporary_directory: str
     if isinstance(sky_model_source, str) and sky_model_source.endswith(".tar"):
         LOG.info(f"Untarring {sky_model_source} to {temporary_directory}")
         untar_file(sky_model_source, temporary_directory, gz=False)
-        return temporary_directory
+
+        # Infer the directory created during untar
+        basename = os.path.basename(sky_model_source).replace(".tar", "")
+        dest_path = os.path.join(temporary_directory, basename)
+
+        if not os.path.exists(dest_path):
+            # fallback: return temporary_directory if .tar file doesn't untar into a named subfolder
+            return temporary_directory
+
+        make_symlinks_relative(dest_path)
+        return dest_path
 
     elif os.path.isdir(sky_model_source):
         LOG.info(f"Copying directory {sky_model_source} to {temporary_directory}")
@@ -170,10 +180,9 @@ def time_convert(mytime: Union[float, int, str, List[Union[float, int, str]]],
 
 
 def do_uvsub(names_list, source_dir, sky_model_tar_file,
-    taylor_terms, outliers, channel_average, produce_qa, w_projection_planes, METADATA_DB
-):
-    sky_model_location = None
+    taylor_terms, outliers, channel_average, produce_qa, w_projection_planes, METADATA_DB):
 
+    sky_model_location = None
     add_column_if_missing(METADATA_DB,"uv_sub_name")
 
     uvsub_data_all = []
@@ -221,7 +230,13 @@ def do_uvsub(names_list, source_dir, sky_model_tar_file,
 
         uvsub_data_all.append(stringify_data(combined_data))
 
+    conn.close()
+    #sky_model_location = str(sky_model_location)
+    uvsub_data_all = np.array(uvsub_data_all, dtype=str)
 
     LOG.info(f"uvsub_data_all: {uvsub_data_all}")
-    LOG.info("All Done with stringifying uvsub data!!!")
-    return np.array(uvsub_data_all, dtype=str), sky_model_location
+    #LOG.info(f"sky_model_location: {sky_model_location}")
+
+    return uvsub_data_all
+
+

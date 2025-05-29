@@ -516,7 +516,7 @@ def do_single_uvsub(
         # Clean up the measurement sets
         if exists(f"{output_measurement_set}.tar"):
             LOG.info(f"Removing {output_measurement_set}.tar")
-            remove_file_directory(f"Removing {output_measurement_set}.tar")
+            remove_file_directory(f"{output_measurement_set}.tar")
 
         rename(
             f"{output_measurement_set}.tar.temp",
