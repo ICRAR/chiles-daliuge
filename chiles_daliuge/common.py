@@ -392,7 +392,7 @@ def update_metadata_column(
     conn.close()
 
 
-def remove_temp_dir(trigger_in: bool, base_dir: str, prefix="__SKY_TEMP__"):
+def remove_temp_dir(trigger_in, base_dir: str, prefix="__SKY_TEMP__"):
     """
     Removes all temporary directories in the given base directory that start with a specific prefix.
 
@@ -407,25 +407,25 @@ def remove_temp_dir(trigger_in: bool, base_dir: str, prefix="__SKY_TEMP__"):
     -------
     None
     """
-    if trigger_in:
-        LOG.info(f"Scanning for temp dirs in: {base_dir} with prefix: {prefix}")
 
-        if not os.path.exists(base_dir):
-            LOG.warning(f"Base directory does not exist: {base_dir}")
-            return
+    LOG.info(f"Scanning for temp dirs in: {base_dir} with prefix: {prefix}")
 
-        count = 0
-        for entry in os.listdir(base_dir):
-            full_path = os.path.join(base_dir, entry)
-            if os.path.isdir(full_path) and entry.startswith(prefix):
-                try:
-                    shutil.rmtree(full_path)
-                    LOG.info(f"Removed temp directory: {full_path}")
-                    count += 1
-                except Exception as e:
-                    LOG.error(f"Failed to remove {full_path}: {e}")
+    if not os.path.exists(base_dir):
+        LOG.warning(f"Base directory does not exist: {base_dir}")
+        return
 
-        LOG.info(f"Completed removal. Total directories removed: {count}")
+    count = 0
+    for entry in os.listdir(base_dir):
+        full_path = os.path.join(base_dir, entry)
+        if os.path.isdir(full_path) and entry.startswith(prefix):
+            try:
+                shutil.rmtree(full_path)
+                LOG.info(f"Removed temp directory: {full_path}")
+                count += 1
+            except Exception as e:
+                LOG.error(f"Failed to remove {full_path}: {e}")
+
+    LOG.info(f"Completed removal. Total directories removed: {count}")
 
 def remove_file_directory(path_name):
     if isdir(path_name):
