@@ -405,7 +405,7 @@
         "generatorCommitHash": "459eaa752c5bb5709ef7564e184f38a50c980bf3",
         "generatorName": "EAGLE",
         "generatorVersion": "v6.6.0",
-        "lastModifiedDatetime": 1748577521.967581,
+        "lastModifiedDatetime": 1748577685.768118,
         "lastModifiedEmail": "",
         "lastModifiedName": "",
         "numLGNodes": 41,
@@ -1082,7 +1082,7 @@
                     "readonly": false,
                     "type": "Integer",
                     "usage": "NoPort",
-                    "value": 1000
+                    "value": 1420
                 }
             ],
             "id": "21c49861-78ea-4aad-8ce8-caccbb51fb1d",
