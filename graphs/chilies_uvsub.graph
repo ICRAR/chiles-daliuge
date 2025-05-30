@@ -405,7 +405,7 @@
         "generatorCommitHash": "459eaa752c5bb5709ef7564e184f38a50c980bf3",
         "generatorName": "EAGLE",
         "generatorVersion": "v6.6.0",
-        "lastModifiedDatetime": 1748506212.517507,
+        "lastModifiedDatetime": 1748577521.967581,
         "lastModifiedEmail": "",
         "lastModifiedName": "",
         "numLGNodes": 41,
@@ -1860,7 +1860,7 @@
                     "readonly": false,
                     "type": "Integer",
                     "usage": "NoPort",
-                    "value": 3
+                    "value": 2
                 }
             ],
             "id": "f8e48658-8294-4c35-8854-ea27752317b9",
@@ -2524,8 +2524,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -1009.5686744110644,
-            "y": -61.364868274134096
+            "x": -914.2744028621169,
+            "y": -74.35954166717237
         },
         {
             "category": "Memory",
@@ -5768,7 +5768,7 @@
                     "description": "",
                     "encoding": "pickle",
                     "id": "d9ba22de-2cbc-4d79-aac6-a027685dcd7b",
-                    "name": "trigger",
+                    "name": "trigger_in",
                     "options": [],
                     "parameterType": "ApplicationArgument",
                     "positional": false,
@@ -5786,7 +5786,7 @@
             "inputApplicationName": "",
             "inputApplicationType": "None",
             "isGroup": false,
-            "name": "trigger",
+            "name": "trigger_in",
             "outputAppFields": [],
             "outputApplicationDescription": "",
             "outputApplicationId": null,
