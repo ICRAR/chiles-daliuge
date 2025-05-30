@@ -1,12 +1,11 @@
-from os import rename
 from pathlib import Path
-from pprint import pformat
-import sys
-import os
 import ast
 from subprocess import run, PIPE
 
 from typing import List
+
+from numpy.core.multiarray import ndarray
+
 from chiles_daliuge.common import *
 import logging
 import sqlite3
@@ -36,14 +35,14 @@ def fetch_original_ms(
 
     Parameters
     ----------
+    METADATA_DB: str
+        path to the database
     source_dir : str
         The root remote directory containing year/date subfolders with .ms sets.
     year_list : list of str
         A list of year or year-ranges to process (e.g., ["2013-2014", "2015"]).
     copy_directory : str
         Local destination directory where the .ms files or placeholders will be stored.
-    make_directory : bool, optional
-        If True, creates the `copy_directory` if it doesn't exist. Default is True.
     process_ms : bool, optional
         If True, copies the .ms data using rclone. If False, creates an empty placeholder
         file with the hashed name. Default is False.
@@ -68,7 +67,6 @@ def fetch_original_ms(
     end_freq = "1420"
     bandwidth = int(end_freq) - int(start_freq)
     name_list = []
-
 
     conn = sqlite3.connect(METADATA_DB)
     cursor = conn.cursor()
@@ -224,13 +222,15 @@ def split_out_frequencies(
         frequencies: List[List[int]],
         METADATA_DB: str,
         process_ms: bool = process_ms_flag
-) -> List:
+) -> ndarray:
     """
     Splits measurement sets into sub-MSs based on provided frequency ranges,
     using metadata stored in a SQLite database.
 
     Parameters
     ----------
+    METADATA_DB : str
+        Path to the database
     ms_in_list : list of str
         List of hashed input MS names to be processed (matches dlg_name in DB).
     output_directory : str
@@ -240,10 +240,8 @@ def split_out_frequencies(
     process_ms : bool
         If True, will run CASA imager to extract frequency ranges.
         If False, will only create placeholder files in the output directory.
-    metadata_db_path : str
-        Path to the SQLite database storing metadata info.
     """
-    #CHANNEL_WIDTH = 15625.0  # Hz
+
     LOG.info("#" * 60)
     LOG.info("#" * 60)
     LOG.info(f"Frequencies: {frequencies}")
@@ -276,8 +274,6 @@ def split_out_frequencies(
             outfile_name_tar = f"{outfile_name}.tar"
             outfile = os.path.join(output_directory, outfile_name)
 
-            #outfile_tar = os.path.join(output_directory, outfile_name_tar)
-
             ms_in_path = os.path.join(output_directory, ms_in)
             # Check if already exists in DB
 
@@ -295,8 +291,9 @@ def split_out_frequencies(
 
 
     conn.close()
+    transform_data_all = np.array(transform_data_all, dtype=str)
     LOG.info(f"transform_data_all: {transform_data_all}")
-    return np.array(transform_data_all, dtype=str)
+    return transform_data_all
 
 
 def ensure_list_then_destringify(arg_or_list) -> list[str]:

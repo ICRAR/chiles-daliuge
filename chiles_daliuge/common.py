@@ -1,7 +1,7 @@
 import logging
 import os
 import pandas as pd
-from os.path import join, exists, isfile, basename
+from os.path import exists, isfile, basename
 import tarfile
 import shutil
 import hashlib
@@ -9,7 +9,6 @@ import sqlite3
 from os.path import isdir
 import numpy as np
 import json
-
 
 LOG = logging.getLogger(f"dlg.{__name__}")
 logging.basicConfig(level=logging.INFO)
@@ -19,6 +18,7 @@ def stringify_data(data: list):
     stringified_data = str([str(x) for x in data])
     LOG.info(f"stringified_data: {stringified_data}")
     return stringified_data
+
 
 def convert_type(s):
     s = s.strip().strip('"').strip("'")
@@ -71,8 +71,7 @@ def destringify_data_uvsub(args: list[str]) -> list:
             parsed_args.append(convert_type(part))
 
     return parsed_args
-                         
-                         
+
 
 def destringify_data(args: list[str]) -> list[str]:
     """
@@ -124,6 +123,7 @@ def get_list_frequency_groups(frequency_width: int, minimum_frequency: int, maxi
     ]
     return result
 
+
 def remove_file_or_directory(filename: str, trigger) -> None:
     """
     Remove a file or directory if it exists.
@@ -163,6 +163,7 @@ def remove_file_or_directory(filename: str, trigger) -> None:
     else:
         LOG.info(f"[{trigger}] Nothing to remove, path does not exist: {filename}")
 
+
 def verify_db_integrity(db_path: str, trigger_in: bool) -> bool:
     """
     Verify that all file references in the metadata database exist on disk.
@@ -172,11 +173,13 @@ def verify_db_integrity(db_path: str, trigger_in: bool) -> bool:
 
     Parameters
     ----------
+    trigger_in:
+        to make function wait
     db_path : str, optional
         Full path to the SQLite metadata database. Uses default METADATA_DB if None.
     """
     verified = False
-    if(trigger_in):
+    if trigger_in:
         if not os.path.exists(db_path):
             LOG.warning(f"Metadata database not found at {db_path}. Skipping integrity check.")
             return False
@@ -241,13 +244,14 @@ def verify_db_integrity(db_path: str, trigger_in: bool) -> bool:
     return verified
 
 
-
 def export_metadata_to_csv(db_path: str, csv_path: str, trigger_in: bool) -> None:
     """
     Export the entire 'metadata' table from a SQLite database to a CSV file.
 
     Parameters
     ----------
+    trigger_in:
+        to make function wait
     db_path : str
         Path to the SQLite database file (e.g., METADATA_DB).
     csv_path : str
@@ -273,6 +277,8 @@ def add_column_if_missing(db_path: str, column_name: str, column_type: str = "TE
 
     Parameters
     ----------
+    db_path:
+        path to the database
     column_name : str
         The name of the column to add.
     column_type : str, optional
@@ -310,9 +316,6 @@ def log_input(x_in):
 
     LOG.info(f"Input size: {size}")
 
-
-LOG = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
 
 def trigger_db(x_in):
     """
@@ -353,6 +356,8 @@ def update_metadata_column(
 
     Parameters
     ----------
+    db_path:
+        path to the database
     dlg_name : str
         The value of the `dlg_name` field to match.
     year : str
@@ -379,7 +384,7 @@ def update_metadata_column(
     valid_columns = [row[1] for row in cursor.fetchall()]
     if column_name not in valid_columns:
         conn.close()
-        raise ValueError(f"Column '{column_name}' does not exist in metadata table.")
+        raise ValueError(f"Column {column_name} does not exist in metadata table.")
 
     # Perform the update
     cursor.execute(f"""
@@ -398,6 +403,8 @@ def remove_temp_dir(trigger_in, base_dir: str, prefix="__SKY_TEMP__"):
 
     Parameters
     ----------
+    trigger_in:
+        to make function wait
     base_dir : str
         The directory in which to search for temp directories.
     prefix : str
@@ -427,6 +434,7 @@ def remove_temp_dir(trigger_in, base_dir: str, prefix="__SKY_TEMP__"):
 
     LOG.info(f"Completed removal. Total directories removed: {count}")
 
+
 def remove_file_directory(path_name):
     if isdir(path_name):
         LOG.info(f"Removing directory {path_name}")
@@ -434,6 +442,7 @@ def remove_file_directory(path_name):
     else:
         LOG.info(f"Removing file {path_name}")
         os.remove(path_name)
+
 
 def create_tar_file(outfile, suffix=None):
     """
@@ -569,4 +578,3 @@ def initialize_metadata_environment(db_path: str) -> bool:
     conn.close()
     initialized = True
     return initialized
-

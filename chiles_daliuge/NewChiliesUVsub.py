@@ -1,4 +1,6 @@
 import tempfile
+from os.path import join
+
 from casatools import quanta
 from typing import Union, List
 from chiles_daliuge.common import *

@@ -10,13 +10,12 @@ import logging
 from casatasks import mstransform
 from casatools import ms, imager
 
-
 # Set up logging
 LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-def do_ms_transform(transform_data: List[str]) -> None:
+def do_ms_transform(channel_width: List[str]) -> None:
     """
     Transforms and regrids a Measurement Set (MS) based on the input data list.
 
@@ -43,7 +42,7 @@ def do_ms_transform(transform_data: List[str]) -> None:
     LOG.info(f"Working on: {outfile_ms} with freq {freq_start} and {freq_end}.")
 
     im = imager()
-    #LOG.info(f"ms_in_path: {ms_in}")
+    # LOG.info(f"ms_in_path: {ms_in}")
     im.selectvis(vis=ms_in)
     selinfo = im.advisechansel(
         freqstart=int(freq_start) * 1e6,
@@ -51,7 +50,7 @@ def do_ms_transform(transform_data: List[str]) -> None:
         freqstep=CHANNEL_WIDTH,
         freqframe="BARY",
     )
-    #LOG.info(f"advisechansel result: {selinfo}")
+    # LOG.info(f"advisechansel result: {selinfo}")
     spw_range = ""
     for n in range(len(selinfo["ms_0"]["spw"])):
         spw_range += (
@@ -67,7 +66,6 @@ def do_ms_transform(transform_data: List[str]) -> None:
     if spw_range.startswith("-1") or spw_range.endswith("-1"):
         LOG.warning(f"The spw_range is {spw_range} which is outside the spectral window")
         return
-
 
     if len(spw_range):
         for suffix in ["", ".tmp", ".tar"]:
@@ -173,7 +171,6 @@ def do_ms_transform(transform_data: List[str]) -> None:
     return
 
 
-
 # def clean_transform_data(args: list[str]) -> list[str]:
 #     """
 #     Clean transform arguments by:
@@ -197,7 +194,6 @@ def do_ms_transform(transform_data: List[str]) -> None:
 #     return cleaned
 
 
-
 def main(transform_data: list) -> None:
     """
     Main entry point to perform MS transform and insert metadata into the database.
@@ -211,12 +207,14 @@ def main(transform_data: list) -> None:
     """
     LOG.info(f"transform_data: {transform_data}")
     do_ms_transform(transform_data)
-    #NewChiliesSplit.insert_metadata_from_transform(transform_data)
+    # NewChiliesSplit.insert_metadata_from_transform(transform_data)
 
 
 if __name__ == "__main__":
     if len(sys.argv) != 9:
-        print("Usage: python run_ms_transform.py <ms_in> <ms_out> <out_dir> <tar_name> <base_name> <year> <freq_start> <freq_end>", file=sys.stderr)
+        print(
+            "Usage: python run_ms_transform.py <ms_in> <ms_out> <out_dir> <tar_name> <base_name> <year> <freq_start> <freq_end>",
+            file=sys.stderr)
         sys.exit(1)
 
     try:
@@ -226,9 +224,3 @@ if __name__ == "__main__":
     except Exception as e:
         LOG.error(json.dumps({"status": "error", "message": str(e)}))
         sys.exit(1)
-
-
-
-
-
-

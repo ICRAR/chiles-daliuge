@@ -1,28 +1,22 @@
 #!/usr/bin/env python3
-from typing import List
-from pprint import pformat
 import sys
+from os.path import join
 from chiles_daliuge.common import *
 import json
 import tempfile
-import shlex
-import sqlite3
 import logging
-from os import makedirs, rename, listdir
+from os import makedirs, rename
 import pylab as pl
 # CASA imports
-
 from casaplotms import plotms
-from casatasks import mstransform
-from casatools import ms
 from casatasks import uvsub, statwt, split, phaseshift
 from casatools import imager, ms, table, quanta, image
-from typing import Union, List, Tuple
-#from chiles_daliuge.NewChiliesSplit import insert_metadata_from_transform
+from typing import List, Tuple
 
 # Set up logging
 LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
+
 
 def time_convert(mytime, myunit="s"):
     if type(mytime).__name__ != "list":
@@ -56,7 +50,6 @@ def fd2radec(fd):
     )
 
 
-
 def rejig_paths(taylor_terms: List[str],
                 outliers: List[str],
                 sky_model_location: str,
@@ -82,11 +75,9 @@ def rejig_paths(taylor_terms: List[str],
     return taylor_terms_, outliers_
 
 
-
-
 def do_single_uvsub(
         taylor_terms, outliers, channel_average, produce_qa, w_projection_planes,
-        source_dir,  sky_model_location,
+        source_dir, sky_model_location,
         split_name, year, freq_st, freq_en, uv_sub_name, METADATA_DB
 ):
     with tempfile.TemporaryDirectory(
@@ -109,8 +100,6 @@ def do_single_uvsub(
         )
         spectral_window = int(((freq_start + freq_end) / 2 - 946) / 32)
 
-
-
         taylor_terms, outliers = rejig_paths(
             taylor_terms, outliers, sky_model_location, spectral_window
         )
@@ -121,8 +110,8 @@ def do_single_uvsub(
         sub_uzero = True  # False #or True
         calc_stats = False  # or True
         pre_average = channel_average  # average in final split
-        if pre_average<=0 | pre_average>2:
-            pre_average=2
+        if pre_average <= 0 | pre_average > 2:
+            pre_average = 2
             LOG.info(f'Resetting PRE_AVERAGE from {str(channel_average)} to {pre_average}')
 
         # Temporary names
@@ -185,11 +174,7 @@ def do_single_uvsub(
                         showgui=False,
                         ydatacolumn="data",
                         xdatacolumn="data",
-                        plotfile=join(
-                            png_directory,
-                            in_ms.rsplit("/")[-1]
-                            + "_infield_subtraction_data.png",
-                            ),
+                        plotfile=join(png_directory, in_ms.rsplit("/")[-1] + "_infield_subtraction_data.png")
                     )
                     ret_m = plotms(
                         vis=in_ms,
@@ -203,9 +188,9 @@ def do_single_uvsub(
                         xdatacolumn="model",
                         plotfile=join(
                             png_directory,
-                            +in_ms.rsplit("/")[-1]
-                            + "_infield_subtraction_model.png",
-                            ),
+                            + in_ms.rsplit("/")[-1]
+                            + "_infield_subtraction_model.png"
+                        )
                     )
                     ret_c = plotms(
                         vis=in_ms,
@@ -217,11 +202,7 @@ def do_single_uvsub(
                         showgui=False,
                         ydatacolumn="corrected",
                         xdatacolumn="corrected",
-                        plotfile=join(
-                            png_directory,
-                            in_ms.rsplit("/")[-1]
-                            + "_infield_subtraction_corrected.png",
-                            ),
+                        plotfile=join(png_directory,in_ms.rsplit("/")[-1] + "_infield_subtraction_corrected.png")
                     )
                     if not (ret_d & ret_c & ret_m):
                         LOG.info(
@@ -322,7 +303,7 @@ def do_single_uvsub(
                             date_end = time_convert(
                                 ret["axis_info"]["time_axis"]["MJDseconds"][ptr]
                             )[0][0]
-                            LOG.info(f"and to end at { date_end } sample no. {ptr}")
+                            LOG.info(f"and to end at {date_end} sample no. {ptr}")
                             # if (ut_end<ut_start):
                             #    ut_end=ut_end+24
                             # timerange=str(ut_start)+'~'+str(ut_end)
@@ -386,11 +367,7 @@ def do_single_uvsub(
                         showgui=False,
                         ydatacolumn="data",
                         xdatacolumn="data",
-                        plotfile=join(
-                            png_directory,
-                            in_ms.rsplit("/")[-1]
-                            + "_outfield_subtraction_data.png",
-                            ),
+                        plotfile=join(png_directory,in_ms.rsplit("/")[-1] + "_outfield_subtraction_data.png")
                     )
                     ret_m = plotms(
                         vis=tmp_name1,
@@ -402,11 +379,7 @@ def do_single_uvsub(
                         showgui=False,
                         ydatacolumn="model",
                         xdatacolumn="model",
-                        plotfile=join(
-                            png_directory,
-                            in_ms.rsplit("/")[-1]
-                            + "_outfield_subtraction_model.png",
-                            ),
+                        plotfile=join(png_directory,in_ms.rsplit("/")[-1] + "_outfield_subtraction_model.png")
                     )
                     ret_c = plotms(
                         vis=tmp_name1,
@@ -418,11 +391,7 @@ def do_single_uvsub(
                         showgui=False,
                         ydatacolumn="corrected",
                         xdatacolumn="corrected",
-                        plotfile=join(
-                            png_directory,
-                            in_ms.rsplit("/")[-1]
-                            + "_outfield_subtraction_corrected.png",
-                            ),
+                        plotfile=join(png_directory,in_ms.rsplit("/")[-1] + "_outfield_subtraction_corrected.png")
                     )
                     if not (ret_d & ret_c & ret_m):
                         LOG.info(
@@ -476,11 +445,7 @@ def do_single_uvsub(
                         showgui=False,
                         ydatacolumn="data",
                         xdatacolumn="data",
-                        plotfile=png_directory
-                                 + "/"
-                                 + in_ms.rsplit("/")[-1]
-                                 + "_weight.png",
-                    )
+                        plotfile=png_directory + "/" + in_ms.rsplit("/")[-1] + "_weight.png")
                     tb = table()
                     tb.open(tmp_name)
                     w = tb.getcol("WEIGHT_SPECTRUM")
@@ -492,7 +457,7 @@ def do_single_uvsub(
                     pl.xlabel("Channel")  # Freq. (MHz)')
                     pl.ylabel("Weight Sigma")
                     pl.legend(["Max Weight/100", "Median Weight"])
-                    pl.savefig(join(png_directory,in_ms.rsplit("/")[-1] + "_lg_weight.png",))
+                    pl.savefig(join(png_directory, in_ms.rsplit("/")[-1] + "_lg_weight.png", ))
 
         except Exception:
             LOG.exception("*********\nUVSub exception: \n***********")
@@ -528,10 +493,10 @@ def do_single_uvsub(
     LOG.info("Finished uvsub")
 
 
-
 def main(uvsub_data: list) -> None:
     LOG.info(f"uvsub_data (parsed): {uvsub_data}")
     do_single_uvsub(*uvsub_data)
+
 
 if __name__ == "__main__":
     try:
@@ -547,10 +512,3 @@ if __name__ == "__main__":
         LOG.exception("Failed to run uvsub job")
         print(json.dumps({"status": "error", "message": str(e)}), file=sys.stderr)
         sys.exit(1)
-
-
-
-
-
-
-
