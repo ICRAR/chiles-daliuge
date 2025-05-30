@@ -7,8 +7,8 @@ from chiles_daliuge.common import *
 
 process_ms_flag = True
 
-
 LOG = logging.getLogger(__name__)
+
 
 def copy_sky_model(sky_model_source: Union[str, bytes], temporary_directory: str) -> str:
     """
@@ -29,6 +29,7 @@ def copy_sky_model(sky_model_source: Union[str, bytes], temporary_directory: str
     str
         Path to the destination directory containing the sky model.
     """
+
     def make_symlinks_relative(target_dir: str):
         for root, dirs, files in os.walk(target_dir):
             for name in dirs + files:
@@ -74,11 +75,9 @@ def copy_sky_model(sky_model_source: Union[str, bytes], temporary_directory: str
         raise ValueError(f"Invalid sky model input: {sky_model_source} is neither a .tar file nor a directory.")
 
 
-
 # def copy_region_files(region_file_tar_file, temporary_directory):
 #     untar_file(region_file_tar_file, temporary_directory, gz=False)
 #     return join(temporary_directory, "region-files")
-
 
 
 def fetch_split_ms(
@@ -133,15 +132,10 @@ def fetch_split_ms(
             #     print(f"  ✗ Frequency {freq_tuple} is NOT in frequency list")
 
             if year in year_list and freq_tuple in freq_set:
-                #print(f"  → Appending: {dlg_name}")
+                # print(f"  → Appending: {dlg_name}")
                 matching_dlg_names.append(f"{dlg_name};{year};{freq_tuple[0]};{freq_tuple[1]}")
 
-
-
     return matching_dlg_names
-
-
-
 
 
 def time_convert(mytime: Union[float, int, str, List[Union[float, int, str]]],
@@ -178,14 +172,10 @@ def time_convert(mytime: Union[float, int, str, List[Union[float, int, str]]],
     return my_timestr
 
 
-
-
-
 def do_uvsub(names_list, source_dir, sky_model_tar_file,
-    taylor_terms, outliers, channel_average, produce_qa, w_projection_planes, METADATA_DB):
-
+             taylor_terms, outliers, channel_average, produce_qa, w_projection_planes, METADATA_DB):
     sky_model_location = None
-    add_column_if_missing(METADATA_DB,"uv_sub_name")
+    add_column_if_missing(METADATA_DB, "uv_sub_name")
 
     uvsub_data_all = []
 
@@ -194,7 +184,6 @@ def do_uvsub(names_list, source_dir, sky_model_tar_file,
         sky_model_location = copy_sky_model(sky_model_tar_file, temporary_sky_model)
 
     conn = sqlite3.connect(METADATA_DB)
-
 
     for name in names_list:
         split_name, year, freq_st, freq_en = name.split(";")
@@ -212,7 +201,6 @@ def do_uvsub(names_list, source_dir, sky_model_tar_file,
 
         uv_sub_name = generate_hashed_ms_name(str(tar_file_split), year, str(freq_start), str(freq_end))
 
-
         LOG.info(f"uv_sub_name: {uv_sub_name}")
         uv_sub_tar = f"{uv_sub_name}.tar"
         LOG.info(f"uv_sub_tar: {uv_sub_tar}")
@@ -222,23 +210,19 @@ def do_uvsub(names_list, source_dir, sky_model_tar_file,
             LOG.info(f"Skipping {uv_sub_tar}, already in metadata DB.")
             continue
 
-
-
         combined_data = [
             taylor_terms, outliers, channel_average, produce_qa, w_projection_planes,
-            source_dir,  sky_model_location,
+            source_dir, sky_model_location,
             split_name, year, freq_st, freq_en, uv_sub_name, METADATA_DB
         ]
 
         uvsub_data_all.append(stringify_data(combined_data))
 
     conn.close()
-    #sky_model_location = str(sky_model_location)
+    # sky_model_location = str(sky_model_location)
     uvsub_data_all = np.array(uvsub_data_all, dtype=str)
 
     LOG.info(f"uvsub_data_all: {uvsub_data_all}")
-    #LOG.info(f"sky_model_location: {sky_model_location}")
+    # LOG.info(f"sky_model_location: {sky_model_location}")
 
     return uvsub_data_all
-
-
