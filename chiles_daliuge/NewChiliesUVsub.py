@@ -12,22 +12,35 @@ LOG = logging.getLogger(__name__)
 
 def copy_sky_model(sky_model_source: Union[str, bytes], temporary_directory: str) -> str:
     """
-    Extract or copy the sky model to a temporary directory, preserving symbolic links as relative links.
+    Copy or extract a sky model archive or directory into a temporary directory,
+    and convert any absolute symbolic links into relative links.
 
     Parameters
     ----------
     sky_model_source : str or bytes
-        Path to the `.tar` archive or a directory containing the sky model.
-        If a `.tar` file, it will be extracted.
-        If a directory, it will be copied as a subdirectory of the temporary directory.
+        Path to the sky model source. This can be either:
+        - A `.tar` file containing the sky model, which will be extracted.
+        - A directory containing the sky model, which will be recursively copied.
+        Absolute symbolic links within the source will be rewritten as relative
+        if they point within the original source tree.
 
     temporary_directory : str
-        Path to the directory where the sky model should be placed.
+        Destination directory where the sky model will be placed.
 
     Returns
     -------
     str
-        Path to the destination directory containing the sky model.
+        Path to the extracted or copied sky model inside the temporary directory.
+
+    Raises
+    ------
+    ValueError
+        If `sky_model_source` is neither a `.tar` file nor a valid directory.
+
+    Notes
+    -----
+    - If the `.tar` file does not extract into a subdirectory, the function returns `temporary_directory`.
+    - Relative symbolic links help preserve portability across filesystems and environments.
     """
 
     def make_symlinks_relative(target_dir: str):
@@ -75,9 +88,6 @@ def copy_sky_model(sky_model_source: Union[str, bytes], temporary_directory: str
         raise ValueError(f"Invalid sky model input: {sky_model_source} is neither a .tar file nor a directory.")
 
 
-# def copy_region_files(region_file_tar_file, temporary_directory):
-#     untar_file(region_file_tar_file, temporary_directory, gz=False)
-#     return join(temporary_directory, "region-files")
 
 
 def fetch_split_ms(
@@ -87,22 +97,28 @@ def fetch_split_ms(
         trigger_in: bool,
 ) -> List[str]:
     """
-    Fetch dlg_name values from the metadata DB where year is in year_list and
-    [start_freq, end_freq] matches any pair in the frequencies list.
+    Retrieve `dlg_name` entries from a metadata SQLite database matching specified years and frequency ranges.
+
+    This function queries the `metadata` table to find measurement sets whose `year` matches any
+    value in `year_list` and whose `[start_freq, end_freq]` pair matches any tuple in `frequencies`.
+    The result is a list of formatted strings with dlg_name and associated metadata.
 
     Parameters
     ----------
     year_list : list of str
-        List of acceptable year values.
+        List of years to filter on (e.g., ["2013", "2014"]).
     frequencies : list of [int, int]
-        List of acceptable [start_freq, end_freq] pairs.
+        List of frequency range pairs to match, specified as [start_freq, end_freq].
     db_path : str
-        Path to the SQLite metadata database.
+        Path to the SQLite metadata database file.
+    trigger_in : bool
+        Placeholder for future use; currently not used in this function.
 
     Returns
     -------
     list of str
-        Matching dlg_name values.
+        List of matching entries formatted as:
+        "dlg_name;year;start_freq;end_freq"
     """
     freq_set = {tuple(freq_pair) for freq_pair in frequencies}
 
@@ -120,17 +136,6 @@ def fetch_split_ms(
 
             freq_tuple = (int(start_freq), int(end_freq))  # ✅ convert to int
 
-            # if year in year_list:
-            #     print(f"  ✓ Year '{year}' is in year_list")
-            # else:
-            #     print(f"  ✗ Year '{year}' is NOT in year_list")
-
-            # print(f"  → Frequency tuple: {freq_tuple}")
-            # if freq_tuple in freq_set:
-            #     print(f"  ✓ Frequency {freq_tuple} is in frequency list")
-            # else:
-            #     print(f"  ✗ Frequency {freq_tuple} is NOT in frequency list")
-
             if year in year_list and freq_tuple in freq_set:
                 # print(f"  → Appending: {dlg_name}")
                 matching_dlg_names.append(f"{dlg_name};{year};{freq_tuple[0]};{freq_tuple[1]}")
@@ -138,42 +143,39 @@ def fetch_split_ms(
     return matching_dlg_names
 
 
-def time_convert(mytime: Union[float, int, str, List[Union[float, int, str]]],
-                 myunit: str = "s") -> List[str]:
+def do_uvsub(names_list, source_dir, sky_model_tar_file,
+             taylor_terms, outliers, channel_average, produce_qa, w_projection_planes, METADATA_DB):
     """
-    Convert one or more time values into human-readable date strings using CASA's quanta module.
+    Prepares data for UV subtraction by checking for existing processed entries,
+    extracting sky models, and assembling configuration metadata.
 
     Parameters
     ----------
-    mytime : float, int, str, or list of float/int/str
-        A single time value or a list of time values to convert. These represent time in the specified unit.
-    myunit : str, optional
-        The unit of the input time value(s), e.g., "s" for seconds, "d" for days, "Hz", etc.
-        Default is "s".
+    names_list : list of str
+        List of semicolon-separated strings of the form "split_name;year;freq_start;freq_end".
+    source_dir : str
+        Path to the directory containing the source tar files.
+    sky_model_tar_file : str
+        Path to the tar file containing the sky model to be used.
+    taylor_terms : list of str
+        File paths to Taylor term sky models.
+    outliers : list of str
+        File paths to outlier models.
+    channel_average : int
+        Number of channels to average before CLEAN or UV subtraction.
+    produce_qa : bool
+        Whether or not to produce QA plots during processing.
+    w_projection_planes : int
+        Number of W-projection planes to use in imaging.
+    METADATA_DB : str
+        Path to the SQLite metadata database used for tracking processed files.
 
     Returns
     -------
-    list of str
-        A list of converted date-time strings in "YYYY/MM/DD/HH:MM:SS" format.
-
-    Notes
-    -----
-    This uses CASA's `quanta` tool to convert time values based on the given unit.
-    Even if a single value is passed, the result will be a list of one string.
+    np.ndarray
+        Array of stringified configuration entries for UV subtraction tasks,
+        excluding any already present in the metadata database.
     """
-    if type(mytime).__name__ != "list":
-        mytime = [mytime]
-    my_timestr = []
-    for time in mytime:
-        qa = quanta()
-        q1 = qa.quantity(time, myunit)
-        time1 = qa.time(q1, form="ymd")
-        my_timestr.append(time1)
-    return my_timestr
-
-
-def do_uvsub(names_list, source_dir, sky_model_tar_file,
-             taylor_terms, outliers, channel_average, produce_qa, w_projection_planes, METADATA_DB):
     sky_model_location = None
     add_column_if_missing(METADATA_DB, "uv_sub_name")
 

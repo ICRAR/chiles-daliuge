@@ -15,12 +15,70 @@ logging.basicConfig(level=logging.INFO)
 
 
 def stringify_data(data: list):
+    """
+    Convert a list of items into a stringified list of strings.
+
+    Each element in the input list is first converted to a string, and the entire
+    list is then represented as a Python-style stringified list. This is useful for
+    safe serialization into text-based formats such as CSV or database fields.
+
+    Parameters
+    ----------
+    data : list
+        A list of arbitrary elements to stringify.
+
+    Returns
+    -------
+    str
+        A string representation of the list with each element converted to a string.
+
+    Example
+    -------
+    >>> stringify_data([123, 'abc', 4.5])
+    "['123', 'abc', '4.5']"
+    """
+
     stringified_data = str([str(x) for x in data])
     LOG.info(f"stringified_data: {stringified_data}")
     return stringified_data
 
 
 def convert_type(s):
+    """
+    Convert a string to its most appropriate Python type (None, int, float, or str).
+
+    The function strips leading/trailing whitespace and quotes, then attempts
+    to interpret the string as:
+    - None (if the string is "None")
+    - int (if the string contains only digits)
+    - float (if it can be converted to a float)
+    - str (fallback if all else fails)
+
+    Parameters
+    ----------
+    s : str
+        The input string to convert.
+
+    Returns
+    -------
+    None, int, float, or str
+        The converted value based on the string content.
+
+    Examples
+    --------
+    >>> convert_type("42")
+    42
+
+    >>> convert_type(" 3.14 ")
+    3.14
+
+    >>> convert_type("'None'")
+    None
+
+    >>> convert_type("hello")
+    'hello'
+    """
+
     s = s.strip().strip('"').strip("'")
     if s == "None":
         return None
@@ -34,10 +92,36 @@ def convert_type(s):
 
 def destringify_data_uvsub(args: list[str]) -> list:
     """
-    Manually clean and split command-line args into Python-native types,
-    especially parsing the first few list-like arguments from strings.
-    Returns a flat list suitable for argument unpacking.
+    Parse and convert a list of stringified command-line arguments into native Python types.
+
+    This function is designed to handle arguments that may include embedded lists
+    or mixed types (e.g., strings, ints, floats, None), particularly those passed
+    as stringified input from the command line or from serialized text formats.
+
+    It:
+    - Strips surrounding brackets.
+    - Splits by top-level commas while respecting quoted sublists.
+    - Parses quoted list-like strings via `json.loads`.
+    - Converts primitive values using `convert_type()`.
+
+    Parameters
+    ----------
+    args : list of str
+        A list of strings (typically from `sys.argv[1:]` or similar) representing
+        serialized Python values or lists.
+
+    Returns
+    -------
+    list
+        A list of native Python objects (e.g., lists, strings, ints, floats, None),
+        suitable for unpacking into function calls.
+
+    Examples
+    --------
+    >>> destringify_data_uvsub(["['a', 'b']", '123', '3.14', "'None'"])
+    [['a', 'b'], 123, 3.14, None]
     """
+
     # Join and strip outer brackets
     full_str = " ".join(args).strip()
     if full_str.startswith("[") and full_str.endswith("]"):
@@ -166,18 +250,38 @@ def remove_file_or_directory(filename: str, trigger) -> None:
 
 def verify_db_integrity(db_path: str, trigger_in: bool) -> bool:
     """
-    Verify that all file references in the metadata database exist on disk.
+    Verify that all file references in the metadata SQLite database exist on disk,
+    and clean up invalid or missing references accordingly.
 
-    - If a file in `dlg_name` or other dynamic columns (after 'size') is missing, clear that field.
-    - If all file references in a row are missing, delete the row.
+    This function performs the following actions:
+    - If `trigger_in` is False, the function exits early without performing any checks.
+    - For each row in the `metadata` table:
+        - If no referenced files (in `dlg_name` or any dynamic column after `size`) exist on disk,
+          the row is deleted.
+        - If only some files are missing, the corresponding column(s) are cleared (set to NULL).
 
     Parameters
     ----------
-    trigger_in:
-        to make function wait
-    db_path : str, optional
-        Full path to the SQLite metadata database. Uses default METADATA_DB if None.
+    db_path : str
+        Path to the SQLite metadata database file.
+    trigger_in : bool
+        If True, triggers the integrity check. If False, the function exits immediately.
+
+    Returns
+    -------
+    bool
+        True if the database was verified (i.e., `trigger_in` was True and the check completed).
+        False otherwise (e.g., if the database file does not exist or `trigger_in` is False).
+
+    Notes
+    -----
+    - Fixed columns (`dir_path`, `dlg_name`, `base_name`, `year`, `start_freq`, `end_freq`, `bandwidth`, `size`)
+      are never cleared.
+    - All other columns are treated as dynamic file references and are individually validated.
+    - Uses `rowid` to identify and modify/delete rows.
+    - Changes are committed in-place and logged.
     """
+
     verified = False
     if trigger_in:
         if not os.path.exists(db_path):
@@ -319,8 +423,14 @@ def log_input(x_in):
 
 def trigger_db(x_in):
     """
-    Return False if the first element of the input array is a string.
-    Return True otherwise.
+    Determines whether the input should trigger a database operation.
+
+    Returns True if:
+    - The input is a non-empty NumPy array and its first element is NOT a string.
+    - The input is an empty NumPy array.
+    - The input is not a NumPy array.
+
+    Returns False only if the input is a non-empty NumPy array and the first element is a string.
     """
     LOG.info(f"Received input: {x_in}")
     LOG.info(f"Type: {type(x_in)}")
@@ -340,6 +450,7 @@ def trigger_db(x_in):
     else:
         LOG.info("Input is not a NumPy array. Returning True.")
         return True
+
 
 
 def update_metadata_column(
@@ -436,6 +547,23 @@ def remove_temp_dir(trigger_in, base_dir: str, prefix="__SKY_TEMP__"):
 
 
 def remove_file_directory(path_name):
+    """
+    Remove a file or directory at the specified path.
+
+    If the path points to a directory, it is removed recursively using `shutil.rmtree`.
+    If it is a file, it is removed using `os.remove`.
+
+    Parameters
+    ----------
+    path_name : str
+        Full path to the file or directory to be removed.
+
+    Notes
+    -----
+    - Logs the removal action using `LOG.info`.
+    - No action is taken if the path does not exist; any resulting `FileNotFoundError` is not explicitly handled.
+    """
+
     if isdir(path_name):
         LOG.info(f"Removing directory {path_name}")
         shutil.rmtree(path_name)

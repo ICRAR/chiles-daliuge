@@ -15,21 +15,35 @@ LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-def do_ms_transform(channel_width: List[str]) -> None:
+def do_ms_transform(transform_data: List[str]) -> None:
     """
-    Transforms and regrids a Measurement Set (MS) based on the input data list.
+    Transform and regrid a Measurement Set (MS) based on frequency bounds,
+    producing a frequency-sliced and regridded MS using CASA's `mstransform`.
+
+    The function performs:
+    - Channel selection using `im.advisechansel` based on input frequency range.
+    - Regridding and subsetting via `mstransform`, supporting both single and multi-SPW handling.
+    - Cleanup of existing outputs.
+    - Archiving of the final MS as a `.tar` file.
+    - Logging of spectral window metadata.
 
     Parameters
     ----------
-    transform_data : list
-        List containing:
-        [ms_in_path, outfile_ms, spw_range, output_directory, outfile_name_tar,
+    transform_data : list of str
+        List containing the following 8 elements:
+        [ms_in_path, outfile_ms, output_directory, outfile_name_tar,
          base_name, year, freq_start, freq_end]
 
     Returns
     -------
-    list
-        The same list as input (transform_data), unchanged.
+    None
+
+    Side Effects
+    ------------
+    - Creates a regridded MS file on disk.
+    - Removes old output files with `.ms`, `.tmp`, and `.tar` extensions.
+    - Writes logs with SPW information.
+    - Generates a `.tar` archive of the final MS.
     """
 
     (
@@ -170,28 +184,6 @@ def do_ms_transform(channel_width: List[str]) -> None:
 
     return
 
-
-# def clean_transform_data(args: list[str]) -> list[str]:
-#     """
-#     Clean transform arguments by:
-#     - Stripping leading/trailing whitespace
-#     - Removing unexpected brackets and commas
-#     - Ensuring all elements are clean strings
-#     """
-#     cleaned = []
-#
-#     for i, arg in enumerate(args):
-#         # Remove leading [ on the first arg
-#         if i == 0:
-#             arg = arg.lstrip("[").strip()
-#         # Remove trailing ] on the last arg
-#         if i == len(args) - 1:
-#             arg = arg.rstrip("]").strip()
-#
-#         # Remove trailing commas and whitespace
-#         cleaned.append(arg.strip().rstrip(","))
-#
-#     return cleaned
 
 
 def main(transform_data: list) -> None:

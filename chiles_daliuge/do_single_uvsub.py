@@ -11,14 +11,39 @@ import pylab as pl
 from casaplotms import plotms
 from casatasks import uvsub, statwt, split, phaseshift
 from casatools import imager, ms, table, quanta, image
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 # Set up logging
 LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-def time_convert(mytime, myunit="s"):
+
+def time_convert(mytime: Union[float, int, str, List[Union[float, int, str]]],
+                 myunit: str = "s") -> List[str]:
+    """
+    Convert one or more time values into human-readable date-time strings using CASA's quanta module.
+
+    Parameters
+    ----------
+    mytime : float, int, str, or list of float/int/str
+        A single time value or a list of time values to convert. Each value represents time
+        in the specified unit (e.g., seconds, days).
+    myunit : str, optional
+        The unit of the input time value(s), such as "s" (seconds), "d" (days), "Hz", etc.
+        Default is "s".
+
+    Returns
+    -------
+    list of str
+        A list of converted time strings in the format "YYYY/MM/DD/HH:MM:SS".
+
+    Notes
+    -----
+    - CASA's `quanta` tool is used for conversion.
+    - If a single time value is provided, the result will still be a list of one string.
+    - Input values are internally wrapped into a list if not already one.
+    """
     if type(mytime).__name__ != "list":
         mytime = [mytime]
     my_timestr = []
@@ -55,7 +80,34 @@ def rejig_paths(taylor_terms: List[str],
                 sky_model_location: str,
                 spectral_window: int) -> Tuple[List[str], List[str]]:
     """
-    Construct full file paths for Taylor term and outlier models using the given spectral window.
+    Construct full file paths for Taylor term and outlier model templates using a given spectral window.
+
+    This function formats file path templates for Taylor terms and outliers with the provided
+    spectral window index, and joins them with the base sky model directory. It also handles
+    normalization to avoid duplicate "LSM/" prefixes when `sky_model_location` already ends with "LSM".
+
+    Parameters
+    ----------
+    taylor_terms : list of str
+        List of file path templates for Taylor term models, containing a `{}` placeholder
+        for the spectral window (e.g., "LSM/si_spw_{}.model.tt0").
+    outliers : list of str
+        List of file path templates for outlier models, also containing a `{}` placeholder
+        (e.g., "LSM/Outliers/Outlier_{}.model").
+    sky_model_location : str
+        Base directory where the sky models are stored.
+    spectral_window : int
+        Spectral window index to format into the file path templates.
+
+    Returns
+    -------
+    tuple of (list of str, list of str)
+        Full file paths for the Taylor term models and outlier models, respectively.
+
+    Notes
+    -----
+    - If `sky_model_location` ends with "LSM", the function avoids prepending "LSM/" again.
+    - Path formatting uses `str.format(spectral_window)` on each template string.
     """
 
     def normalize(path_template: str) -> str:
@@ -80,6 +132,59 @@ def do_single_uvsub(
         source_dir, sky_model_location,
         split_name, year, freq_st, freq_en, uv_sub_name, METADATA_DB
 ):
+    """
+    Performs UV subtraction on a single measurement set using in-beam and outlier models.
+
+    This function:
+    - Extracts and preprocesses a measurement set tarball.
+    - Applies in-beam and/or outlier sky models to perform UV subtraction.
+    - Generates QA plots if requested.
+    - Handles phase shifting, HA-based model selection, model FT, subtraction, and final measurement set export.
+    - Updates a metadata database to record the UV subtraction result.
+
+    Parameters
+    ----------
+    taylor_terms : list of str
+        File paths to Taylor term sky models for in-beam sources.
+    outliers : list of str
+        File paths to outlier sky models used for HA-based subtraction.
+    channel_average : int
+        Number of channels to average in the final output.
+    produce_qa : bool
+        Whether to generate QA plots using `plotms`.
+    w_projection_planes : int
+        Number of W-projection planes to use for FT modeling.
+    source_dir : str
+        Path to the directory containing input and output MS files.
+    sky_model_location : str
+        Directory containing untarred sky models.
+    split_name : str
+        Name of the input tarred measurement set file (e.g., `split_1234.ms.tar`).
+    year : str
+        Observation year used for bookkeeping and naming.
+    freq_st : str
+        Start frequency of the sub-band.
+    freq_en : str
+        End frequency of the sub-band.
+    uv_sub_name : str
+        Base name for the output MS and tar file after UV subtraction.
+    METADATA_DB : str
+        Path to the SQLite metadata database to be updated after processing.
+
+    Returns
+    -------
+    None
+        All outputs are written to disk and the metadata DB is updated in-place.
+        Final result is a `.tar` archive of the UV-subtracted measurement set.
+
+    Notes
+    -----
+    - HA-based model selection is based on estimated Hour Angle ranges.
+    - Phase shifting is used to align outlier models with the target MS phase center.
+    - Temporary directories are used for intermediate files and cleaned up after execution.
+    - The function also flags baselines with nearly zero `u` values to reduce contamination.
+    - QA plots are written to `qa_pngs/` within the output MS directory if `produce_qa=True`.
+    """
     with tempfile.TemporaryDirectory(
             dir=source_dir, prefix=f"__{split_name}__TEMP__"
     ) as temporary_directory:

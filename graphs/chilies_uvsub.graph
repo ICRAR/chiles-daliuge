@@ -405,7 +405,7 @@
         "generatorCommitHash": "23f5d29e36e84cd6379c99607bc89f05e4d5d47c",
         "generatorName": "EAGLE",
         "generatorVersion": "v6.7.0",
-        "lastModifiedDatetime": 1749614122.221759,
+        "lastModifiedDatetime": 1749713279.234609,
         "lastModifiedEmail": "",
         "lastModifiedName": "",
         "numLGNodes": 41,
@@ -425,7 +425,7 @@
             "color": "#0059a5",
             "commitHash": "f68c56d",
             "dataHash": "9fcd5b919101f608159489c670c0d3af958af0d4381312a5d9ecb14877bd5ccb",
-            "description": "An application that wraps a python function. The inputs of the application are treated as the arguments of the function. Conversely, the output of the function is treated as the output of the application. If the application has more than one output, the result of calling the function is treated as an iterable, with each individual object being written to its corresponding output.",
+            "description": "Retrieve `dlg_name` entries from a metadata SQLite database matching specified years and frequency ranges.\n\n    This function queries the `metadata` table to find measurement sets whose `year` matches any\n    value in `year_list` and whose `[start_freq, end_freq]` pair matches any tuple in `frequencies`.\n    The result is a list of formatted strings with dlg_name and associated metadata.\n\n    Parameters\n    ----------\n    year_list : list of str\n        List of years to filter on (e.g., [\"2013\", \"2014\"]).\n    frequencies : list of [int, int]\n        List of frequency range pairs to match, specified as [start_freq, end_freq].\n    db_path : str\n        Path to the SQLite metadata database file.\n    trigger_in : bool\n        Placeholder for future use; currently not used in this function.\n\n    Returns\n    -------\n    list of str\n        List of matching entries formatted as:\n        \"dlg_name;year;start_freq;end_freq\"",
             "drawOrderHint": 0,
             "fields": [
                 {
@@ -699,8 +699,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master-template.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -1066.8687390312464,
-            "y": 12.001236045654785
+            "x": -1054.3687390312464,
+            "y": 24.501236045654785
         },
         {
             "category": "PyFuncApp",
@@ -708,7 +708,7 @@
             "color": "#0059a5",
             "commitHash": "f68c56d",
             "dataHash": "9fcd5b919101f608159489c670c0d3af958af0d4381312a5d9ecb14877bd5ccb",
-            "description": "An application that wraps a python function. The inputs of the application are treated as the arguments of the function. Conversely, the output of the function is treated as the output of the application. If the application has more than one output, the result of calling the function is treated as an iterable, with each individual object being written to its corresponding output.",
+            "description": "Generate frequency ranges based on the given width and bounds.\n\n    This function divides the frequency range from `minimum_frequency` to `maximum_frequency`\n    into contiguous intervals of width `frequency_width`.\n\n    Parameters\n    ----------\n    frequency_width : int\n        Width of each frequency bin.\n    minimum_frequency : int\n        Starting frequency of the range (inclusive).\n    maximum_frequency : int\n        Ending frequency of the range (exclusive).\n\n    Returns\n    -------\n    list of list of int\n        A list of [start, end] pairs representing the frequency bins.\n\n    Examples\n    --------\n    >>> get_list_frequency_groups(2, 0, 6)\n    [[0, 2], [2, 4], [4, 6]]",
             "drawOrderHint": 0,
             "fields": [
                 {
@@ -948,7 +948,7 @@
                     "readonly": false,
                     "type": "Integer",
                     "usage": "NoPort",
-                    "value": 1420
+                    "value": 1016
                 }
             ],
             "id": "21c49861-78ea-4aad-8ce8-caccbb51fb1d",
@@ -967,8 +967,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master-template.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -1179.748253484351,
-            "y": -168.27245373968697
+            "x": -1167.248253484351,
+            "y": -155.77245373968697
         },
         {
             "category": "Memory",
@@ -1116,8 +1116,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -1113.5187275637554,
-            "y": -88.76496404491334
+            "x": -1104.5187275637554,
+            "y": -79.76496404491334
         },
         {
             "category": "PyFuncApp",
@@ -1125,7 +1125,7 @@
             "color": "#0059a5",
             "commitHash": "8059e41",
             "dataHash": "71a2915a5b24887f4afef401339c9ee5c725c9220994ad1876e563cf8c431f39",
-            "description": "An application that wraps a python function. The inputs of the application are treated as the arguments of the function. Conversely, the output of the function is treated as the output of the application. If the application has more than one output, the result of calling the function is treated as an iterable, with each individual object being written to its corresponding output.",
+            "description": "Prepares data for UV subtraction by checking for existing processed entries,\n    extracting sky models, and assembling configuration metadata.\n\n    Parameters\n    ----------\n    names_list : list of str\n        List of semicolon-separated strings of the form \"split_name;year;freq_start;freq_end\".\n    source_dir : str\n        Path to the directory containing the source tar files.\n    sky_model_tar_file : str\n        Path to the tar file containing the sky model to be used.\n    taylor_terms : list of str\n        File paths to Taylor term sky models.\n    outliers : list of str\n        File paths to outlier models.\n    channel_average : int\n        Number of channels to average before CLEAN or UV subtraction.\n    produce_qa : bool\n        Whether or not to produce QA plots during processing.\n    w_projection_planes : int\n        Number of W-projection planes to use in imaging.\n    METADATA_DB : str\n        Path to the SQLite metadata database used for tracking processed files.\n\n    Returns\n    -------\n    np.ndarray\n        Array of stringified configuration entries for UV subtraction tasks,\n        excluding any already present in the metadata database.",
             "drawOrderHint": 0,
             "fields": [
                 {
@@ -1431,8 +1431,8 @@
             "parentId": "f8e48658-8294-4c35-8854-ea27752317b9",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -457.87108587268693,
-            "y": -215.31444993150916
+            "x": -445.37108587268693,
+            "y": -202.81444993150916
         },
         {
             "category": "File",
@@ -1611,8 +1611,8 @@
             "parentId": "f8e48658-8294-4c35-8854-ea27752317b9",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -552.9559324732413,
-            "y": -295.94967459407724
+            "x": -543.9559324732413,
+            "y": -286.94967459407724
         },
         {
             "category": "File",
@@ -1791,8 +1791,8 @@
             "parentId": "f8e48658-8294-4c35-8854-ea27752317b9",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -576.9010711438439,
-            "y": -220.99108389208635
+            "x": -567.9010711438439,
+            "y": -211.99108389208635
         },
         {
             "category": "Scatter",
@@ -1816,7 +1816,7 @@
                     "readonly": false,
                     "type": "Integer",
                     "usage": "NoPort",
-                    "value": 2
+                    "value": 3
                 }
             ],
             "id": "f8e48658-8294-4c35-8854-ea27752317b9",
@@ -1913,7 +1913,7 @@
                 }
             ],
             "inputApplicationDescription": "",
-            "inputApplicationId": "c4ee375a-cc51-473b-9402-55f86f4b6467",
+            "inputApplicationId": "c034f801-183c-43b7-a3f3-41e547e3314b",
             "inputApplicationName": "GenericScatterApp",
             "inputApplicationType": "DALiuGEApp",
             "isGroup": true,
@@ -1926,8 +1926,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "repositoryUrl": "",
             "subject": null,
-            "x": -168.62977159101428,
-            "y": -190.8096069829375
+            "x": -159.87585693600948,
+            "y": -179.1407590679152
         },
         {
             "category": "Memory",
@@ -2076,8 +2076,8 @@
             "parentId": "f8e48658-8294-4c35-8854-ea27752317b9",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -469.704210782842,
-            "y": -342.46069899457785
+            "x": -460.704210782842,
+            "y": -333.46069899457785
         },
         {
             "category": "Memory",
@@ -2226,8 +2226,8 @@
             "parentId": "f8e48658-8294-4c35-8854-ea27752317b9",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -356.7143212678442,
-            "y": -335.96838527860143
+            "x": -347.7143212678442,
+            "y": -326.96838527860143
         },
         {
             "category": "Memory",
@@ -2361,8 +2361,8 @@
             "parentId": "f8e48658-8294-4c35-8854-ea27752317b9",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -549.6804047856316,
-            "y": -133.8317696318395
+            "x": -540.6804047856316,
+            "y": -124.8317696318395
         },
         {
             "category": "Memory",
@@ -2510,8 +2510,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -905.2744028621169,
-            "y": -65.35954166717237
+            "x": -896.2744028621169,
+            "y": -56.359541667172365
         },
         {
             "category": "File",
@@ -2689,8 +2689,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -1006.3012960735352,
-            "y": 392.01555888466817
+            "x": -997.3012960735352,
+            "y": 401.01555888466817
         },
         {
             "category": "File",
@@ -2868,8 +2868,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -490.17302524727603,
-            "y": 391.47266972823564
+            "x": -481.17302524727603,
+            "y": 400.47266972823564
         },
         {
             "category": "Loop",
@@ -2893,7 +2893,7 @@
                     "readonly": false,
                     "type": "Integer",
                     "usage": "NoPort",
-                    "value": 10
+                    "value": 20
                 }
             ],
             "id": "efb14612-3fc8-4079-bfb1-888be7ec5855",
@@ -2913,8 +2913,8 @@
             "parentId": "f8e48658-8294-4c35-8854-ea27752317b9",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": 24.83942546940824,
-            "y": -191.85397765693853
+            "x": 35.58942546940824,
+            "y": -179.35397765693853
         },
         {
             "category": "BashShellApp",
@@ -2922,7 +2922,7 @@
             "color": "#0059a5",
             "commitHash": "786bff7",
             "dataHash": "c5a1f4f94f6a8a86faed99c4e6a06175be6eb5a5ab021bbba93258761a0d6055",
-            "description": "An application component able to run an arbitrary command within the Bash Shell",
+            "description": "Performs UV subtraction on a single measurement set using in-beam and outlier models.\n\nThis is used as a bashshell app to bypass the CASA limitation where multiple parallel calls from a single node crash. \n\n    This function:\n    - Extracts and preprocesses a measurement set tarball.\n    - Applies in-beam and/or outlier sky models to perform UV subtraction.\n    - Generates QA plots if requested.\n    - Handles phase shifting, HA-based model selection, model FT, subtraction, and final measurement set export.\n    - Updates a metadata database to record the UV subtraction result.\n\n    Parameters\n    ----------\n    taylor_terms : list of str\n        File paths to Taylor term sky models for in-beam sources.\n    outliers : list of str\n        File paths to outlier sky models used for HA-based subtraction.\n    channel_average : int\n        Number of channels to average in the final output.\n    produce_qa : bool\n        Whether to generate QA plots using `plotms`.\n    w_projection_planes : int\n        Number of W-projection planes to use for FT modeling.\n    source_dir : str\n        Path to the directory containing input and output MS files.\n    sky_model_location : str\n        Directory containing untarred sky models.\n    split_name : str\n        Name of the input tarred measurement set file (e.g., `split_1234.ms.tar`).\n    year : str\n        Observation year used for bookkeeping and naming.\n    freq_st : str\n        Start frequency of the sub-band.\n    freq_en : str\n        End frequency of the sub-band.\n    uv_sub_name : str\n        Base name for the output MS and tar file after UV subtraction.\n    METADATA_DB : str\n        Path to the SQLite metadata database to be updated after processing.\n\n    Returns\n    -------\n    None\n        All outputs are written to disk and the metadata DB is updated in-place.\n        Final result is a `.tar` archive of the UV-subtracted measurement set.\n\n    Notes\n    -----\n    - HA-based model selection is based on estimated Hour Angle ranges.\n    - Phase shifting is used to align outlier models with the target MS phase center.\n    - Temporary directories are used for intermediate files and cleaned up after execution.\n    - The function also flags baselines with nearly zero `u` values to reduce contamination.\n    - QA plots are written to `qa_pngs/` within the output MS directory if `produce_qa=True`.",
             "drawOrderHint": 0,
             "fields": [
                 {
@@ -3115,8 +3115,8 @@
             "parentId": "efb14612-3fc8-4079-bfb1-888be7ec5855",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": 172.4352307014557,
-            "y": -252.42728195849685
+            "x": 184.9352307014557,
+            "y": -239.92728195849685
         },
         {
             "category": "DALiuGEApp",
@@ -3272,8 +3272,8 @@
             "parentId": "efb14612-3fc8-4079-bfb1-888be7ec5855",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -16.718457940210413,
-            "y": -332.94455538750213
+            "x": -4.218457940210413,
+            "y": -320.44455538750213
         },
         {
             "category": "Memory",
@@ -3422,8 +3422,8 @@
             "parentId": "efb14612-3fc8-4079-bfb1-888be7ec5855",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": 76.23824826180287,
-            "y": -349.40910890853644
+            "x": 85.23824826180287,
+            "y": -340.40910890853644
         },
         {
             "category": "PyFuncApp",
@@ -3431,7 +3431,7 @@
             "color": "#0059a5",
             "commitHash": "483b909",
             "dataHash": "83264c2930d04314860785d5395539788fbd510809b6fb49a6ad704f92481eb2",
-            "description": "An application that wraps a python function. The inputs of the application are treated as the arguments of the function. Conversely, the output of the function is treated as the output of the application. If the application has more than one output, the result of calling the function is treated as an iterable, with each individual object being written to its corresponding output.",
+            "description": "Verify that all file references in the metadata SQLite database exist on disk,\n    and clean up invalid or missing references accordingly.\n\n    This function performs the following actions:\n    - If `trigger_in` is False, the function exits early without performing any checks.\n    - For each row in the `metadata` table:\n        - If no referenced files (in `dlg_name` or any dynamic column after `size`) exist on disk,\n          the row is deleted.\n        - If only some files are missing, the corresponding column(s) are cleared (set to NULL).\n\n    Parameters\n    ----------\n    db_path : str\n        Path to the SQLite metadata database file.\n    trigger_in : bool\n        If True, triggers the integrity check. If False, the function exits immediately.\n\n    Returns\n    -------\n    bool\n        True if the database was verified (i.e., `trigger_in` was True and the check completed).\n        False otherwise (e.g., if the database file does not exist or `trigger_in` is False).\n\n    Notes\n    -----\n    - Fixed columns (`dir_path`, `dlg_name`, `base_name`, `year`, `start_freq`, `end_freq`, `bandwidth`, `size`)\n      are never cleared.\n    - All other columns are treated as dynamic file references and are individually validated.\n    - Uses `rowid` to identify and modify/delete rows.\n    - Changes are committed in-place and logged.",
             "drawOrderHint": 0,
             "fields": [
                 {
@@ -3653,8 +3653,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master-template.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -340.8139986444644,
-            "y": 507.09679511713637
+            "x": -328.3139986444644,
+            "y": 519.5967951171364
         },
         {
             "category": "PyFuncApp",
@@ -3662,7 +3662,7 @@
             "color": "#0059a5",
             "commitHash": "483b909",
             "dataHash": "83264c2930d04314860785d5395539788fbd510809b6fb49a6ad704f92481eb2",
-            "description": "An application that wraps a python function. The inputs of the application are treated as the arguments of the function. Conversely, the output of the function is treated as the output of the application. If the application has more than one output, the result of calling the function is treated as an iterable, with each individual object being written to its corresponding output.",
+            "description": "Export the entire 'metadata' table from a SQLite database to a CSV file.\n\n    Parameters\n    ----------\n    trigger_in:\n        to make function wait\n    db_path : str\n        Path to the SQLite database file (e.g., METADATA_DB).\n    csv_path : str\n        Path to the output CSV file (e.g., METADATA_CSV).\n\n    Returns\n    -------\n    None",
             "drawOrderHint": 0,
             "fields": [
                 {
@@ -3884,8 +3884,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master-template.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -631.0871590058762,
-            "y": 523.6246724051188
+            "x": -618.5871590058762,
+            "y": 536.1246724051188
         },
         {
             "category": "Memory",
@@ -4033,8 +4033,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -436.95247384560054,
-            "y": 533.7254298550755
+            "x": -427.95247384560054,
+            "y": 542.7254298550755
         },
         {
             "category": "Memory",
@@ -4183,8 +4183,8 @@
             "parentId": "efb14612-3fc8-4079-bfb1-888be7ec5855",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -2.7280095207382224,
-            "y": -215.69132212530002
+            "x": 6.2719904792617776,
+            "y": -206.69132212530002
         },
         {
             "category": "Memory",
@@ -4333,8 +4333,8 @@
             "parentId": "efb14612-3fc8-4079-bfb1-888be7ec5855",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": 141.95941046285205,
-            "y": -109.36521511197435
+            "x": 150.95941046285205,
+            "y": -100.36521511197435
         },
         {
             "category": "PyFuncApp",
@@ -4342,7 +4342,7 @@
             "color": "#0059a5",
             "commitHash": "117d50e",
             "dataHash": "83264c2930d04314860785d5395539788fbd510809b6fb49a6ad704f92481eb2",
-            "description": "An application that wraps a python function. The inputs of the application are treated as the arguments of the function. Conversely, the output of the function is treated as the output of the application. If the application has more than one output, the result of calling the function is treated as an iterable, with each individual object being written to its corresponding output.",
+            "description": "Determines whether the input should trigger a database operation.\n\n    Returns True if:\n    - The input is a non-empty NumPy array and its first element is NOT a string.\n    - The input is an empty NumPy array.\n    - The input is not a NumPy array.\n\n    Returns False only if the input is a non-empty NumPy array and the first element is a string.",
             "drawOrderHint": 0,
             "fields": [
                 {
@@ -4549,8 +4549,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master-template.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -279.7519334178474,
-            "y": 314.86193771490036
+            "x": -267.2519334178474,
+            "y": 327.36193771490036
         },
         {
             "category": "Memory",
@@ -4698,8 +4698,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -294.91691265506137,
-            "y": 416.63395760673234
+            "x": -285.91691265506137,
+            "y": 425.63395760673234
         },
         {
             "category": "Memory",
@@ -4863,8 +4863,8 @@
             "parentId": "efb14612-3fc8-4079-bfb1-888be7ec5855",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -129.7563797626392,
-            "y": -176.93350245864198
+            "x": -120.7563797626392,
+            "y": -167.93350245864198
         },
         {
             "category": "Memory",
@@ -5013,8 +5013,8 @@
             "parentId": "efb14612-3fc8-4079-bfb1-888be7ec5855",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -80.62847954607139,
-            "y": -40.595899895367005
+            "x": -71.62847954607139,
+            "y": -31.595899895367005
         },
         {
             "category": "Branch",
@@ -5230,8 +5230,8 @@
             "parentId": "efb14612-3fc8-4079-bfb1-888be7ec5855",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": 17.38435230776597,
-            "y": -48.2988464053406
+            "x": 33.384352307765965,
+            "y": -32.2988464053406
         },
         {
             "category": "PyFuncApp",
@@ -5239,7 +5239,7 @@
             "color": "#0059a5",
             "commitHash": "483b909",
             "dataHash": "83264c2930d04314860785d5395539788fbd510809b6fb49a6ad704f92481eb2",
-            "description": "An application that wraps a python function. The inputs of the application are treated as the arguments of the function. Conversely, the output of the function is treated as the output of the application. If the application has more than one output, the result of calling the function is treated as an iterable, with each individual object being written to its corresponding output.",
+            "description": "Export the entire 'metadata' table from a SQLite database to a CSV file.\n\n    Parameters\n    ----------\n    trigger_in:\n        to make function wait\n    db_path : str\n        Path to the SQLite database file (e.g., METADATA_DB).\n    csv_path : str\n        Path to the output CSV file (e.g., METADATA_CSV).\n\n    Returns\n    -------\n    None",
             "drawOrderHint": 0,
             "fields": [
                 {
@@ -5461,8 +5461,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master-template.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -591.4846080053788,
-            "y": 380.74823310712304
+            "x": -578.9846080053788,
+            "y": 393.24823310712304
         },
         {
             "category": "PyFuncApp",
@@ -5470,7 +5470,7 @@
             "color": "#0059a5",
             "commitHash": "483b909",
             "dataHash": "83264c2930d04314860785d5395539788fbd510809b6fb49a6ad704f92481eb2",
-            "description": "An application that wraps a python function. The inputs of the application are treated as the arguments of the function. Conversely, the output of the function is treated as the output of the application. If the application has more than one output, the result of calling the function is treated as an iterable, with each individual object being written to its corresponding output.",
+            "description": "Verify that all file references in the metadata SQLite database exist on disk,\n    and clean up invalid or missing references accordingly.\n\n    This function performs the following actions:\n    - If `trigger_in` is False, the function exits early without performing any checks.\n    - For each row in the `metadata` table:\n        - If no referenced files (in `dlg_name` or any dynamic column after `size`) exist on disk,\n          the row is deleted.\n        - If only some files are missing, the corresponding column(s) are cleared (set to NULL).\n\n    Parameters\n    ----------\n    db_path : str\n        Path to the SQLite metadata database file.\n    trigger_in : bool\n        If True, triggers the integrity check. If False, the function exits immediately.\n\n    Returns\n    -------\n    bool\n        True if the database was verified (i.e., `trigger_in` was True and the check completed).\n        False otherwise (e.g., if the database file does not exist or `trigger_in` is False).\n\n    Notes\n    -----\n    - Fixed columns (`dir_path`, `dlg_name`, `base_name`, `year`, `start_freq`, `end_freq`, `bandwidth`, `size`)\n      are never cleared.\n    - All other columns are treated as dynamic file references and are individually validated.\n    - Uses `rowid` to identify and modify/delete rows.\n    - Changes are committed in-place and logged.",
             "drawOrderHint": 0,
             "fields": [
                 {
@@ -5692,8 +5692,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master-template.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -780.0398884498189,
-            "y": 236.30504254637714
+            "x": -798.1722098276258,
+            "y": 256.46312289082886
         },
         {
             "category": "Memory",
@@ -5841,8 +5841,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -701.7320833665374,
-            "y": 158.74431225624872
+            "x": -702.304683797102,
+            "y": 177.31691268681337
         },
         {
             "category": "PyFuncApp",
@@ -5850,7 +5850,7 @@
             "color": "#0059a5",
             "commitHash": "117d50e",
             "dataHash": "83264c2930d04314860785d5395539788fbd510809b6fb49a6ad704f92481eb2",
-            "description": "An application that wraps a python function. The inputs of the application are treated as the arguments of the function. Conversely, the output of the function is treated as the output of the application. If the application has more than one output, the result of calling the function is treated as an iterable, with each individual object being written to its corresponding output.",
+            "description": "Determines whether the input should trigger a database operation.\n\n    Returns True if:\n    - The input is a non-empty NumPy array and its first element is NOT a string.\n    - The input is an empty NumPy array.\n    - The input is not a NumPy array.\n\n    Returns False only if the input is a non-empty NumPy array and the first element is a string.",
             "drawOrderHint": 0,
             "fields": [
                 {
@@ -6057,8 +6057,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master-template.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -639.476117162898,
-            "y": 94.96994508842687
+            "x": -626.976117162898,
+            "y": 107.46994508842687
         },
         {
             "category": "Branch",
@@ -6259,8 +6259,8 @@
             "parentId": "f8e48658-8294-4c35-8854-ea27752317b9",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -334.45869489352526,
-            "y": -34.81449283082428
+            "x": -318.45869489352526,
+            "y": -18.81449283082428
         },
         {
             "category": "Memory",
@@ -6409,8 +6409,8 @@
             "parentId": "f8e48658-8294-4c35-8854-ea27752317b9",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -465.5153657776266,
-            "y": 24.632391323524743
+            "x": -456.5153657776266,
+            "y": 33.63239132352474
         },
         {
             "category": "Memory",
@@ -6559,8 +6559,8 @@
             "parentId": "f8e48658-8294-4c35-8854-ea27752317b9",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -433.8395905508796,
-            "y": -129.2755758196895
+            "x": -424.8395905508796,
+            "y": -120.2755758196895
         },
         {
             "category": "Memory",
@@ -6709,8 +6709,8 @@
             "parentId": "f8e48658-8294-4c35-8854-ea27752317b9",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -336.7033406721447,
-            "y": -250.16041615141182
+            "x": -327.7033406721447,
+            "y": -241.16041615141182
         },
         {
             "category": "Memory",
@@ -6858,8 +6858,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -708.7113420749922,
-            "y": 292.42801662331004
+            "x": -699.7113420749922,
+            "y": 301.42801662331004
         },
         {
             "category": "PyFuncApp",
@@ -6867,7 +6867,7 @@
             "color": "#0059a5",
             "commitHash": "483b909",
             "dataHash": "83264c2930d04314860785d5395539788fbd510809b6fb49a6ad704f92481eb2",
-            "description": "An application that wraps a python function. The inputs of the application are treated as the arguments of the function. Conversely, the output of the function is treated as the output of the application. If the application has more than one output, the result of calling the function is treated as an iterable, with each individual object being written to its corresponding output.",
+            "description": "Verify that all file references in the metadata SQLite database exist on disk,\n    and clean up invalid or missing references accordingly.\n\n    This function performs the following actions:\n    - If `trigger_in` is False, the function exits early without performing any checks.\n    - For each row in the `metadata` table:\n        - If no referenced files (in `dlg_name` or any dynamic column after `size`) exist on disk,\n          the row is deleted.\n        - If only some files are missing, the corresponding column(s) are cleared (set to NULL).\n\n    Parameters\n    ----------\n    db_path : str\n        Path to the SQLite metadata database file.\n    trigger_in : bool\n        If True, triggers the integrity check. If False, the function exits immediately.\n\n    Returns\n    -------\n    bool\n        True if the database was verified (i.e., `trigger_in` was True and the check completed).\n        False otherwise (e.g., if the database file does not exist or `trigger_in` is False).\n\n    Notes\n    -----\n    - Fixed columns (`dir_path`, `dlg_name`, `base_name`, `year`, `start_freq`, `end_freq`, `bandwidth`, `size`)\n      are never cleared.\n    - All other columns are treated as dynamic file references and are individually validated.\n    - Uses `rowid` to identify and modify/delete rows.\n    - Changes are committed in-place and logged.",
             "drawOrderHint": 0,
             "fields": [
                 {
@@ -7089,8 +7089,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master-template.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -1144.999282436861,
-            "y": 266.55018616567975
+            "x": -1132.499282436861,
+            "y": 279.05018616567975
         },
         {
             "category": "Memory",
@@ -7238,8 +7238,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -1153.2079111126284,
-            "y": 109.26225979799526
+            "x": -1144.2079111126284,
+            "y": 118.26225979799526
         },
         {
             "category": "PyFuncApp",
@@ -7247,7 +7247,7 @@
             "color": "#0059a5",
             "commitHash": "b3c8baf",
             "dataHash": "83264c2930d04314860785d5395539788fbd510809b6fb49a6ad704f92481eb2",
-            "description": "An application that wraps a python function. The inputs of the application are treated as the arguments of the function. Conversely, the output of the function is treated as the output of the application. If the application has more than one output, the result of calling the function is treated as an iterable, with each individual object being written to its corresponding output.",
+            "description": "Removes all temporary directories in the given base directory that start with a specific prefix.\n\n    Parameters\n    ----------\n    trigger_in:\n        to make function wait\n    base_dir : str\n        The directory in which to search for temp directories.\n    prefix : str\n        The prefix of temp directories to be deleted.\n\n    Returns\n    -------\n    None",
             "drawOrderHint": 0,
             "fields": [
                 {
@@ -7469,8 +7469,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master-template.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": 3.7613982797797245,
-            "y": 420.61706370985036
+            "x": 16.261398279779726,
+            "y": 433.11706370985036
         },
         {
             "category": "PyFuncApp",
@@ -7478,7 +7478,7 @@
             "color": "#0059a5",
             "commitHash": "b3c8baf",
             "dataHash": "83264c2930d04314860785d5395539788fbd510809b6fb49a6ad704f92481eb2",
-            "description": "An application that wraps a python function. The inputs of the application are treated as the arguments of the function. Conversely, the output of the function is treated as the output of the application. If the application has more than one output, the result of calling the function is treated as an iterable, with each individual object being written to its corresponding output.",
+            "description": "Removes all temporary directories in the given base directory that start with a specific prefix.\n\n    Parameters\n    ----------\n    trigger_in:\n        to make function wait\n    base_dir : str\n        The directory in which to search for temp directories.\n    prefix : str\n        The prefix of temp directories to be deleted.\n\n    Returns\n    -------\n    None",
             "drawOrderHint": 0,
             "fields": [
                 {
@@ -7700,8 +7700,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master-template.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": 428.88788389777966,
-            "y": -158.9751414818407
+            "x": 441.38788389777966,
+            "y": -146.4751414818407
         },
         {
             "category": "Memory",
@@ -7864,8 +7864,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -1327.135219718249,
-            "y": -16.469812437613868
+            "x": -1318.135219718249,
+            "y": -7.469812437613868
         }
     ]
 }

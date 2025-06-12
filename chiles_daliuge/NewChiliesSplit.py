@@ -26,38 +26,43 @@ def fetch_original_ms(
         process_ms: bool = process_ms_flag,
 ) -> list[str]:
     """
-    Fetch measurement sets from a remote directory structure using rclone, track them with metadata in SQLite.
+    Fetches Measurement Set (.ms) directories from a remote directory structure using rclone,
+    and tracks them using metadata stored in an SQLite database.
 
-    This function scans a remote source directory structured by year/date to locate
-    Measurement Set (.ms) directories. It optionally creates local placeholder files
-    or copies the MS directories to a specified local directory, renaming each using a
-    hash of metadata fields. Metadata is logged in a persistent SQLite database.
+    The function navigates a remote source directory structured by year/date (e.g., /remote/2013/01/)
+    to locate .ms directories. It either creates placeholder files (if `process_ms=False`) or copies
+    the MS directories locally (if `process_ms=True`) into a destination folder using rclone.
+
+    Metadata such as hashed names, frequency information, and sizes are recorded in a persistent
+    SQLite database. Previously recorded MS entries are skipped.
 
     Parameters
     ----------
-    METADATA_DB: str
-        path to the database
     source_dir : str
-        The root remote directory containing year/date subfolders with .ms sets.
+        Root remote directory containing year/date subfolders with .ms directories.
     year_list : list of str
-        A list of year or year-ranges to process (e.g., ["2013-2014", "2015"]).
+        List of years to include in the search (e.g., ["2013", "2014"]).
     copy_directory : str
-        Local destination directory where the .ms files or placeholders will be stored.
+        Local destination where .ms files or placeholders will be stored.
+    trigger_in : bool
+        Currently unused; placeholder for future logic or triggering conditions.
+    METADATA_DB : str
+        Path to the SQLite database used to store and check MS metadata.
     process_ms : bool, optional
-        If True, copies the .ms data using rclone. If False, creates an empty placeholder
-        file with the hashed name. Default is False.
+        If True, rclone will copy full .ms directories to `copy_directory`.
+        If False, only empty placeholder files will be created. Default is taken from `process_ms_flag`.
 
     Returns
     -------
     list of str
-        List of local file paths (either real .ms directories or placeholder `.ms` files)
-        corresponding to the processed or identified measurement sets.
+        List of hashed .ms names (real or placeholder) that were processed or already recorded.
 
     Notes
     -----
-    - Uses rclone for folder traversal and copying.
-    - Logs metadata to "Chilies_metadata.db" SQLite database.
-    - Also exports the metadata table to "Chilies_metadata.csv" for inspection.
+    - Uses rclone commands (`lsf`, `copy`, `size`) to interact with the remote filesystem.
+    - Assumes MS directories have `.ms/` suffix.
+    - Avoids reprocessing MS sets that already exist in the metadata database.
+    - Logs all significant actions and errors.
     """
 
     # verify_db_integrity()
@@ -163,22 +168,23 @@ def fetch_original_ms(
 
 def split_ms_list(ms_list: list[str], parallel_processes: int) -> list[list[str]]:
     """
-    Split a list of measurement set paths into size-balanced sublists.
+    Split a list of measurement set paths into nearly equal-sized sublists.
 
-    This version divides the input list into `parallel_processes` sublists
-    such that the sizes of the sublists differ by at most 1.
+    The function divides `ms_list` into `parallel_processes` sublists such that the
+    lengths of the sublists differ by at most one. This is useful for distributing
+    work evenly across parallel processes.
 
     Parameters
     ----------
     ms_list : list of str
-        The list of measurement set paths or identifiers to be split.
+        List of measurement set paths or identifiers to be split.
     parallel_processes : int
-        Number of sublists to create.
+        Number of sublists (i.e., parallel processes) to create.
 
     Returns
     -------
     list of list of str
-        A list containing `parallel_processes` sublists with nearly equal lengths.
+        A list containing `parallel_processes` sublists, each with approximately equal length.
 
     Raises
     ------
@@ -193,6 +199,7 @@ def split_ms_list(ms_list: list[str], parallel_processes: int) -> list[list[str]
     >>> split_ms_list(["a", "b", "c"], 5)
     [['a'], ['b'], ['c'], [], []]
     """
+
     if parallel_processes <= 0:
         raise ValueError("parallel_processes must be a positive integer.")
 
@@ -224,22 +231,7 @@ def split_out_frequencies(
         process_ms: bool = process_ms_flag
 ) -> ndarray:
     """
-    Splits measurement sets into sub-MSs based on provided frequency ranges,
-    using metadata stored in a SQLite database.
 
-    Parameters
-    ----------
-    METADATA_DB : str
-        Path to the database
-    ms_in_list : list of str
-        List of hashed input MS names to be processed (matches dlg_name in DB).
-    output_directory : str
-        Path where output measurement sets will be stored.
-    frequencies : list of [int, int]
-        List of frequency ranges in MHz as [start_freq, end_freq].
-    process_ms : bool
-        If True, will run CASA imager to extract frequency ranges.
-        If False, will only create placeholder files in the output directory.
     """
 
     LOG.info("#" * 60)
@@ -298,9 +290,31 @@ def split_out_frequencies(
 
 def ensure_list_then_destringify(arg_or_list) -> list[str]:
     """
-    If input is a stringified list, evaluate it to a list first,
-    then pass it to destringify_data(). If it's already a list, pass it directly.
+    Converts a stringified list or a list of strings into a destringified list.
+
+    If the input is a string representation of a list (e.g., '["a", "b"]'),
+    it is parsed using `ast.literal_eval()` and then passed to `destringify_data()`.
+    If the input is already a list, it is passed directly.
+    The function ensures the final output is a list of destringified strings.
+
+    Parameters
+    ----------
+    arg_or_list : str or list of str
+        A stringified list (e.g., from a CSV or database) or an actual list of strings.
+
+    Returns
+    -------
+    list of str
+        A destringified list derived from the input.
+
+    Raises
+    ------
+    ValueError
+        If a string input is not a valid list or fails to parse.
+    TypeError
+        If the input is neither a string nor a list.
     """
+
     if isinstance(arg_or_list, str):
         try:
             parsed = ast.literal_eval(arg_or_list)
@@ -317,16 +331,43 @@ def ensure_list_then_destringify(arg_or_list) -> list[str]:
 
 def insert_metadata_from_transform(transform_data: str, METADATA_DB: str) -> None:
     """
-    Insert metadata for a transformed measurement set into the database.
+    Parses transformation metadata and inserts it into a SQLite database.
+
+    This function expects a stringified list containing metadata about a
+    transformed measurement set, including input/output paths and frequency details.
+    It destringifies the input, calculates bandwidth and file size (if available),
+    and appends the entry to the metadata table in the database.
 
     Parameters
     ----------
     transform_data : str
-        A string containing a Python-style list:
-        "['ms_in_path', 'outfile', 'spw_range', 'output_directory', 'outfile_name_tar', 'base_name', 'year', 'freq_start', 'freq_end']"
+        A stringified Python-style list with exactly 8 elements:
+        [
+            ms_in_path (str),
+            outfile (str),
+            output_directory (str),
+            outfile_name_tar (str),
+            base_name (str),
+            year (str or int),
+            freq_start (str or int),
+            freq_end (str or int)
+        ]
 
     METADATA_DB : str
-        Path to the SQLite database file.
+        Path to the SQLite metadata database file.
+
+    Raises
+    ------
+    ValueError
+        If the input string cannot be parsed into a valid list of 8 elements.
+    OSError
+        If reading the file size of `outfile_name_tar` fails for reasons
+        other than the file not existing.
+
+    Side Effects
+    ------------
+    - Inserts a new row into the `metadata` table of the SQLite database.
+    - Logs messages to the standard logger.
     """
     LOG.info(f"transform_data before destringing: {transform_data}")
     try:
