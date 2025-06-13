@@ -1,323 +1,22 @@
+#!/usr/bin/env python3
+import sys
+import json
 import logging
+from pprint import pformat
+from chiles_daliuge.common import destringify_data
+
 import shutil
-from glob import glob
-from os import makedirs, chdir, getcwd, rename, remove
-from os.path import join, exists, isdir, basename, isfile
-from pathlib import Path
+from os import makedirs
+from os.path import join, exists, isfile
 
 from casatasks import tclean, concat
 from casatools import table, image, regionmanager
-from typing import Union, List
-import sqlite3
 
+# Set up logging
 LOG = logging.getLogger(__name__)
-
-SEMESTER_VALUES = ["2013-2014", "2015", "2016", "2017-2018", "2019"]
-
+logging.basicConfig(level=logging.INFO)
 
 
-def fetch_uvsub_ms(
-        year_list: List[str],
-        frequencies: List[List[int]],
-        db_path: str,
-        trigger_in: bool,
-) -> List[str]:
-    """
-    Retrieve `uv_sub_name` entries from a metadata SQLite database matching specified years and frequency ranges.
-
-    This function queries the `metadata` table to find measurement sets whose `year` matches any
-    value in `year_list` and whose `[start_freq, end_freq]` pair matches any tuple in `frequencies`.
-    The result is a list of formatted strings with uv_sub_name and associated metadata.
-
-    Parameters
-    ----------
-    year_list : list of str
-        List of years to filter on (e.g., ["2013", "2014"]).
-    frequencies : list of [int, int]
-        List of frequency range pairs to match, specified as [start_freq, end_freq].
-    db_path : str
-        Path to the SQLite metadata database file.
-    trigger_in : bool
-        Placeholder for future use; currently not used in this function.
-
-    Returns
-    -------
-    list of str
-        List of matching entries formatted as:
-        "uv_sub_name;year;start_freq;end_freq"
-    """
-    freq_set = {tuple(freq_pair) for freq_pair in frequencies}
-
-    query = """
-        SELECT uv_sub_name, year, start_freq, end_freq FROM metadata
-    """
-
-    matching_uv_sub_names = []
-
-    with sqlite3.connect(db_path) as conn:
-        cursor = conn.cursor()
-        for row in cursor.execute(query):
-            uv_sub_name, year, start_freq, end_freq = row
-            # print(f"\nChecking row: dlg_name={dlg_name}, year={year}, start_freq={start_freq}, end_freq={end_freq}")
-
-            freq_tuple = (int(start_freq), int(end_freq))  # ✅ convert to int
-
-            if year in year_list and freq_tuple in freq_set:
-                # print(f"  → Appending: {dlg_name}")
-                matching_uv_sub_names.append(f"{uv_sub_name};{year};{freq_tuple[0]};{freq_tuple[1]}")
-
-    return matching_uv_sub_names
-
-
-@snoop
-def get_uvsub_files(input_directory, temporary_directory, semester, count_files):
-    input_measurement_sets = []
-    count = 0
-    for tar_file in glob(join(input_directory, semester, "*.ms.tar")):
-        LOG.info(f"Untarring file: {tar_file}")
-        untar_file(tar_file, temporary_directory, gz=False)
-        measurement_set = join(temporary_directory, basename(tar_file)[:-4])
-        input_measurement_sets.append(measurement_set)
-        count += 1
-
-        if count_files is not None and count >= count_files:
-            break
-
-    def get_time(long_filename):
-        base_name = basename(long_filename)
-        elements = base_name.split(".")
-        return float(f"{elements[3]}.{elements[4]}")
-
-    sort_input_measurement_sets = sorted(input_measurement_sets, key=get_time)
-
-    return sort_input_measurement_sets
-
-
-def tar_image_files(directory):
-    LOG.info(f"Tarring file: {directory}")
-    create_tar_file(directory, suffix="temp")
-
-    rename(
-        f"{directory}.tar.temp",
-        f"{directory}.tar",
-    )
-    Path(f"{directory}.tar.done").touch()
-
-
-@snoop
-def build_concatenated_ms(args, root_directory, top_level_output_directory):
-    combine_file_build = join(
-        top_level_output_directory,
-        "com_all.building.ms",
-    )
-    combine_file_final = join(
-        top_level_output_directory,
-        "com_all.ms",
-    )
-    if exists(combine_file_final):
-        LOG.info(f"{combine_file_final} already exists")
-        return
-
-    if exists(combine_file_build):
-        LOG.info(f"Removing {combine_file_build}")
-        shutil.rmtree(combine_file_build)
-
-    input_measurement_sets = get_uvsub_files(
-        root_directory,
-        args.temporary_directory,
-        "*",
-        args.count_files,
-    )
-
-    # Combine all the MS into a single MS
-    concat(vis=input_measurement_sets, concatvis=combine_file_build)
-
-    if exists(combine_file_build):
-        shutil.move(combine_file_build, combine_file_final)
-
-
-@snoop
-def tclean_from_concatenated_ms(args, frequencies, top_level_output_directory):
-    # Have we done this one?
-    working_directory = join(top_level_output_directory, "all")
-    done_file = f"{working_directory}.tar.done"
-
-    combine_file_final = join(
-        top_level_output_directory,
-        "com_all.ms",
-    )
-    combine_file_build = join(
-        top_level_output_directory,
-        "com_all.ms",
-    )
-    if exists(done_file):
-        LOG.info("Skipping: all")
-
-        if exists(combine_file_build):
-            LOG.info(f"Removing old combined file: {combine_file_build}")
-            shutil.rmtree(combine_file_build)
-
-        if exists(combine_file_final):
-            LOG.info(f"Removing old combined file: {combine_file_final}")
-            shutil.rmtree(combine_file_final)
-
-        return
-
-    # Remove old tar file
-    tar_file = f"{working_directory}.tar"
-    if exists(tar_file):
-        LOG.info(f"Removing old tar file: {tar_file}")
-        remove(tar_file)
-
-    # If we have the directory without the tar file, then we need to delete it
-    if exists(working_directory) and isdir(working_directory):
-        LOG.info(f"Removing old directory: {working_directory}")
-        shutil.rmtree(working_directory)
-
-    # Is the concatenated MS there?
-    if not exists(combine_file_final):
-        LOG.info(f"{combine_file_final} does not exist")
-        return
-
-    # TClean doesn't seem to work with absolute paths for the output
-    chdir(args.temporary_directory)
-    LOG.info(f"Current directory: {getcwd()}")
-    # Get the region files
-    region_files_location = copy_region_files(args, args.temporary_directory)
-
-    succeeded = do_tclean_implementation(
-        cube_dir=working_directory,
-        min_freq=frequencies[0],
-        max_freq=frequencies[1],
-        iterations=args.iterations,
-        arcsec=args.arcsec_low if frequencies[1] < args.arcsec_cutover else args.arcsec_high,
-        w_projection_planes=args.w_projection_planes,
-        clean_weighting_uv=args.clean_weighting_uv,
-        robust=args.robust,
-        image_size=args.image_size,
-        clean_channel_average=args.clean_channel_average,
-        region_file=join(region_files_location, args.region_file),
-        produce_qa=args.produce_qa,
-        temporary_directory=args.temporary_directory,
-        in_dirs=combine_file_final,
-    )
-
-    if succeeded:
-        # Tar the files
-        tar_image_files(working_directory)
-
-        # Remove working directory
-        if exists(working_directory):
-            shutil.rmtree(working_directory)
-
-        # Remove the combined file
-        if exists(combine_file_final):
-            shutil.rmtree(combine_file_final)
-
-
-@snoop
-def do_tclean(args):
-    frequencies = list(get_list_frequency_groups(args.width))[args.frequency_band]
-    top_level_output_directory = join(
-        args.output_directory, f"{frequencies[0]:04d}-{frequencies[1]:04d}"
-    )
-    makedirs(top_level_output_directory, exist_ok=True)
-
-    LOG.info("#" * 60)
-    LOG.info("#" * 60)
-    LOG.info(f"Frequencies: {frequencies}")
-    LOG.info(f"Current directory: {getcwd()}")
-    LOG.info(f"Output directory: {args.output_directory}")
-
-    root_directory = join(
-        args.input_directory, f"{frequencies[0]:04d}-{frequencies[1]:04d}"
-    )
-
-    LOG.info(f"Root directory: {root_directory}")
-
-    if "all" in args.semesters:
-        if args.concatenate:
-            build_concatenated_ms(args, root_directory, top_level_output_directory)
-        else:
-            tclean_from_concatenated_ms(args, frequencies, top_level_output_directory)
-
-    else:
-        for semester in SEMESTER_VALUES:
-            if len(args.semesters) == 0 or semester in args.semesters:
-                # Have we done this one?
-                working_directory = join(top_level_output_directory, semester)
-                done_file = f"{working_directory}.tar.done"
-                if exists(done_file):
-                    LOG.info(f"Skipping: {semester}")
-                    continue
-
-                # If we have the directory without the tar file, then we need to delete it
-                if exists(working_directory) and isdir(working_directory):
-                    LOG.info(f"Removing old directory: {working_directory}")
-                    shutil.rmtree(working_directory)
-
-                copy_files_and_clean(
-                    args,
-                    frequencies,
-                    root_directory,
-                    semester,
-                    args.temporary_directory,
-                    working_directory,
-                )
-
-            else:
-                LOG.info(f"Ignoring: {semester}")
-
-
-@snoop
-def copy_files_and_clean(
-    args, frequencies, root_directory, semester, temporary_directory, working_directory
-):
-    # TClean doesn't seem to work with absolute paths for the output
-    chdir(temporary_directory)
-    LOG.info(f"Current directory: {getcwd()}")
-    # Get the region files
-    region_files_location = copy_region_files(args, temporary_directory)
-    input_measurement_sets = get_uvsub_files(
-        root_directory,
-        temporary_directory,
-        semester,
-        args.count_files,
-    )
-    if len(input_measurement_sets) == 0:
-        LOG.info(f"No files found for {semester}")
-        # Remove working directory
-        if exists(working_directory):
-            shutil.rmtree(working_directory)
-        return
-
-    succeeded = do_tclean_implementation(
-        cube_dir=working_directory,
-        min_freq=frequencies[0],
-        max_freq=frequencies[1],
-        iterations=args.iterations,
-        arcsec=args.arcsec_low if frequencies[1] < args.arcsec_cutover else args.arcsec_high,
-        w_projection_planes=args.w_projection_planes,
-        clean_weighting_uv=args.clean_weighting_uv,
-        robust=args.robust,
-        image_size=args.image_size,
-        clean_channel_average=args.clean_channel_average,
-        region_file=join(region_files_location, args.region_file),
-        produce_qa=args.produce_qa,
-        temporary_directory=temporary_directory,
-        in_dirs=input_measurement_sets,
-    )
-
-    if succeeded:
-        # Tar the files
-        tar_image_files(working_directory)
-
-        # Remove working directory
-        if exists(working_directory):
-            shutil.rmtree(working_directory)
-
-
-@snoop
 def do_tclean_implementation(
     cube_dir,
     min_freq,
@@ -640,3 +339,43 @@ def do_tclean_implementation(
         ia.close()
 
     return True
+
+
+def main(tclean_args):
+    """
+    Main entry point to run the tclean implementation.
+
+    Parameters
+    ----------
+    tclean_args : list
+        A list of 13 elements:
+        [cube_dir, min_freq, max_freq, iterations, arcsec, w_projection_planes,
+         clean_weighting_uv, robust, image_size, clean_channel_average,
+         region_file, produce_qa, temporary_directory, in_dirs]
+    """
+    LOG.info("Starting CLEAN step with parameters:")
+    LOG.info(pformat(tclean_args))
+
+    do_tclean_implementation(*tclean_args)
+
+
+if __name__ == "__main__":
+    if len(sys.argv) != 15:
+        print(
+            "Usage:\n"
+            "python run_tclean_implementation.py "
+            "<cube_dir> <min_freq> <max_freq> <iterations> <arcsec> "
+            "<w_projection_planes> <clean_weighting_uv> <robust> <image_size> "
+            "<clean_channel_average> <region_file> <produce_qa> <temporary_directory> <in_dirs>\n\n"
+            "Note: Arguments should be passed as strings; lists must be stringified properly.",
+            file=sys.stderr
+        )
+        sys.exit(1)
+
+    try:
+        raw_args = sys.argv[1:]
+        tclean_args = destringify_data(raw_args)
+        main(tclean_args)
+    except Exception as e:
+        LOG.error(json.dumps({"status": "error", "message": str(e)}))
+        sys.exit(1)
