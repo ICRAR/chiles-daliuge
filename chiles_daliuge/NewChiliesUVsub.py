@@ -88,8 +88,6 @@ def copy_sky_model(sky_model_source: Union[str, bytes], temporary_directory: str
         raise ValueError(f"Invalid sky model input: {sky_model_source} is neither a .tar file nor a directory.")
 
 
-
-
 def fetch_split_ms(
         year_list: List[str],
         frequencies: List[List[int]],

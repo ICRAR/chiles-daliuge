@@ -156,6 +156,26 @@ def destringify_data_uvsub(args: list[str]) -> list:
 
     return parsed_args
 
+def destringify_concat_input(arg: str) -> tuple:
+    """
+    Parse a stringified flat list into start_freq, end_freq, file list, and output_name.
+
+    Example:
+    "['948', '952', 'file1.ms.tar', 'file2.ms.tar', 'abc.ms']"
+    → (948, 952, ['file1.ms.tar', 'file2.ms.tar'], 'abc.ms')
+    """
+    import ast
+    flat = ast.literal_eval(arg)  # returns list of strings
+    start_freq = int(flat[0])
+    end_freq = int(flat[1])
+    output_name = flat[-1]
+    files = flat[2:-1]
+    return {
+        "start_freq": start_freq,
+        "end_freq": end_freq,
+        "files": files,
+        "output_name": output_name
+    }
 
 def destringify_data(args: list[str]) -> list[str]:
     """
@@ -453,59 +473,105 @@ def trigger_db(x_in):
 
 
 
+# Setup basic logging
+logging.basicConfig(level=logging.INFO)
+LOG = logging.getLogger(__name__)
+
+def log_data(input_data):
+    """
+    Log type and content of input_data. If input_data behaves like a string, log its value.
+    """
+    try:
+        LOG.info(f"[log_data] Input type: {type(input_data).__name__}")
+    except Exception:
+        LOG.info("[log_data] Input type could not be determined")
+
+    try:
+        if isinstance(input_data, str):
+            LOG.info(f"[log_data] Input string content: {input_data}")
+        else:
+            LOG.info(f"[log_data] Input (non-str) value: {str(input_data)}")
+    except Exception as e:
+        LOG.warning(f"[log_data] Failed to stringify input_data: {e}")
+
+    # if isinstance(input_data, np.str_):
+    #     input_data = str(input_data)
+    #     LOG.info(f"[log_data] Updated input type: {type(input_data).__name__}")
+
+    return input_data
+
+
+
 def update_metadata_column(
-        db_path: str,
-        dlg_name: str,
-        year: str,
-        start_freq: str,
-        end_freq: str,
-        column_name: str,
-        column_value: str
+    db_path: str,
+    dlg_name: str,
+    year: str,
+    start_freq: str,
+    end_freq: str,
+    column_name: str,
+    column_value: str
 ) -> None:
     """
-    Update a specific column value in the metadata table for a matched row.
+    Update a single column value in the metadata table for all matching rows.
+
+    Supports wildcard '*' in dlg_name, year, start_freq, or end_freq to match multiple rows.
 
     Parameters
     ----------
-    db_path:
-        path to the database
+    db_path : str
+        Path to the SQLite metadata database.
     dlg_name : str
-        The value of the `dlg_name` field to match.
+        Value to match for `dlg_name`, or '*' to match all.
     year : str
-        The value of the `year` field to match.
+        Value to match for `year`, or '*' to match all.
     start_freq : str
-        The value of the `start_freq` field to match.
+        Value to match for `start_freq`, or '*' to match all.
     end_freq : str
-        The value of the `end_freq` field to match.
+        Value to match for `end_freq`, or '*' to match all.
     column_name : str
         The name of the column to update.
     column_value : str
         The value to insert into the specified column.
 
-    Notes
-    -----
-    - Only updates the row if an exact match is found.
-    - Raises ValueError if the column does not exist.
+    Raises
+    ------
+    ValueError
+        If the column does not exist in the metadata table.
     """
+
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
-    # Validate that the column exists
+    # Validate the column exists
     cursor.execute("PRAGMA table_info(metadata);")
     valid_columns = [row[1] for row in cursor.fetchall()]
     if column_name not in valid_columns:
         conn.close()
-        raise ValueError(f"Column {column_name} does not exist in metadata table.")
+        raise ValueError(f"Column '{column_name}' does not exist in metadata table.")
 
-    # Perform the update
-    cursor.execute(f"""
+    # Build WHERE clause
+    conditions = []
+    params = []
+    for field, value in [("dlg_name", dlg_name), ("year", year), ("start_freq", start_freq), ("end_freq", end_freq)]:
+        if value != "*":
+            conditions.append(f"{field} = ?")
+            params.append(value)
+
+    where_clause = " AND ".join(conditions) if conditions else "1=1"
+
+    # Execute update
+    sql = f"""
         UPDATE metadata
         SET {column_name} = ?
-        WHERE dlg_name = ? AND year = ? AND start_freq = ? AND end_freq = ?
-    """, (column_value, dlg_name, year, start_freq, end_freq))
+        WHERE {where_clause}
+    """
+    cursor.execute(sql, [column_value] + params)
+    updated_count = cursor.rowcount
 
     conn.commit()
     conn.close()
+
+    print(f"[INFO] Updated {updated_count} row(s) in column '{column_name}' with value '{column_value}'.")
 
 
 def remove_temp_dir(trigger_in, base_dir: str, prefix="__SKY_TEMP__"):
