@@ -11,11 +11,12 @@ import logging
 import sqlite3
 import numpy as np
 
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
 LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 process_ms_flag = True
-
 
 def fetch_original_ms(
         source_dir: str,
@@ -25,47 +26,9 @@ def fetch_original_ms(
         METADATA_DB: str,
         process_ms: bool = process_ms_flag,
 ) -> list[str]:
-    """
-    Fetches Measurement Set (.ms) directories from a remote directory structure using rclone,
-    and tracks them using metadata stored in an SQLite database.
-
-    The function navigates a remote source directory structured by year/date (e.g., /remote/2013/01/)
-    to locate .ms directories. It either creates placeholder files (if `process_ms=False`) or copies
-    the MS directories locally (if `process_ms=True`) into a destination folder using rclone.
-
-    Metadata such as hashed names, frequency information, and sizes are recorded in a persistent
-    SQLite database. Previously recorded MS entries are skipped.
-
-    Parameters
-    ----------
-    source_dir : str
-        Root remote directory containing year/date subfolders with .ms directories.
-    year_list : list of str
-        List of years to include in the search (e.g., ["2013", "2014"]).
-    copy_directory : str
-        Local destination where .ms files or placeholders will be stored.
-    trigger_in : bool
-        Currently unused; placeholder for future logic or triggering conditions.
-    METADATA_DB : str
-        Path to the SQLite database used to store and check MS metadata.
-    process_ms : bool, optional
-        If True, rclone will copy full .ms directories to `copy_directory`.
-        If False, only empty placeholder files will be created. Default is taken from `process_ms_flag`.
-
-    Returns
-    -------
-    list of str
-        List of hashed .ms names (real or placeholder) that were processed or already recorded.
-
-    Notes
-    -----
-    - Uses rclone commands (`lsf`, `copy`, `size`) to interact with the remote filesystem.
-    - Assumes MS directories have `.ms/` suffix.
-    - Avoids reprocessing MS sets that already exist in the metadata database.
-    - Logs all significant actions and errors.
-    """
-
-    # verify_db_integrity()
+    import os
+    import sqlite3
+    from subprocess import run, PIPE
 
     make_directory = True
     start_freq = "0944"
@@ -83,12 +46,13 @@ def fetch_original_ms(
 
     year_dirs = [line.strip("/") for line in result.stdout.strip().splitlines()]
 
+    copy_tasks = []
+
     for year in year_dirs:
         if year not in year_list:
             continue
 
         year_path = f"{source_dir}{year}/"
-
         result = run(["rclone", "lsf", year_path, "--dirs-only"], stdout=PIPE, stderr=PIPE, text=True)
         if result.returncode != 0:
             LOG.warning(f"Skipping {year_path}: {result.stderr}")
@@ -98,73 +62,93 @@ def fetch_original_ms(
 
         for date in date_dirs:
             date_path = f"{year_path}{date}/"
-
             result = run(["rclone", "lsf", date_path, "--dirs-only"], stdout=PIPE, stderr=PIPE, text=True)
             if result.returncode != 0:
                 LOG.warning(f"Skipping {date_path}: {result.stderr}")
                 continue
 
-            ms_dirs = [f"{date_path}{line.strip('/')}" for line in result.stdout.strip().splitlines() if
-                       line.endswith(".ms/")]
+            ms_dirs = [f"{date_path}{line.strip('/')}" for line in result.stdout.strip().splitlines() if line.endswith(".ms/")]
 
             for ms_name in ms_dirs:
                 base_name = os.path.basename(ms_name.strip("/"))
                 dlg_name = generate_hashed_ms_name(ms_name, year, start_freq, end_freq)
-                copy_path = os.path.join(copy_directory, dlg_name)
+                ms_path = os.path.join(copy_directory, dlg_name)
 
-                cursor.execute("SELECT 1 FROM metadata WHERE dlg_name = ?", (dlg_name,))
+                cursor.execute("SELECT 1 FROM metadata WHERE ms_path = ?", (ms_path,))
                 if cursor.fetchone():
-                    LOG.info(f"Skipping existing MS: {base_name}, already recorded as {dlg_name}")
-                    name_list.append(str(dlg_name))
+                    LOG.info(f"Skipping fetch of existing MS: {base_name}, already recorded as {ms_path}")
+                    name_list.append(str(ms_path))
                     continue
 
                 if make_directory:
                     os.makedirs(copy_directory, exist_ok=True)
 
-                if process_ms:
-                    LOG.info(f"Copying {ms_name} → {copy_path}")
-                    cp_result = run(["rclone", "copy", "-P", ms_name, copy_path], stdout=PIPE, stderr=PIPE, text=True)
+                LOG.info(f"Queued for copy: {ms_name} → {ms_path}")
+                copy_tasks.append({
+                    "base_name": base_name,
+                    "ms_name": ms_name,
+                    "ms_path": ms_path,
+                    "year": year,
+                    "cmd": [
+                        "rclone", "copy", ms_name, ms_path,
+                        "--progress",
+                        "--s3-disable-checksum",
+                        "--s3-chunk-size", "1024M",
+                        "--s3-upload-concurrency", "8",
+                        "--transfers", "4",
+                        "--ignore-times",
+                        "--retries", "1",
+                        "--local-no-set-modtime",
+                        "--log-level", "INFO"
+                    ]
+                })
 
-                    size = "Unknown"
+    # Execute copy tasks in parallel (max 5 at a time)
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        futures = {executor.submit(run, task["cmd"], stdout=PIPE, stderr=PIPE, text=True): task for task in copy_tasks}
+        for future in as_completed(futures):
+            task = futures[future]
+            base_name = task["base_name"]
+            ms_path = task["ms_path"]
+            year = task["year"]
 
-                    if cp_result.returncode == 0:
-                        LOG.info(f"Copied MS to: {copy_path}")
+            try:
+                cp_result = future.result()
+            except Exception as e:
+                LOG.error(f"Copy failed for {base_name}: {e}")
+                continue
 
-                        size_result = run(["rclone", "size", copy_path], stdout=PIPE, stderr=PIPE, text=True)
-                        if size_result.returncode == 0:
+            size = "Unknown"
 
-                            for line in size_result.stdout.strip().splitlines():
-                                if line.startswith("Total size:") and "(" in line:
-                                    try:
-                                        size_bytes_str = line.split("(")[-1].split()[0]  # robust extraction
-                                        size_bytes = int(size_bytes_str)
-                                        size = round(size_bytes / (1024 * 1024 * 1024), 3)  # GB
-                                        break
-                                    except ValueError:
-                                        LOG.warning(f"Could not parse size from line: {line}")
+            if cp_result.returncode == 0:
+                LOG.info(f"Copied MS to: {ms_path}")
+                size_result = run(["rclone", "size", ms_path], stdout=PIPE, stderr=PIPE, text=True)
+                if size_result.returncode == 0:
+                    for line in size_result.stdout.strip().splitlines():
+                        if line.startswith("Total size:") and "(" in line:
+                            try:
+                                size_bytes_str = line.split("(")[-1].split()[0]
+                                size_bytes = int(size_bytes_str)
+                                size = round(size_bytes / (1024 * 1024 * 1024), 3)  # GB
+                                break
+                            except ValueError:
+                                LOG.warning(f"Could not parse size from line: {line}")
 
-                        LOG.info(f"Size of copied MS: {size} GB.")
-                    else:
-                        LOG.error(f"Failed to copy {ms_name}: {cp_result.stderr}")
+                LOG.info(f"Size of copied MS: {size} GB.")
+                if size != "Unknown" and float(size) > 0:
+                    cursor.execute("""
+                        INSERT INTO metadata (ms_path, base_name, year, start_freq, end_freq, bandwidth, size)
+                        VALUES (?, ?, ?, ?, ?, ?, ?)
+                    """, (ms_path, base_name, year, start_freq, end_freq, str(bandwidth), str(size)))
+                    conn.commit()
+                    name_list.append(str(ms_path))
+            else:
+                LOG.error(f"Failed to copy {task['ms_name']}: {cp_result.stderr}")
 
-
-                else:
-                    Path(copy_path).touch()
-                    size = "0"
-                    LOG.info(f"Created placeholder for MS: {copy_path}")
-
-                cursor.execute("""
-                    INSERT INTO metadata (dir_path, dlg_name, base_name, year, start_freq, end_freq, bandwidth, size)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                """, (copy_directory, dlg_name, base_name, year, start_freq, end_freq, str(bandwidth), str(size)))
-                conn.commit()
-
-                name_list.append(str(dlg_name))
-
-    # Export database table to CSV
-    #export_metadata_to_csv(METADATA_DB, METADATA_CSV)
+    conn.close()
     LOG.info(f"Complete fetch_original_ms list: {name_list}")
     return name_list
+
 
 def split_ms_list(ms_list: list[str], parallel_processes: int) -> list[list[str]]:
     """
@@ -244,7 +228,7 @@ def split_out_frequencies(
 
     for ms_in in ms_in_list:
         # Fetch year and base_name from DB
-        cursor.execute("SELECT year, base_name FROM metadata WHERE dlg_name = ?", (ms_in,))
+        cursor.execute("SELECT year, base_name FROM metadata WHERE ms_path = ?", (ms_in,))
         row = cursor.fetchone()
 
         if row:
@@ -263,23 +247,24 @@ def split_out_frequencies(
                 end_freq=str(freq_end)
             )
 
-            outfile_name_tar = f"{outfile_name}.tar"
-            outfile = os.path.join(output_directory, outfile_name)
+
+            outfile_path = os.path.join(output_directory, outfile_name)
+            outfile_tar_path = f"{outfile_path}.tar"
 
             ms_in_path = os.path.join(output_directory, ms_in)
             # Check if already exists in DB
 
-            cursor.execute("SELECT 1 FROM metadata WHERE dlg_name = ?", (outfile_name_tar,))
+            cursor.execute("SELECT 1 FROM metadata WHERE ms_path = ?", (outfile_tar_path,))
             if cursor.fetchone():
-                LOG.info(f"Skipping {outfile_name_tar}, already in metadata DB.")
+                LOG.info(f"Skipping {outfile_path}, already in metadata DB.")
 
             else:
-                transform_data = [ms_in_path, outfile, output_directory, outfile_name_tar, base_name,
+                transform_data = [ms_in_path, base_name, outfile_path, outfile_tar_path,
                                   str(year), str(freq_start), str(freq_end)]
 
                 transform_data_string = stringify_data(transform_data)
                 transform_data_all.append(transform_data_string)
-                LOG.info(f"Queueing {outfile_name_tar} for processing.")
+                LOG.info(f"Queueing {outfile_tar_path} for processing.")
 
 
     conn.close()
@@ -329,7 +314,7 @@ def ensure_list_then_destringify(arg_or_list) -> list[str]:
         raise TypeError("Expected str or list[str] for transform_data")
 
 
-def insert_metadata_from_transform(transform_data: str, METADATA_DB: str) -> None:
+def update_db_after_transform(transform_data: str, db_path: str) -> None:
     """
     Parses transformation metadata and inserts it into a SQLite database.
 
@@ -344,16 +329,15 @@ def insert_metadata_from_transform(transform_data: str, METADATA_DB: str) -> Non
         A stringified Python-style list with exactly 8 elements:
         [
             ms_in_path (str),
-            outfile (str),
-            output_directory (str),
-            outfile_name_tar (str),
             base_name (str),
+            outfile_path (str),
+            outfile_name_tar (str),
             year (str or int),
             freq_start (str or int),
             freq_end (str or int)
         ]
 
-    METADATA_DB : str
+    db_path : str
         Path to the SQLite metadata database file.
 
     Raises
@@ -373,37 +357,47 @@ def insert_metadata_from_transform(transform_data: str, METADATA_DB: str) -> Non
     try:
         # Safely evaluate the string into a Python list
         data_list = ensure_list_then_destringify(transform_data)
-        if not isinstance(data_list, list) or len(data_list) != 8:
-            raise ValueError("transform_data must be a list of 8 elements")
+        if not isinstance(data_list, list) or len(data_list) != 7:
+            raise ValueError("transform_data must be a list of 7 elements")
     except Exception as e:
         raise ValueError(f"Invalid transform_data format: {e}")
 
     LOG.info(f"transform_data after destringing: {data_list}")
 
     (
-        ms_in_path, outfile, output_directory,
-        outfile_name_tar, base_name, year, freq_start, freq_end
+        ms_in_path, base_name, outfile_path, outfile_tar_path, year, freq_start, freq_end
     ) = data_list
 
-    outfile_tar = os.path.join(output_directory, outfile_name_tar)
-    size_bytes = os.path.getsize(outfile_tar) if os.path.exists(outfile_tar) else 0
+    size_bytes = os.path.getsize(outfile_tar_path) if os.path.exists(outfile_tar_path) else 0
     size = round(float(size_bytes / (1024 * 1024 * 1024)), 3)
     bandwidth = int(freq_end) - int(freq_start)
 
-    conn = sqlite3.connect(METADATA_DB)
+    if size <= 0:
+        size = -1
+        LOG.warning(f"{outfile_tar_path} is not a valid MS. ")
+        try:
+            os.makedirs(os.path.dirname(outfile_tar_path), exist_ok=True)
+            with open(outfile_tar_path, "w"):
+                pass  # equivalent to touch
+        except Exception as e:
+            LOG.error(f"Failed to create dummy file at {outfile_tar_path}: {e}")
+
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     cursor.execute("""
         INSERT INTO metadata (
-            dir_path, dlg_name, base_name, year,
+            ms_path, base_name, year,
             start_freq, end_freq, bandwidth, size
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)
     """, (
-        output_directory, outfile_name_tar, base_name, year,
+        outfile_tar_path, base_name, year,
         freq_start, freq_end, bandwidth, size
     ))
     conn.commit()
     conn.close()
 
-    LOG.info(f"Appended {outfile_name_tar} to metadata DB.")
+    LOG.info(f"Appended {outfile_tar_path} to metadata DB.")
+
+
 
 

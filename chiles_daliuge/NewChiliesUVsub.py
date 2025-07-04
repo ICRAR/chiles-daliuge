@@ -95,11 +95,11 @@ def fetch_split_ms(
         trigger_in: bool,
 ) -> List[str]:
     """
-    Retrieve `dlg_name` entries from a metadata SQLite database matching specified years and frequency ranges.
+    Retrieve `ms_path` entries from a metadata SQLite database matching specified years and frequency ranges.
 
     This function queries the `metadata` table to find measurement sets whose `year` matches any
     value in `year_list` and whose `[start_freq, end_freq]` pair matches any tuple in `frequencies`.
-    The result is a list of formatted strings with dlg_name and associated metadata.
+    The result is a list of formatted strings with ms_path and associated metadata.
 
     Parameters
     ----------
@@ -116,12 +116,12 @@ def fetch_split_ms(
     -------
     list of str
         List of matching entries formatted as:
-        "dlg_name;year;start_freq;end_freq"
+        "ms_path;year;start_freq;end_freq"
     """
     freq_set = {tuple(freq_pair) for freq_pair in frequencies}
 
     query = """
-        SELECT dlg_name, year, start_freq, end_freq FROM metadata
+        SELECT ms_path, year, start_freq, end_freq FROM metadata
     """
 
     matching_dlg_names = []
@@ -129,19 +129,19 @@ def fetch_split_ms(
     with sqlite3.connect(db_path) as conn:
         cursor = conn.cursor()
         for row in cursor.execute(query):
-            dlg_name, year, start_freq, end_freq = row
-            # print(f"\nChecking row: dlg_name={dlg_name}, year={year}, start_freq={start_freq}, end_freq={end_freq}")
+            ms_path, year, start_freq, end_freq = row
+            # print(f"\nChecking row: ms_path={ms_path}, year={year}, start_freq={start_freq}, end_freq={end_freq}")
 
             freq_tuple = (int(start_freq), int(end_freq))  # ✅ convert to int
 
             if year in year_list and freq_tuple in freq_set:
-                # print(f"  → Appending: {dlg_name}")
-                matching_dlg_names.append(f"{dlg_name};{year};{freq_tuple[0]};{freq_tuple[1]}")
+                # print(f"  → Appending: {ms_path}")
+                matching_dlg_names.append(f"{ms_path};{year};{freq_tuple[0]};{freq_tuple[1]}")
 
     return matching_dlg_names
 
 
-def do_uvsub(names_list, source_dir, sky_model_tar_file,
+def do_uvsub(names_list, save_dir, sky_model_tar_file,
              taylor_terms, outliers, channel_average, produce_qa, w_projection_planes, METADATA_DB):
     """
     Prepares data for UV subtraction by checking for existing processed entries,
@@ -151,8 +151,8 @@ def do_uvsub(names_list, source_dir, sky_model_tar_file,
     ----------
     names_list : list of str
         List of semicolon-separated strings of the form "split_name;year;freq_start;freq_end".
-    source_dir : str
-        Path to the directory containing the source tar files.
+    save_dir : str
+        Path to the directory to save tar files.
     sky_model_tar_file : str
         Path to the tar file containing the sky model to be used.
     taylor_terms : list of str
@@ -175,18 +175,18 @@ def do_uvsub(names_list, source_dir, sky_model_tar_file,
         excluding any already present in the metadata database.
     """
     sky_model_location = None
-    add_column_if_missing(METADATA_DB, "uv_sub_name")
+    add_column_if_missing(METADATA_DB, "uv_sub_path")
 
     uvsub_data_all = []
 
-    temporary_sky_model = tempfile.mkdtemp(dir=source_dir, prefix="__SKY_TEMP__")
+    temporary_sky_model = tempfile.mkdtemp(dir=save_dir, prefix="__SKY_TEMP__")
     if sky_model_location is None:
         sky_model_location = copy_sky_model(sky_model_tar_file, temporary_sky_model)
 
     conn = sqlite3.connect(METADATA_DB)
 
     for name in names_list:
-        split_name, year, freq_st, freq_en = name.split(";")
+        tar_file_split, year, freq_st, freq_en = name.split(";")
         freq_start = int(freq_st)
         freq_end = int(freq_en)
 
@@ -194,26 +194,28 @@ def do_uvsub(names_list, source_dir, sky_model_tar_file,
         LOG.info("#" * 60)
         LOG.info(f"Processing: {name}")
 
-        tar_file_split = join(
-            source_dir, split_name
-        )
+        #tar_file_split = join(
+        #    source_dir, split_name
+        #)
         LOG.info(f"Checking: {tar_file_split}")
 
         uv_sub_name = generate_hashed_ms_name(str(tar_file_split), year, str(freq_start), str(freq_end))
-
-        LOG.info(f"uv_sub_name: {uv_sub_name}")
-        uv_sub_tar = f"{uv_sub_name}.tar"
-        LOG.info(f"uv_sub_tar: {uv_sub_tar}")
+        uv_sub_path = join(
+            save_dir, uv_sub_name
+        )
+        LOG.info(f"uv_sub_path: {uv_sub_path}")
+        uv_sub_tar_path = f"{uv_sub_path}.tar"
+        LOG.info(f"uv_sub_tar_path: {uv_sub_tar_path}")
         cursor = conn.cursor()
-        cursor.execute("SELECT 1 FROM metadata WHERE uv_sub_name = ?", (uv_sub_tar,))
+        cursor.execute("SELECT 1 FROM metadata WHERE uv_sub_path = ?", (uv_sub_tar_path,))
         if cursor.fetchone():
-            LOG.info(f"Skipping {uv_sub_tar}, already in metadata DB.")
+            LOG.info(f"Skipping {uv_sub_tar_path}, already in metadata DB.")
             continue
 
         combined_data = [
             taylor_terms, outliers, channel_average, produce_qa, w_projection_planes,
-            source_dir, sky_model_location,
-            split_name, year, freq_st, freq_en, uv_sub_name, METADATA_DB
+            sky_model_location,
+            tar_file_split, year, freq_st, freq_en, uv_sub_path, METADATA_DB
         ]
 
         uvsub_data_all.append(stringify_data(combined_data))

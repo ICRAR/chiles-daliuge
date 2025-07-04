@@ -30,9 +30,8 @@ def do_ms_transform(transform_data: List[str]) -> None:
     Parameters
     ----------
     transform_data : list of str
-        List containing the following 8 elements:
-        [ms_in_path, outfile_ms, output_directory, outfile_name_tar,
-         base_name, year, freq_start, freq_end]
+        List containing the following 6 elements:
+        [ms_in_path, base_name, outfile_path, outfile_tar_path, year, freq_start, freq_end]
 
     Returns
     -------
@@ -47,17 +46,16 @@ def do_ms_transform(transform_data: List[str]) -> None:
     """
 
     (
-        ms_in, outfile_ms, output_directory,
-        outfile_name_tar, base_name, year, freq_start, freq_end
+        ms_in_path, base_name, outfile_path, outfile_tar_path, year, freq_start, freq_end
     ) = transform_data
 
     CHANNEL_WIDTH = 15625.0  # Hz
 
-    LOG.info(f"Working on: {outfile_ms} with freq {freq_start} and {freq_end}.")
+    LOG.info(f"Working on: {outfile_path} with freq {freq_start} and {freq_end}.")
 
     im = imager()
     # LOG.info(f"ms_in_path: {ms_in}")
-    im.selectvis(vis=ms_in)
+    im.selectvis(vis=ms_in_path)
     selinfo = im.advisechansel(
         freqstart=int(freq_start) * 1e6,
         freqend=int(freq_end) * 1e6,
@@ -83,20 +81,20 @@ def do_ms_transform(transform_data: List[str]) -> None:
 
     if len(spw_range):
         for suffix in ["", ".tmp", ".tar"]:
-            path = f"{outfile_ms}{suffix}"
+            path = f"{outfile_path}{suffix}"
             if os.path.exists(path):
                 LOG.info(f"Removing: {path}")
-                remove_file_or_directory(path)
+                remove_file_or_directory(path, trigger=True)
 
-        LOG.info(f"ms_in: {ms_in}")
-        LOG.info(f"outfile_ms: {outfile_ms}")
+        LOG.info(f"ms_in: {ms_in_path}")
+        LOG.info(f"outfile_ms: {outfile_path}")
         LOG.info(f"spw_range: {spw_range}")
 
         if len(spw_range.split(",")) == 1:
             # Single spectral window
             mstransform(
-                vis=ms_in,
-                outputvis=outfile_ms,
+                vis=ms_in_path,
+                outputvis=outfile_path,
                 regridms=True,
                 restfreq="1420.405752MHz",
                 mode="channel",
@@ -114,7 +112,7 @@ def do_ms_transform(transform_data: List[str]) -> None:
         else:
             # Multi-SPW
             tmp_spws = [entry.split(":")[0] for entry in spw_range.split(",")]
-            outfile_tmp = outfile_ms.replace(".ms", ".ms.tmp")
+            outfile_tmp = outfile_path.replace(".ms", ".ms.tmp")
             LOG.info(f"outfile_tmp: {outfile_tmp}")
 
             if os.path.exists(outfile_tmp):
@@ -122,7 +120,7 @@ def do_ms_transform(transform_data: List[str]) -> None:
 
             # Step 1: combine SPWs
             mstransform(
-                vis=ms_in,
+                vis=ms_in_path,
                 outputvis=outfile_tmp,
                 regridms=True,
                 restfreq="1420.405752MHz",
@@ -147,7 +145,7 @@ def do_ms_transform(transform_data: List[str]) -> None:
 
             mstransform(
                 vis=outfile_tmp,
-                outputvis=outfile_ms,
+                outputvis=outfile_path,
                 regridms=True,
                 restfreq="1420.405752MHz",
                 mode="channel",
@@ -167,18 +165,18 @@ def do_ms_transform(transform_data: List[str]) -> None:
 
         # Log SPW info
         ms_ = ms()
-        ms_.open(thems=outfile_ms)
+        ms_.open(thems=outfile_path)
         LOG.info(
-            f"Created File: {outfile_ms}\n"
+            f"Created File: {outfile_path}\n"
             f"Spectral Window Range: {spw_range}\n"
             f"Spectral Window Info: {pformat(ms_.getspectralwindowinfo(), indent=2)}\n"
         )
         ms_.close()
 
         # Archive output
-        create_tar_file(outfile_ms, suffix="tmp")
-        os.rename(f"{outfile_ms}.tar.tmp", f"{outfile_ms}.tar")
-        LOG.info(f"Created final file {outfile_ms}.tar from {outfile_ms}.tar.tmp")
+        create_tar_file(outfile_path, suffix="tmp")
+        os.rename(f"{outfile_tar_path}.tmp", f"{outfile_tar_path}")
+        LOG.info(f"Created final file {outfile_tar_path} from {outfile_tar_path}.tmp")
     else:
         LOG.warning("*********\nmstransform spw out of range:\n***********")
 
@@ -193,9 +191,8 @@ def main(transform_data: list) -> None:
     Parameters
     ----------
     transform_data : list
-        A list of 9 elements containing:
-        [ms_in, outfile_ms, spw_range, output_directory, outfile_name_tar,
-         base_name, year, freq_start, freq_end]
+        A list of 7 elements containing:
+        [ms_in_path, base_name, outfile_path, outfile_tar_path, year, freq_start, freq_end]
     """
     LOG.info(f"transform_data: {transform_data}")
     do_ms_transform(transform_data)
@@ -203,9 +200,9 @@ def main(transform_data: list) -> None:
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 9:
+    if len(sys.argv) != 8:
         print(
-            "Usage: python run_ms_transform.py <ms_in> <ms_out> <out_dir> <tar_name> <base_name> <year> <freq_start> <freq_end>",
+            "Usage: python run_ms_transform.py <ms_in_path> <base_name> <outfile_path> <outfile_tar_path> <year> <freq_start> <freq_end>",
             file=sys.stderr)
         sys.exit(1)
 

@@ -267,105 +267,81 @@ def remove_file_or_directory(filename: str, trigger) -> None:
     else:
         LOG.info(f"[{trigger}] Nothing to remove, path does not exist: {filename}")
 
-
-def verify_db_integrity(db_path: str, trigger_in: bool) -> bool:
+def verify_db_integrity(db_path: str, trigger_in: bool) -> bool: # , trigger_in: bool
     """
     Verify that all file references in the metadata SQLite database exist on disk,
     and clean up invalid or missing references accordingly.
 
-    This function performs the following actions:
-    - If `trigger_in` is False, the function exits early without performing any checks.
-    - For each row in the `metadata` table:
-        - If no referenced files (in `dlg_name` or any dynamic column after `size`) exist on disk,
-          the row is deleted.
-        - If only some files are missing, the corresponding column(s) are cleared (set to NULL).
+    This verifies the 'ms_path' and all dynamic columns (those not fixed).
 
     Parameters
     ----------
     db_path : str
         Path to the SQLite metadata database file.
     trigger_in : bool
-        If True, triggers the integrity check. If False, the function exits immediately.
+        If True, perform integrity check. If False, skip.
 
     Returns
     -------
     bool
-        True if the database was verified (i.e., `trigger_in` was True and the check completed).
-        False otherwise (e.g., if the database file does not exist or `trigger_in` is False).
-
-    Notes
-    -----
-    - Fixed columns (`dir_path`, `dlg_name`, `base_name`, `year`, `start_freq`, `end_freq`, `bandwidth`, `size`)
-      are never cleared.
-    - All other columns are treated as dynamic file references and are individually validated.
-    - Uses `rowid` to identify and modify/delete rows.
-    - Changes are committed in-place and logged.
+        True if check was performed and completed successfully.
     """
+    if not os.path.exists(db_path):
+        LOG.warning(f"[VERIFY] Metadata DB not found at {db_path}. Skipping integrity check.")
+        return False
 
-    verified = False
-    if trigger_in:
-        if not os.path.exists(db_path):
-            LOG.warning(f"Metadata database not found at {db_path}. Skipping integrity check.")
-            return False
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
 
-        conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
+    # Get all columns
+    cursor.execute("PRAGMA table_info(metadata);")
+    all_columns = [col[1] for col in cursor.fetchall()]
 
-        # Get all columns in order
-        cursor.execute("PRAGMA table_info(metadata);")
-        columns = [col[1] for col in cursor.fetchall()]
+    # Columns not to be touched
+    fixed_columns = ["ms_path", "base_name", "year", "start_freq", "end_freq", "bandwidth", "size"]
+    dynamic_columns = [col for col in all_columns if col not in fixed_columns]
 
-        # Identify fixed + dynamic columns
-        fixed_columns = ["dir_path", "dlg_name", "base_name", "year", "start_freq", "end_freq", "bandwidth", "size"]
-        dynamic_columns = [col for col in columns if col not in fixed_columns]
+    # Select needed fields
+    select_cols = ["rowid", "ms_path"] + dynamic_columns
+    cursor.execute(f"SELECT {', '.join(select_cols)} FROM metadata")
+    rows = cursor.fetchall()
 
-        # Fetch all rows
-        select_cols = ["rowid", "dir_path", "dlg_name"] + dynamic_columns
-        query = f"SELECT {', '.join(select_cols)} FROM metadata"
-        cursor.execute(query)
+    for row in rows:
+        rowid = row[0]
+        ms_path = row[1]
+        dynamic_values = dict(zip(dynamic_columns, row[2:]))
 
-        rows = cursor.fetchall()
+        existing_refs = []
+        missing_fields = []
 
-        for row in rows:
-            rowid = row[0]
-            dir_path = row[1]
-            dlg_name = row[2]
-            dynamic_values = dict(zip(dynamic_columns, row[3:]))
+        # Check ms_path
+        if ms_path and os.path.exists(ms_path.strip()):
+            existing_refs.append(ms_path)
+        else:
+            LOG.debug(f"[VERIFY] ms_path missing in row {rowid}")
 
-            existing_files = []
-
-            # Check dlg_name
-            dlg_path = os.path.join(dir_path, dlg_name)
-            if os.path.exists(dlg_path):
-                existing_files.append(dlg_name)
-
-            # Check dynamic fields
-            missing_fields = []
-            for col, val in dynamic_values.items():
-                if val is None or val.strip() == "":
-                    continue
-                full_path = os.path.join(dir_path, val)
-                if os.path.exists(full_path):
-                    existing_files.append(val)
-                else:
-                    missing_fields.append(col)
-
-            if not existing_files:
-                # No valid files → delete entire row
-                cursor.execute("DELETE FROM metadata WHERE rowid = ?", (rowid,))
-                LOG.info(f"Deleted row {rowid}: no existing files found.")
+        # Check dynamic fields
+        for col, val in dynamic_values.items():
+            if not val or not val.strip():
+                continue
+            path = val.strip()
+            if os.path.exists(path):
+                existing_refs.append(path)
             else:
-                # Clear individual missing fields
-                for col in missing_fields:
-                    cursor.execute(f"UPDATE metadata SET {col} = NULL WHERE rowid = ?", (rowid,))
-                    LOG.info(f"Cleared column {col} in row {rowid}: file not found.")
+                missing_fields.append(col)
 
-        conn.commit()
-        conn.close()
-        LOG.info("Database integrity check completed.")
-        verified = True
+        if not existing_refs:
+            cursor.execute("DELETE FROM metadata WHERE rowid = ?", (rowid,))
+            LOG.info(f"[DELETE] Row {rowid} removed: all file references missing.")
+        else:
+            for col in missing_fields:
+                cursor.execute(f"UPDATE metadata SET {col} = NULL WHERE rowid = ?", (rowid,))
+                LOG.info(f"[CLEAN] Cleared column '{col}' in row {rowid}: file not found.")
 
-    return verified
+    conn.commit()
+    conn.close()
+    LOG.info("[VERIFY] Metadata DB integrity check complete.")
+    return True
 
 
 def export_metadata_to_csv(db_path: str, csv_path: str, trigger_in: bool) -> None:
@@ -504,7 +480,7 @@ def log_data(input_data):
 
 def update_metadata_column(
     db_path: str,
-    dlg_name: str,
+    ms_path: str,
     year: str,
     start_freq: str,
     end_freq: str,
@@ -514,14 +490,14 @@ def update_metadata_column(
     """
     Update a single column value in the metadata table for all matching rows.
 
-    Supports wildcard '*' in dlg_name, year, start_freq, or end_freq to match multiple rows.
+    Supports wildcard '*' in ms_path, year, start_freq, or end_freq to match multiple rows.
 
     Parameters
     ----------
     db_path : str
         Path to the SQLite metadata database.
-    dlg_name : str
-        Value to match for `dlg_name`, or '*' to match all.
+    ms_path : str
+        Value to match for `ms_path`, or '*' to match all.
     year : str
         Value to match for `year`, or '*' to match all.
     start_freq : str
@@ -552,7 +528,7 @@ def update_metadata_column(
     # Build WHERE clause
     conditions = []
     params = []
-    for field, value in [("dlg_name", dlg_name), ("year", year), ("start_freq", start_freq), ("end_freq", end_freq)]:
+    for field, value in [("ms_path", ms_path), ("year", year), ("start_freq", start_freq), ("end_freq", end_freq)]:
         if value != "*":
             conditions.append(f"{field} = ?")
             params.append(value)
@@ -758,8 +734,7 @@ def initialize_metadata_environment(db_path: str) -> bool:
     cursor = conn.cursor()
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS metadata (
-            dir_path TEXT,
-            dlg_name TEXT PRIMARY KEY,
+            ms_path TEXT PRIMARY KEY,
             base_name TEXT,
             year TEXT,
             start_freq TEXT,
