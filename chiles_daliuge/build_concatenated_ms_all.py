@@ -60,10 +60,12 @@ def sanitize_broken_dict_str(s: str) -> dict:
 
 
 # --- Main logic ---
-def build_concatenated_ms_all(data: dict, source_dir: str, db_path: str):
+def build_concatenated_ms_all(data: dict, output_directory: str, db_path: str):
     # Validate input keys
     required_keys = {"start_freq", "end_freq", "files", "output_name"}
     missing = required_keys - data.keys()
+
+
     if missing:
         raise ValueError(f"Missing required keys in input: {missing}")
 
@@ -73,28 +75,29 @@ def build_concatenated_ms_all(data: dict, source_dir: str, db_path: str):
     output_name = data["output_name"]
 
     # Create temp directory
-    with tempfile.TemporaryDirectory(dir=source_dir, prefix="concat_tmp_") as temporary_directory:
+    with tempfile.TemporaryDirectory(dir=output_directory, prefix="concat_tmp_") as temporary_directory:
         LOG.info(f"Created temp directory: {temporary_directory}")
         input_measurement_sets = []
 
+
+
+        # Build output paths
+        combine_file_build = join(output_directory, f"{output_name}.building")
+        combine_file_final = join(output_directory, output_name)
+
+        # Skip if already built
+        if exists(combine_file_final):
+            LOG.info(f"{combine_file_final} already exists, skipping.")
+            return
+
         # Untar all files
-        for tar_file in files:
-            tar_path = join(source_dir, tar_file)
+        for tar_path in files:
             if not exists(tar_path):
                 raise FileNotFoundError(f"Missing file: {tar_path}")
 
             untar_file(tar_path, temporary_directory, gz=False)
-            ms_path = join(temporary_directory, basename(tar_file)[:-4])
+            ms_path = join(temporary_directory, basename(tar_path)[:-4])
             input_measurement_sets.append(ms_path)
-
-        # Build output paths
-        combine_file_build = join(source_dir, f"{output_name}.building")
-        combine_file_final = join(source_dir, output_name)
-
-        # Skip if already built
-        if exists(combine_file_final):
-            LOG.info(f"{combine_file_final} already exists — skipping.")
-            return
 
         # Remove old .building dir if exists
         if exists(combine_file_build):
@@ -108,7 +111,7 @@ def build_concatenated_ms_all(data: dict, source_dir: str, db_path: str):
         if exists(combine_file_build):
             shutil.move(combine_file_build, combine_file_final)
             LOG.info(f"Build complete: {combine_file_final}")
-            update_metadata_column(db_path, "*", "*", str(start_freq), str(end_freq), "build_concat_all", output_name)
+            update_metadata_column(db_path, "uv_sub_path", "*", "*", str(start_freq), str(end_freq), "build_concat_all", combine_file_final)
         else:
             raise RuntimeError("Concat failed — build file not created.")
 
@@ -118,22 +121,25 @@ def main():
         LOG.info(f"[RAW ARGS] {raw_args}")
 
         if len(raw_args) < 3:
-            print("Usage: python build_concatenated_ms_all.py <stringified_list> <source_dir> <db_path>")
+            print("Usage: python build_concatenated_ms_all.py <stringified_list> <output_directory> <db_path>")
             sys.exit(1)
 
         # Extract paths from the end
-        source_dir = raw_args[-2]
+        output_directory = raw_args[-2]
         db_path = raw_args[-1]
         arg_str = " ".join(raw_args[:-2])  # join list parts
 
-        LOG.info(f"[ARGS] source_dir: {source_dir}")
+        LOG.info(f"[ARGS] output_directory: {output_directory}")
         LOG.info(f"[ARGS] db_path: {db_path}")
         LOG.info(f"[ARGS] input_str: {arg_str}")
 
+        os.makedirs(output_directory, exist_ok=True)
+
         # Validate paths
-        if not os.path.isdir(source_dir):
-            LOG.error(f"Invalid source_dir: {source_dir}")
+        if not os.path.isdir(output_directory):
+            LOG.error(f"Invalid output_directory: {output_directory}")
             sys.exit(1)
+
         if not os.path.isfile(db_path):
             LOG.error(f"Invalid db_path: {db_path}")
             sys.exit(1)
@@ -159,7 +165,7 @@ def main():
             "output_name": output_name
         }
 
-        build_concatenated_ms_all(data, source_dir, db_path)
+        build_concatenated_ms_all(data, output_directory, db_path)
 
     except Exception as e:
         LOG.exception("Failed to run build job")

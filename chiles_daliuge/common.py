@@ -477,10 +477,12 @@ def log_data(input_data):
     return input_data
 
 
+import sqlite3
 
 def update_metadata_column(
     db_path: str,
-    ms_path: str,
+    match_column: str,
+    match_value: str,
     year: str,
     start_freq: str,
     end_freq: str,
@@ -490,14 +492,16 @@ def update_metadata_column(
     """
     Update a single column value in the metadata table for all matching rows.
 
-    Supports wildcard '*' in ms_path, year, start_freq, or end_freq to match multiple rows.
+    Supports wildcard '*' in match_value, year, start_freq, or end_freq to match multiple rows.
 
     Parameters
     ----------
     db_path : str
         Path to the SQLite metadata database.
-    ms_path : str
-        Value to match for `ms_path`, or '*' to match all.
+    match_column : str
+        Name of the column to match (e.g., "ms_path", "base_name", etc.).
+    match_value : str
+        Value to match in match_column, or '*' to match all.
     year : str
         Value to match for `year`, or '*' to match all.
     start_freq : str
@@ -512,30 +516,38 @@ def update_metadata_column(
     Raises
     ------
     ValueError
-        If the column does not exist in the metadata table.
+        If the target or match column does not exist in the metadata table.
     """
 
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
-    # Validate the column exists
+    # Validate column names
     cursor.execute("PRAGMA table_info(metadata);")
     valid_columns = [row[1] for row in cursor.fetchall()]
     if column_name not in valid_columns:
         conn.close()
         raise ValueError(f"Column '{column_name}' does not exist in metadata table.")
+    if match_column not in valid_columns:
+        conn.close()
+        raise ValueError(f"Match column '{match_column}' does not exist in metadata table.")
 
-    # Build WHERE clause
+    # Build WHERE clause dynamically
     conditions = []
     params = []
-    for field, value in [("ms_path", ms_path), ("year", year), ("start_freq", start_freq), ("end_freq", end_freq)]:
+
+    if match_value != "*":
+        conditions.append(f"{match_column} = ?")
+        params.append(match_value)
+
+    for field, value in [("year", year), ("start_freq", start_freq), ("end_freq", end_freq)]:
         if value != "*":
             conditions.append(f"{field} = ?")
             params.append(value)
 
     where_clause = " AND ".join(conditions) if conditions else "1=1"
 
-    # Execute update
+    # Perform the update
     sql = f"""
         UPDATE metadata
         SET {column_name} = ?
@@ -548,6 +560,7 @@ def update_metadata_column(
     conn.close()
 
     print(f"[INFO] Updated {updated_count} row(s) in column '{column_name}' with value '{column_value}'.")
+
 
 
 def remove_temp_dir(trigger_in, base_dir: str, prefix="__SKY_TEMP__"):

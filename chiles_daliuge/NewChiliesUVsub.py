@@ -119,9 +119,8 @@ def fetch_split_ms(
         "ms_path;year;start_freq;end_freq"
     """
     freq_set = {tuple(freq_pair) for freq_pair in frequencies}
-
     query = """
-        SELECT ms_path, year, start_freq, end_freq FROM metadata
+        SELECT ms_path, year, start_freq, end_freq, size FROM metadata
     """
 
     matching_dlg_names = []
@@ -129,14 +128,20 @@ def fetch_split_ms(
     with sqlite3.connect(db_path) as conn:
         cursor = conn.cursor()
         for row in cursor.execute(query):
-            ms_path, year, start_freq, end_freq = row
+            ms_path, year, start_freq, end_freq , size = row
             # print(f"\nChecking row: ms_path={ms_path}, year={year}, start_freq={start_freq}, end_freq={end_freq}")
 
-            freq_tuple = (int(start_freq), int(end_freq))  # ✅ convert to int
+            if float(size) > 0:
+                freq_tuple = (int(start_freq), int(end_freq))  # ✅ convert to int
 
-            if year in year_list and freq_tuple in freq_set:
-                # print(f"  → Appending: {ms_path}")
-                matching_dlg_names.append(f"{ms_path};{year};{freq_tuple[0]};{freq_tuple[1]}")
+                if year in year_list and freq_tuple in freq_set:
+                    # print(f"  → Appending: {ms_path}")
+                    matching_dlg_names.append(f"{ms_path};{year};{freq_tuple[0]};{freq_tuple[1]}")
+            else:
+                LOG.warning(f"Measurement Set with following details is not valid, ignoring it for uvsub list. {ms_path}, {year}, {start_freq}, {end_freq}")
+
+    LOG.info(f"Adding 'uv_sub_path' column to DB.")
+    add_column_if_missing(db_path, "uv_sub_path")
 
     return matching_dlg_names
 
@@ -174,8 +179,11 @@ def do_uvsub(names_list, save_dir, sky_model_tar_file,
         Array of stringified configuration entries for UV subtraction tasks,
         excluding any already present in the metadata database.
     """
+
+    os.makedirs(save_dir, exist_ok=True)
+
     sky_model_location = None
-    add_column_if_missing(METADATA_DB, "uv_sub_path")
+
 
     uvsub_data_all = []
 

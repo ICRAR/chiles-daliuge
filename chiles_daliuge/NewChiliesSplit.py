@@ -214,13 +214,12 @@ def split_out_frequencies(
         METADATA_DB: str,
         process_ms: bool = process_ms_flag
 ) -> ndarray:
-    """
 
-    """
-
+    os.makedirs(output_directory, exist_ok=True)
     LOG.info("#" * 60)
     LOG.info("#" * 60)
     LOG.info(f"Frequencies: {frequencies}")
+
 
     conn = sqlite3.connect(METADATA_DB)
     cursor = conn.cursor()

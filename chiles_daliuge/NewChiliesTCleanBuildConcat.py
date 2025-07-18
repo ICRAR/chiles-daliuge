@@ -52,7 +52,9 @@ def fetch_uvsub_ms(
     freq_set = {tuple(freq_pair) for freq_pair in frequencies}
 
     query = """
-        SELECT uv_sub_name, year, start_freq, end_freq FROM metadata
+        SELECT uv_sub_path, year, start_freq, end_freq 
+        FROM metadata
+        WHERE uv_sub_path IS NOT NULL AND TRIM(uv_sub_path) != ''
     """
 
     matching_uv_sub_names = []
@@ -60,14 +62,14 @@ def fetch_uvsub_ms(
     with sqlite3.connect(db_path) as conn:
         cursor = conn.cursor()
         for row in cursor.execute(query):
-            uv_sub_name, year, start_freq, end_freq = row
+            uv_sub_path, year, start_freq, end_freq = row
             # print(f"\nChecking row: dlg_name={dlg_name}, year={year}, start_freq={start_freq}, end_freq={end_freq}")
 
             freq_tuple = (int(start_freq), int(end_freq))  # ✅ convert to int
 
             if year in year_list and freq_tuple in freq_set:
                 # print(f"  → Appending: {dlg_name}")
-                matching_uv_sub_names.append(f"{uv_sub_name};{year};{freq_tuple[0]};{freq_tuple[1]}")
+                matching_uv_sub_names.append(f"{uv_sub_path};{year};{freq_tuple[0]};{freq_tuple[1]}")
 
     LOG.info(f"matching_uv_sub_names: {matching_uv_sub_names}")
     return matching_uv_sub_names

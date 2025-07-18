@@ -129,9 +129,10 @@ def rejig_paths(taylor_terms: List[str],
 
 def do_single_uvsub(
         taylor_terms, outliers, channel_average, produce_qa, w_projection_planes,
-        source_dir, sky_model_location,
-        split_name, year, freq_st, freq_en, uv_sub_name, METADATA_DB
+        sky_model_location,
+        tar_file_split, year, freq_st, freq_en, uv_sub_path, METADATA_DB
 ):
+
     """
     Performs UV subtraction on a single measurement set using in-beam and outlier models.
 
@@ -185,31 +186,28 @@ def do_single_uvsub(
     - The function also flags baselines with nearly zero `u` values to reduce contamination.
     - QA plots are written to `qa_pngs/` within the output MS directory if `produce_qa=True`.
     """
+    _, split_name = os.path.split(tar_file_split)
+    save_dir, uvsub_name = os.path.split(uv_sub_path)
+
     with tempfile.TemporaryDirectory(
-            dir=source_dir, prefix=f"__{split_name}__TEMP__"
+            dir=save_dir, prefix=f"__{split_name}__TEMP__"
     ) as temporary_directory:
         freq_start = int(freq_st)
         freq_end = int(freq_en)
 
-        tar_file_split = join(
-            source_dir, split_name
-        )
-        uv_sub_tar = f"{uv_sub_name}.tar"
+        uv_sub_tar = f"{uv_sub_path}.tar"
 
-        LOG.info(f"Checking: {tar_file_split}")
         LOG.info(f"Untarring file: {tar_file_split}")
         untar_file(str(tar_file_split), temporary_directory)
         in_ms = join(temporary_directory, basename(tar_file_split)[:-4])
-        output_measurement_set = join(
-            source_dir, uv_sub_name
-        )
+
         spectral_window = int(((freq_start + freq_end) / 2 - 946) / 32)
 
         taylor_terms, outliers = rejig_paths(
             taylor_terms, outliers, sky_model_location, spectral_window
         )
 
-        out_ms = basename(output_measurement_set)
+        out_ms = basename(uv_sub_path)
 
         out_rot_data = "no"  # Keep a version of the subtracted data
         sub_uzero = True  # False #or True
@@ -224,8 +222,8 @@ def do_single_uvsub(
         tmp_name1 = f"{tmp_name}.0"
         tmp_name2 = f"{tmp_name}.1"
 
-        png_directory = join(output_measurement_set, "qa_pngs")
         if produce_qa:
+            png_directory = join(uv_sub_path, "qa_pngs")
             if not exists(png_directory):
                 makedirs(png_directory)
 
@@ -505,18 +503,18 @@ def do_single_uvsub(
                 # Could be a copy
                 split(
                     vis=tmp_name,
-                    outputvis=join(source_dir, out_ms),
+                    outputvis=uv_sub_path,
                     datacolumn="data",
                     width=pre_average,
                 )
             else:
                 split(
                     vis=in_ms,
-                    outputvis=join(source_dir, out_ms),
+                    outputvis=uv_sub_path,
                     datacolumn="corrected",
                     width=pre_average,
                 )
-            tmp_name = join(source_dir, out_ms)
+            tmp_name = join(temporary_directory, f"{out_ms}.tmp")
             if sub_uzero:
                 tb = table()
                 tb.open(tmp_name, nomodify=False)
@@ -531,7 +529,7 @@ def do_single_uvsub(
                     fg = fg_normal.T
                     I = np.where(np.abs(uv[0]) < 50)[0]
                     LOG.info(
-                        f"Flagging {len(I)} baselines on {join(source_dir, out_ms)}, on which u is ~zero"
+                        f"Flagging {len(I)} baselines on {uv_sub_path}, on which u is ~zero"
                     )
                     fg[I] = True
                     tb.putcol("FLAG", fg.T)
@@ -568,32 +566,32 @@ def do_single_uvsub(
             LOG.exception("*********\nUVSub exception: \n***********")
 
         # Clean up the temporary files
-        tmp_name = join(source_dir, f"{out_ms}.tmp")
+        tmp_name = join(temporary_directory, f"{out_ms}.tmp")
+        tmp_name1 = f"{tmp_name}.0"
+        tmp_name2 = f"{tmp_name}.1"
         if exists(tmp_name):
             remove_file_directory(tmp_name)
 
-        tmp_name1 = f"{tmp_name}.0"
         if exists(tmp_name1):
             remove_file_directory(tmp_name1)
 
-        tmp_name2 = f"{tmp_name}.1"
         if exists(tmp_name2):
             remove_file_directory(tmp_name2)
 
-        LOG.info(f"Tarring file: {output_measurement_set}")
-        create_tar_file(output_measurement_set, suffix="temp")
+        LOG.info(f"Tarring file: {uv_sub_path}")
+        create_tar_file(uv_sub_path, suffix="temp")
 
         # Clean up the measurement sets
-        if exists(f"{output_measurement_set}.tar"):
-            LOG.info(f"Removing {output_measurement_set}.tar")
-            remove_file_directory(f"{output_measurement_set}.tar")
+        if exists(uv_sub_tar):
+            LOG.info(f"Removing {uv_sub_tar}")
+            remove_file_directory(uv_sub_tar)
 
         rename(
-            f"{output_measurement_set}.tar.temp",
-            f"{output_measurement_set}.tar",
+            f"{uv_sub_tar}.temp",
+            uv_sub_tar,
         )
 
-        update_metadata_column(METADATA_DB, split_name, year, freq_st, freq_en, "uv_sub_name", uv_sub_tar)
+        update_metadata_column(METADATA_DB, "ms_path", tar_file_split, year, freq_st, freq_en, "uv_sub_path", uv_sub_tar)
 
     LOG.info("Finished uvsub")
 
