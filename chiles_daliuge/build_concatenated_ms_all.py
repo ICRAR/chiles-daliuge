@@ -111,7 +111,8 @@ def build_concatenated_ms_all(data: dict, output_directory: str, db_path: str):
         if exists(combine_file_build):
             shutil.move(combine_file_build, combine_file_final)
             LOG.info(f"Build complete: {combine_file_final}")
-            update_metadata_column(db_path, "uv_sub_path", "*", "*", str(start_freq), str(end_freq), "build_concat_all", combine_file_final)
+            for tar_path in files:
+                update_metadata_column(db_path, "uv_sub_path", tar_path, "*", str(start_freq), str(end_freq), "build_concat_all", combine_file_final)
         else:
             raise RuntimeError("Concat failed — build file not created.")
 
