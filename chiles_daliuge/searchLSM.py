@@ -1,21 +1,15 @@
 import subprocess
 import json
+import sys
 from typing import List
 
-def list_lsm_related_paths(bucket_path: str) -> List[str]:
+def list_lsm_and_region(bucket_path: str) -> List[str]:
     """
-    List all files and directories containing 'lsm' or 'LSM' in their names
-    in an rclone-accessible remote bucket and its subdirectories.
+    For a given bucket_path, list only
+      • directories whose name ends with “.ms” (your MS datasets)
+      • files whose name contains “region-files”
 
-    Parameters
-    ----------
-    bucket_path : str
-        The rclone remote path (e.g., "acacia-chiles:2025-04-chiles01").
-
-    Returns
-    -------
-    list of str
-        Full rclone paths to all matching files and directories found.
+    This avoids printing all the nested folders inside each .ms.
     """
     try:
         result = subprocess.run(
@@ -23,34 +17,34 @@ def list_lsm_related_paths(bucket_path: str) -> List[str]:
             capture_output=True, text=True, check=True
         )
         entries = json.loads(result.stdout)
-        matching_paths = []
+        matches: List[str] = []
+        for e in entries:
+            name = e.get("Name", "")
+            # only files (not dirs) whose name ends with .tar
+            if not e.get("IsDir", False) and name.lower().endswith(".tar"):
+                full = f"{bucket_path}/{e['Path']}"
+                print(f"[TAR]  {full}")
+                matches.append(full)
 
-        for entry in entries:
-            name = entry.get("Name", "")
-            if "lsm" in name.lower():
-                full_path = f"{bucket_path}/{entry['Path']}"
-                entry_type = "[DIR]" if entry.get("IsDir", False) else "[FILE]"
-                print(f"{entry_type} {full_path}")
-                matching_paths.append(full_path)
+        if not matches:
+            print(f"[INFO] no .tar files found in {bucket_path}")
 
-        if not matching_paths:
-            print("[INFO] No files or directories with 'lsm' or 'LSM' in the name found.")
-        return matching_paths
+        return matches
 
     except subprocess.CalledProcessError as e:
-        print(f"[ERROR] rclone failed: {e.stderr}")
+        print(f"[ERROR] rclone failed on {bucket_path}: {e.stderr}", file=sys.stderr)
         return []
     except json.JSONDecodeError as e:
-        print(f"[ERROR] Failed to parse rclone output: {e}")
+        print(f"[ERROR] JSON parse error on {bucket_path}: {e}", file=sys.stderr)
         return []
 
-# Example usage
 if __name__ == "__main__":
-    bucket = "acacia-chiles:2025-04-chiles01-lsm"
-    lsm_paths = list_lsm_related_paths(bucket)
-    print("\nSummary of matching files and directories:")
-    for path in lsm_paths:
-        print(path)
+    target_buckets = [
+        "acacia-chiles:2025-04-chiles01",
+        "acacia-chiles:2025-04-chiles01-lsm",
+        "acacia-chiles:chiles"
+    ]
 
-
-#rclone copy acacia-chiles:2025-04-chiles01-lsm/LSM /home/00103780/dlg/LSM --create-empty-src-dirs
+    for bucket in target_buckets:
+        print(f"\n=== Scanning bucket: {bucket} ===")
+        list_lsm_and_region(bucket)

@@ -9,6 +9,8 @@ import sqlite3
 from os.path import isdir
 import numpy as np
 import json
+import re
+from typing import List, Any
 
 LOG = logging.getLogger(f"dlg.{__name__}")
 logging.basicConfig(level=logging.INFO)
@@ -89,6 +91,46 @@ def convert_type(s):
     except ValueError:
         return s
 
+
+def destringify_data_tclean(args: List[str]) -> List[Any]:
+    """
+    Turn something like:
+      ["[3c2ef5fab83c5355.ms, 952, 956, ..., False, ['/path/to/in.ms']]"]
+    back into:
+      ['3c2ef5fab83c5355.ms','952','956',...,'False', ['/path/to/in.ms']]
+    """
+    # 1) reassemble into one string and strip outer brackets
+    raw = " ".join(args).strip()
+    if raw.startswith("[") and raw.endswith("]"):
+        raw = raw[1:-1]
+
+    # 2) split on commas that are NOT inside square‑brackets
+    parts = re.split(r',\s*(?![^\[]*\])', raw)
+
+    out: List[Any] = []
+    for part in parts:
+        token = part.strip().rstrip(",")  # remove extra spaces/trailing commas
+
+        # 3) nested list at the end?
+        if token.startswith("[") and token.endswith("]"):
+            inner = token[1:-1].strip()
+            if inner:
+                # split inner list on commas
+                sub = [s.strip().strip("\"'") for s in inner.split(",")]
+            else:
+                sub = []
+            out.append(sub)
+            continue
+
+        # 4) strip quotes if any
+        if (token.startswith("'") and token.endswith("'")) or \
+           (token.startswith('"') and token.endswith('"')):
+            token = token[1:-1]
+
+        # leave everything else as string
+        out.append(token)
+
+    return out
 
 def destringify_data_uvsub(args: list[str]) -> list:
     """

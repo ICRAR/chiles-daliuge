@@ -2,10 +2,12 @@
 import sys
 import json
 import logging
-from pprint import pformat
-from chiles_daliuge.common import destringify_data
 
+from chiles_daliuge.common import *
+import tempfile
+from pathlib import Path
 import shutil
+import os
 from os import makedirs
 from os.path import join, exists, isfile
 
@@ -18,7 +20,7 @@ logging.basicConfig(level=logging.INFO)
 
 
 def do_tclean_implementation(
-    cube_dir,
+    out_ms,
     min_freq,
     max_freq,
     iterations,
@@ -30,30 +32,44 @@ def do_tclean_implementation(
     clean_channel_average,
     region_file,
     produce_qa,
-    temporary_directory,
-    in_dirs,
+    in_ms,
+    out_dir,
+    db_path
 ):
     """
     Perform the CLEAN step
 
     """
-    if not exists(cube_dir):
-        makedirs(cube_dir, exist_ok=True)
+    max_freq = int(max_freq)
+    min_freq = int(min_freq)
+    clean_channel_average = float(clean_channel_average)
+    iterations = int(iterations)
+    w_projection_planes = int(w_projection_planes)
+    robust = float(robust)
+    image_size = int(image_size)
+
+    if not exists(out_dir):
+        makedirs(out_dir, exist_ok=True)
 
     delete_wtsp = True  ## Temp hack till weight spectrum makes sense
 
-    if isinstance(in_dirs, list):
-        outfile = join(cube_dir, f"clean_{min_freq:04d}-{max_freq:04d}")
-        combine_file = join(
-            temporary_directory, f"com_{min_freq:04d}-{max_freq:04d}.ms"
-        )
+    if isinstance(in_ms, list):
+        tmpdir_obj = tempfile.TemporaryDirectory(dir=out_dir, prefix="tclean_tmp_")
+        temporary_directory = tmpdir_obj.name  # this is the actual path string
+
+        if not Path(temporary_directory).exists():
+            # normally unnecessary, since TemporaryDirectory already made it
+            Path(temporary_directory).mkdir(parents=True, exist_ok=True)
+
+        outfile = join(out_dir, out_ms)
+        combine_file = join(out_dir, temporary_directory, out_ms)
 
         if exists(outfile):
             LOG.info(f"Removing old: {outfile}")
             shutil.rmtree(outfile)
     else:
-        outfile = join(cube_dir, "clean_all")
-        combine_file = in_dirs
+        outfile = join(out_dir, out_ms)
+        combine_file = in_ms
 
     # If region_file is given check it exists. If not try some paths.
     # If still not set to blank to prevent failure
@@ -62,97 +78,97 @@ def do_tclean_implementation(
         region_file = ""
         LOG.error(f"Setting file to blank: {region_file}")
 
-    LOG.info(f"tclean(vis={in_dirs}, imagename={outfile})")
-    try:
+
         # dump_all()
-        if delete_wtsp:  # Temp hack till weight spectrum makes sense
-            if isinstance(in_dirs, list):
-                for vis_file in in_dirs:
-                    print(f"Removing weight spectrum from {vis_file}")
-                    tb = table()
-                    tb.open(vis_file, nomodify=False)
-                    if "WEIGHT_SPECTRUM" in tb.colnames():
-                        tb.removecols("WEIGHT_SPECTRUM")
-                        tb.removecols("SIGMA_SPECTRUM")
-                    tb.close()
-            else:
-                # else single ms file
-                print(f"Removing weight spectrum from {in_dirs}")
+    if delete_wtsp:  # Temp hack till weight spectrum makes sense
+        if isinstance(in_ms, list):
+            for vis_file in in_ms:
+                print(f"Removing weight spectrum from {vis_file}")
                 tb = table()
-                tb.open(in_dirs, nomodify=False)
+                tb.open(vis_file, nomodify=False)
                 if "WEIGHT_SPECTRUM" in tb.colnames():
                     tb.removecols("WEIGHT_SPECTRUM")
                     tb.removecols("SIGMA_SPECTRUM")
                 tb.close()
-
-        # Combine all the MS into a single MS
-        if isinstance(in_dirs, list):
-            concat(vis=in_dirs, concatvis=combine_file)
-
-        number_channels = round((max_freq - min_freq) / clean_channel_average)
-        if clean_weighting_uv == "briggs":
-            tclean(
-                vis=combine_file,
-                field="deepfield",
-                spw="*",
-                datacolumn="data",
-                imagename=outfile,
-                imsize=[image_size],
-                cell=[arcsec],
-                specmode="cube",
-                # chanchunks=-1,
-                nchan=number_channels,
-                start=f"{min_freq}MHz",
-                width=f"{clean_channel_average:.4f}MHz",
-                mask=region_file,
-                outframe="BARY",
-                restfreq="1420.405752MHz",
-                interpolation="linear",
-                gridder="widefield",
-                wprojplanes=w_projection_planes,
-                pblimit=-0.2,
-                deconvolver="clark",
-                weighting="briggs",
-                robust=robust,
-                niter=iterations,
-                gain=0.1,
-                threshold="0.0mJy",
-                savemodel="virtual",
-                restart=False,  # TODO: Check if this is needed
-                verbose=True,
-            )  # Don't overwrite the model data col
         else:
-            tclean(
-                vis=in_dirs,
-                field="deepfield",
-                spw="*",
-                datacolumn="data",
-                imagename=outfile,
-                imsize=[image_size],
-                cell=[arcsec],
-                specmode="cube",
-                # chanchunks=-1,
-                nchan=number_channels,
-                start=f"{min_freq}MHz",
-                width=f"{clean_channel_average:.4f}MHz",
-                mask=region_file,
-                outframe="BARY",
-                restfreq="1420.405752MHz",
-                interpolation="linear",
-                gridder="widefield",
-                wprojplanes=w_projection_planes,
-                pblimit=-0.2,
-                deconvolver="clark",
-                weighting=clean_weighting_uv,
-                robust=robust,
-                niter=iterations,
-                gain=0.1,
-                threshold="0.0mJy",
-                savemodel="virtual",
-            )  # Don't overwrite the model data col
-    except Exception:
-        LOG.exception("*********\nClean exception: \n***********")
-        return False
+            # else single ms file
+            print(f"Removing weight spectrum from {in_ms}")
+            tb = table()
+            tb.open(in_ms, nomodify=False)
+            if "WEIGHT_SPECTRUM" in tb.colnames():
+                tb.removecols("WEIGHT_SPECTRUM")
+                tb.removecols("SIGMA_SPECTRUM")
+            tb.close()
+
+    # Combine all the MS into a single MS
+    if isinstance(in_ms, list):
+        concat(vis=in_ms, concatvis=combine_file)
+        LOG.info(f"concat(vis={in_ms}, concatvis={combine_file})")
+
+    LOG.info(f"tclean(vis={combine_file}, imagename={outfile})")
+
+    number_channels = round((max_freq - min_freq) / clean_channel_average)
+    if clean_weighting_uv == "briggs":
+        tclean(
+            vis=combine_file,
+            field="deepfield",
+            spw="*",
+            datacolumn="data",
+            imagename=outfile,
+            imsize=[image_size],
+            cell=[arcsec],
+            specmode="cube",
+            # chanchunks=-1,
+            nchan=number_channels,
+            start=f"{min_freq}MHz",
+            width=f"{clean_channel_average:.4f}MHz",
+            mask=region_file,
+            outframe="BARY",
+            restfreq="1420.405752MHz",
+            interpolation="linear",
+            gridder="widefield",
+            wprojplanes=w_projection_planes,
+            pblimit=-0.2,
+            deconvolver="clark",
+            weighting="briggs",
+            robust=robust,
+            niter=iterations,
+            gain=0.1,
+            threshold="0.0mJy",
+            savemodel="virtual",
+            restart=False,  # TODO: Check if this is needed
+            verbose=True,
+        )  # Don't overwrite the model data col
+    else:
+        tclean(
+            vis=combine_file,
+            field="deepfield",
+            spw="*",
+            datacolumn="data",
+            imagename=outfile,
+            imsize=[image_size],
+            cell=[arcsec],
+            specmode="cube",
+            # chanchunks=-1,
+            nchan=number_channels,
+            start=f"{min_freq}MHz",
+            width=f"{clean_channel_average:.4f}MHz",
+            mask=region_file,
+            outframe="BARY",
+            restfreq="1420.405752MHz",
+            interpolation="linear",
+            gridder="widefield",
+            wprojplanes=w_projection_planes,
+            pblimit=-0.2,
+            deconvolver="clark",
+            weighting=clean_weighting_uv,
+            robust=robust,
+            niter=iterations,
+            gain=0.1,
+            threshold="0.0mJy",
+            savemodel="virtual",
+        )  # Don't overwrite the model data col
+
 
     # Make a smaller verision of the image cube
     rg = regionmanager()
@@ -180,7 +196,7 @@ def do_tclean_implementation(
     im2.done()
     ia.close()
 
-    if produce_qa == "yes":
+    if produce_qa == 'True':
         import numpy as np
         import matplotlib.pyplot as pl
 
@@ -341,41 +357,53 @@ def do_tclean_implementation(
     return True
 
 
-def main(tclean_args):
-    """
-    Main entry point to run the tclean implementation.
+def main():
+    raw_args = sys.argv[1:]
+    LOG.info(f"[RAW ARGS] {raw_args}")
 
-    Parameters
-    ----------
-    tclean_args : list
-        A list of 13 elements:
-        [cube_dir, min_freq, max_freq, iterations, arcsec, w_projection_planes,
-         clean_weighting_uv, robust, image_size, clean_channel_average,
-         region_file, produce_qa, temporary_directory, in_dirs]
-    """
-    LOG.info("Starting CLEAN step with parameters:")
-    LOG.info(pformat(tclean_args))
-
-    do_tclean_implementation(*tclean_args)
-
-
-if __name__ == "__main__":
-    if len(sys.argv) != 15:
+    # we need at least: stringified‑13‑args, out_dir, db_path
+    if len(raw_args) < 3:
         print(
-            "Usage:\n"
-            "python run_tclean_implementation.py "
-            "<cube_dir> <min_freq> <max_freq> <iterations> <arcsec> "
-            "<w_projection_planes> <clean_weighting_uv> <robust> <image_size> "
-            "<clean_channel_average> <region_file> <produce_qa> <temporary_directory> <in_dirs>\n\n"
-            "Note: Arguments should be passed as strings; lists must be stringified properly.",
+            "Usage: python do_tclean_implementation.py "
+            "<stringified_tclean_args> <out_dir> <db_path>",
             file=sys.stderr
         )
         sys.exit(1)
 
-    try:
-        raw_args = sys.argv[1:]
-        tclean_args = destringify_data(raw_args)
-        main(tclean_args)
-    except Exception as e:
-        LOG.error(json.dumps({"status": "error", "message": str(e)}))
+    # peel off the last two as paths
+    out_dir = raw_args[-2]
+    db_path = raw_args[-1]
+    # everything else (one or more pieces) is our stringified block
+    arg_str = " ".join(raw_args[:-2])
+
+    LOG.info(f"[ARGS] out_dir: {out_dir}")
+    LOG.info(f"[ARGS] db_path: {db_path}")
+    LOG.info(f"[ARGS] arg_str: {arg_str}")
+
+
+    # ensure database path
+    if not os.path.isfile(db_path):
+        LOG.error(f"Invalid db_path: {db_path}")
         sys.exit(1)
+
+    # destringify the 13 tclean arguments
+    parsed = destringify_data_tclean([arg_str])
+    LOG.info(f"[PARSED] {parsed!r}")
+
+    if len(parsed) != 13:
+        LOG.error(f"Expected 13 tclean args after destringify, got {len(parsed)}")
+        sys.exit(1)
+
+    # build the final 15‑element list and dispatch
+    tclean_args = parsed + [out_dir, db_path]
+    LOG.info(f"[FINAL TCLEAN_ARGS] {tclean_args!r}")
+
+    try:
+        do_tclean_implementation(*tclean_args)
+    except Exception:
+        LOG.exception("tclean implementation failed")
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
