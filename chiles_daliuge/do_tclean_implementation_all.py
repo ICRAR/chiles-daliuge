@@ -19,7 +19,33 @@ LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-def do_tclean_implementation(
+def prune_ms_dirs(root_path: str, keep_suffix: str = ".centre") -> None:
+    """
+    Scan `root_path` for **directories** and delete all except those whose
+    names end with `keep_suffix`.
+
+    Parameters
+    ----------
+    root_path : str
+        Path to the directory you want to clean up.
+    keep_suffix : str, optional
+        Only directories ending with this suffix will be kept.
+        Default is ".centre".
+    """
+    if not os.path.isdir(root_path):
+        raise ValueError(f"{root_path!r} is not a valid directory")
+
+    for name in os.listdir(root_path):
+        full_path = os.path.join(root_path, name)
+        if os.path.isdir(full_path):
+            # If it doesn't end with the desired suffix, remove it
+            if not name.endswith(keep_suffix):
+                print(f"Removing directory: {name}")
+                shutil.rmtree(full_path)
+            else:
+                print(f"Keeping directory:   {name}")
+
+def do_tclean_implementation_all(
     out_ms,
     min_freq,
     max_freq,
@@ -61,15 +87,25 @@ def do_tclean_implementation(
             # normally unnecessary, since TemporaryDirectory already made it
             Path(temporary_directory).mkdir(parents=True, exist_ok=True)
 
-        outfile = join(out_dir, out_ms)
         combine_file = join(out_dir, temporary_directory, out_ms)
 
-        if exists(outfile):
-            LOG.info(f"Removing old: {outfile}")
-            shutil.rmtree(outfile)
     else:
-        outfile = join(out_dir, out_ms)
         combine_file = in_ms
+
+    outdir = join(out_dir, out_ms)
+    outfile = join(out_dir, out_ms, out_ms)
+
+
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("SELECT 1 FROM metadata WHERE tclean_all = ?", (outdir,))
+    if cursor.fetchone():
+        LOG.info(f"Skipping {outdir}, already in tclean_all of metadata DB.")
+        return
+
+    if exists(outdir):
+        LOG.info(f"Removing old: {outdir}")
+        shutil.rmtree(outdir)
 
     # If region_file is given check it exists. If not try some paths.
     # If still not set to blank to prevent failure
@@ -354,6 +390,11 @@ def do_tclean_implementation(
             pl.clf()
         ia.close()
 
+    prune_ms_dirs(outdir)
+
+    for ms_in in in_ms:
+        update_metadata_column(db_path, "build_concat_all", ms_in, "*", str(min_freq), str(max_freq), "tclean_all", outdir)
+
     return True
 
 
@@ -364,7 +405,7 @@ def main():
     # we need at least: stringified‑13‑args, out_dir, db_path
     if len(raw_args) < 3:
         print(
-            "Usage: python do_tclean_implementation.py "
+            "Usage: python do_tclean_implementation_all.py "
             "<stringified_tclean_args> <out_dir> <db_path>",
             file=sys.stderr
         )
@@ -399,7 +440,7 @@ def main():
     LOG.info(f"[FINAL TCLEAN_ARGS] {tclean_args!r}")
 
     try:
-        do_tclean_implementation(*tclean_args)
+        do_tclean_implementation_all(*tclean_args)
     except Exception:
         LOG.exception("tclean implementation failed")
         sys.exit(1)

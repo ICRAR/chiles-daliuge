@@ -328,6 +328,14 @@
             "from": "a5819143-d630-4b34-8074-f281055e6cd5",
             "fromPort": "3286b084-b4b1-49c3-9d6a-98408b46a748",
             "loop_aware": "0",
+            "to": "0231eb5a-a16c-4d49-aca1-3d36b778a8cd",
+            "toPort": "64bd0d21-c4d9-45e7-8da1-1910b625c9b3"
+        },
+        {
+            "closesLoop": false,
+            "from": "0231eb5a-a16c-4d49-aca1-3d36b778a8cd",
+            "fromPort": "64bd0d21-c4d9-45e7-8da1-1910b625c9b3",
+            "loop_aware": "0",
             "to": "c8ebb8fd-da84-4750-a63e-28163d73d410",
             "toPort": "fddcc9de-9dc4-4a8d-9d5d-d74557c99640"
         }
@@ -336,15 +344,15 @@
         "commitHash": "",
         "detailedDescription": "",
         "downloadUrl": "",
-        "filePath": "chilies_tclean.graph",
+        "filePath": "chilies_build_concat_epoch.graph",
         "fileType": "Graph",
         "generatorCommitHash": "99748785801049ebed287674e774fb633ee0e982",
         "generatorName": "EAGLE",
         "generatorVersion": "v6.7.0",
-        "lastModifiedDatetime": 1753410448.016033,
+        "lastModifiedDatetime": 1753853870.239096,
         "lastModifiedEmail": "",
         "lastModifiedName": "",
-        "numLGNodes": 33,
+        "numLGNodes": 34,
         "readonly": false,
         "repo": "",
         "repoBranch": "",
@@ -377,7 +385,7 @@
                     "readonly": false,
                     "type": "String",
                     "usage": "NoPort",
-                    "value": "chiles_daliuge.NewChiliesTClean.fetch_concat_ms"
+                    "value": "chiles_daliuge.NewChiliesBuildConcat.fetch_uvsub_ms"
                 },
                 {
                     "defaultValue": "",
@@ -626,7 +634,7 @@
             "inputApplicationName": "",
             "inputApplicationType": "None",
             "isGroup": false,
-            "name": "fetch_concat_ms",
+            "name": "fetch_uvsub_ms",
             "outputAppFields": [],
             "outputApplicationDescription": "",
             "outputApplicationId": null,
@@ -635,8 +643,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master-template.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -2445.621604946901,
-            "y": 229.34220257382307
+            "x": -2420.621604946901,
+            "y": 254.34220257382307
         },
         {
             "category": "PyFuncApp",
@@ -903,8 +911,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master-template.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -2558.5011194000053,
-            "y": 49.06851278848128
+            "x": -2612.0583840156473,
+            "y": 13.467194370700408
         },
         {
             "category": "Memory",
@@ -1052,8 +1060,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -2516.77159347941,
-            "y": 104.07600248325498
+            "x": -2498.77159347941,
+            "y": 122.07600248325498
         },
         {
             "category": "Memory",
@@ -1201,8 +1209,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -2351.3289573023894,
-            "y": 118.47054306634011
+            "x": -2323.8757992149026,
+            "y": 225.51789791010953
         },
         {
             "category": "File",
@@ -1380,8 +1388,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -2738.4432833328265,
-            "y": 673.4793425413594
+            "x": -2720.4432833328265,
+            "y": 691.4793425413594
         },
         {
             "category": "File",
@@ -1559,8 +1567,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -2379.139418715008,
-            "y": 736.0991136164279
+            "x": -2361.139418715008,
+            "y": 754.0991136164279
         },
         {
             "category": "PyFuncApp",
@@ -1790,8 +1798,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master-template.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -1971.923979225035,
-            "y": 591.3431784192896
+            "x": -1946.923979225035,
+            "y": 616.3431784192896
         },
         {
             "category": "PyFuncApp",
@@ -2021,8 +2029,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master-template.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -2189.42507574328,
-            "y": 461.30408941899674
+            "x": -2164.42507574328,
+            "y": 486.30408941899674
         },
         {
             "category": "Memory",
@@ -2170,8 +2178,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -2111.964207990647,
-            "y": 485.26898315147787
+            "x": -2093.964207990647,
+            "y": 503.26898315147787
         },
         {
             "category": "PyFuncApp",
@@ -2401,8 +2409,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master-template.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -2523.7521483525156,
-            "y": 483.8911526938476
+            "x": -2498.7521483525156,
+            "y": 508.8911526938476
         },
         {
             "category": "Memory",
@@ -2550,8 +2558,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -2556.460777028283,
-            "y": 302.10322632616345
+            "x": -2538.460777028283,
+            "y": 320.10322632616345
         },
         {
             "category": "Memory",
@@ -2714,8 +2722,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -2730.3880856339033,
-            "y": 176.37115409055446
+            "x": -2712.3880856339033,
+            "y": 194.37115409055446
         },
         {
             "category": "PyFuncApp",
@@ -2739,7 +2747,7 @@
                     "readonly": false,
                     "type": "String",
                     "usage": "NoPort",
-                    "value": "chiles_daliuge.NewChiliesTClean.prep_tclean"
+                    "value": "chiles_daliuge.NewChiliesBuildConcat.prep_build_concat"
                 },
                 {
                     "defaultValue": "",
@@ -2951,7 +2959,7 @@
             "inputApplicationName": "",
             "inputApplicationType": "None",
             "isGroup": false,
-            "name": "prep_tclean",
+            "name": "prep_build_concat",
             "outputAppFields": [],
             "outputApplicationDescription": "",
             "outputApplicationId": null,
@@ -2960,8 +2968,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master-template.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -2173.9734267687286,
-            "y": 198.24381100016794
+            "x": -2168.5249913448947,
+            "y": 265.85671143119725
         },
         {
             "category": "ParameterSet",
@@ -3292,7 +3300,7 @@
                     "readonly": false,
                     "type": "String",
                     "usage": "NoPort",
-                    "value": "/home/00103780/dlg/LSM/Clean_Regions_All.crtf"
+                    "value": "Clean_Regions_All.crtf"
                 },
                 {
                     "defaultValue": "",
@@ -3307,7 +3315,7 @@
                     "readonly": false,
                     "type": "String",
                     "usage": "NoPort",
-                    "value": "all"
+                    "value": "epoch"
                 },
                 {
                     "defaultValue": "",
@@ -3322,7 +3330,7 @@
                     "readonly": false,
                     "type": "Boolean",
                     "usage": "NoPort",
-                    "value": false
+                    "value": true
                 }
             ],
             "id": "630a9dd3-26f4-4dbb-a19a-37b737753493",
@@ -3341,8 +3349,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -2232.917543851077,
-            "y": -56.119474652153656
+            "x": -2339.9435287519254,
+            "y": -56.14123824146509
         },
         {
             "category": "Scatter",
@@ -3366,7 +3374,7 @@
                     "readonly": false,
                     "type": "Integer",
                     "usage": "NoPort",
-                    "value": 1
+                    "value": 3
                 }
             ],
             "id": "80f3ef36-7e11-4626-bde1-d18469454afc",
@@ -3463,7 +3471,7 @@
                 }
             ],
             "inputApplicationDescription": "",
-            "inputApplicationId": "cdc743f2-2a0d-40a6-b3d0-b647fad05467",
+            "inputApplicationId": "8b494a21-8c93-4f97-ba3a-e45680cb5f71",
             "inputApplicationName": "GenericScatterApp",
             "inputApplicationType": "DALiuGEApp",
             "isGroup": true,
@@ -3476,8 +3484,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "repositoryUrl": "",
             "subject": null,
-            "x": -1498.7469513546678,
-            "y": 134.1796434542117
+            "x": -1479.2176649844218,
+            "y": 152.1796434542117
         },
         {
             "category": "Memory",
@@ -3640,8 +3648,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -2134.766026616574,
-            "y": 256.91498699863143
+            "x": -2002.6910122496606,
+            "y": 361.7980766523023
         },
         {
             "category": "Loop",
@@ -3665,7 +3673,7 @@
                     "readonly": false,
                     "type": "Integer",
                     "usage": "NoPort",
-                    "value": 1
+                    "value": 20
                 }
             ],
             "id": "6a9bc204-6abf-4edc-bb00-223af03c5f89",
@@ -3685,8 +3693,8 @@
             "parentId": "80f3ef36-7e11-4626-bde1-d18469454afc",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -1468.9205797571226,
-            "y": 134.1796434542117
+            "x": -1447.4205797571226,
+            "y": 152.1796434542117
         },
         {
             "category": "BashShellApp",
@@ -3710,7 +3718,7 @@
                     "readonly": false,
                     "type": "String",
                     "usage": "NoPort",
-                    "value": "python /home/00103780/chiles-daliuge/chiles_daliuge/do_tclean_implementation.py {build_tclean} {output_directory} {db_path}"
+                    "value": "python /home/00103780/chiles-daliuge/chiles_daliuge/build_concatenated_ms_epoch.py {build_concat} {output_directory} {db_path}"
                 },
                 {
                     "defaultValue": "NOTSET",
@@ -3844,7 +3852,7 @@
                     "description": "",
                     "encoding": "pickle",
                     "id": "22d3e6f7-9041-45ac-a72c-b1931d3c45ce",
-                    "name": "build_tclean",
+                    "name": "build_concat",
                     "options": [],
                     "parameterType": "ApplicationArgument",
                     "positional": false,
@@ -3907,7 +3915,7 @@
             "inputApplicationName": "",
             "inputApplicationType": "None",
             "isGroup": false,
-            "name": "do_tclean_implementation",
+            "name": "build_concatenated_ms_epoch",
             "outputAppFields": [],
             "outputApplicationDescription": "",
             "outputApplicationId": null,
@@ -3917,8 +3925,8 @@
             "parentId": "6a9bc204-6abf-4edc-bb00-223af03c5f89",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -1298.339174069017,
-            "y": 115.41440182934089
+            "x": -1250.894241321691,
+            "y": 183.0597740492608
         },
         {
             "category": "DALiuGEApp",
@@ -4074,8 +4082,8 @@
             "parentId": "6a9bc204-6abf-4edc-bb00-223af03c5f89",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -1508.9640636227996,
-            "y": -34.56852160945161
+            "x": -1560.2768349637079,
+            "y": 6.14293131367677
         },
         {
             "category": "Memory",
@@ -4224,8 +4232,8 @@
             "parentId": "6a9bc204-6abf-4edc-bb00-223af03c5f89",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -1440.5073574207863,
-            "y": -75.53307513048601
+            "x": -1458.4192498165078,
+            "y": -48.555102031555506
         },
         {
             "category": "Memory",
@@ -4374,8 +4382,8 @@
             "parentId": "6a9bc204-6abf-4edc-bb00-223af03c5f89",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -1519.4736152033274,
-            "y": 58.1847116527502
+            "x": -1521.6740546759206,
+            "y": 161.4754560925899
         },
         {
             "category": "Memory",
@@ -4539,8 +4547,8 @@
             "parentId": "6a9bc204-6abf-4edc-bb00-223af03c5f89",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -1646.5019854452285,
-            "y": 96.9425313194084
+            "x": -1608.3015459726353,
+            "y": 206.96675558344606
         },
         {
             "category": "Memory",
@@ -4689,8 +4697,8 @@
             "parentId": "6a9bc204-6abf-4edc-bb00-223af03c5f89",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -1480.9591887615554,
-            "y": 343.8923620389094
+            "x": -1462.9591887615554,
+            "y": 361.8923620389094
         },
         {
             "category": "Branch",
@@ -4906,8 +4914,8 @@
             "parentId": "6a9bc204-6abf-4edc-bb00-223af03c5f89",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -1450.3612533748233,
-            "y": 274.5771873727096
+            "x": -1418.3612533748233,
+            "y": 306.5771873727096
         },
         {
             "category": "PyFuncApp",
@@ -5137,8 +5145,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master-template.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -1622.4421518280603,
-            "y": 586.9826976144691
+            "x": -1597.4421518280603,
+            "y": 611.9826976144691
         },
         {
             "category": "Memory",
@@ -5286,8 +5294,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -1616.415753086748,
-            "y": 762.3122842601456
+            "x": -1598.415753086748,
+            "y": 780.3122842601456
         },
         {
             "category": "PyFuncApp",
@@ -5517,8 +5525,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master-template.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -1793.443559874517,
-            "y": 806.5499751931877
+            "x": -1768.443559874517,
+            "y": 831.5499751931877
         },
         {
             "category": "Memory",
@@ -5666,8 +5674,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -1933.5139018101604,
-            "y": 850.0212066775687
+            "x": -1915.5139018101604,
+            "y": 868.0212066775687
         },
         {
             "category": "PyFuncApp",
@@ -5897,8 +5905,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master-template.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -1658.1087771272473,
-            "y": 884.1401510970151
+            "x": -1633.1087771272473,
+            "y": 909.1401510970151
         },
         {
             "category": "Memory",
@@ -6047,8 +6055,8 @@
             "parentId": "80f3ef36-7e11-4626-bde1-d18469454afc",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -1770.2020911755305,
-            "y": 12.735420660950076
+            "x": -1752.2020911755305,
+            "y": 30.735420660950076
         },
         {
             "category": "Memory",
@@ -6087,7 +6095,7 @@
                     "readonly": false,
                     "type": "String",
                     "usage": "NoPort",
-                    "value": "/home/00103780/dlg/MeasurementSets/tclean"
+                    "value": "/home/00103780/dlg/MeasurementSets/build_concat_epoch"
                 },
                 {
                     "defaultValue": "False",
@@ -6211,8 +6219,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -938.9563437067542,
-            "y": 115.79693446657349
+            "x": -920.9563437067542,
+            "y": 133.79693446657348
         },
         {
             "category": "PyFuncApp",
@@ -6428,8 +6436,8 @@
             "parentId": "6a9bc204-6abf-4edc-bb00-223af03c5f89",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -1432.8787850003698,
-            "y": 37.34365720455147
+            "x": -1338.2994934836586,
+            "y": -13.969114136357788
         },
         {
             "category": "Memory",
@@ -6593,8 +6601,173 @@
             "parentId": "6a9bc204-6abf-4edc-bb00-223af03c5f89",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -1341.7186249839,
-            "y": 8.703802687820083
+            "x": -1267.606293115585,
+            "y": 60.37120180880947
+        },
+        {
+            "category": "Memory",
+            "categoryType": "Data",
+            "color": "#2c2c2c",
+            "commitHash": "b5e4298",
+            "dataHash": "6a0582245c5a9b27e63fb9ca483146a3e48450c972d2614bccb2bb51e0998aeb",
+            "description": "In-memory storage of intermediate data products",
+            "drawOrderHint": 0,
+            "fields": [
+                {
+                    "defaultValue": "None",
+                    "description": "Data to be loaded into memory",
+                    "encoding": "pickle",
+                    "id": "3526e356-78d0-4704-a224-f189ba53f922",
+                    "name": "pydata",
+                    "options": [],
+                    "parameterType": "ApplicationArgument",
+                    "positional": false,
+                    "precious": false,
+                    "readonly": false,
+                    "type": "Object",
+                    "usage": "NoPort",
+                    "value": "None"
+                },
+                {
+                    "defaultValue": "",
+                    "description": "",
+                    "encoding": "pickle",
+                    "id": "64bd0d21-c4d9-45e7-8da1-1910b625c9b3",
+                    "name": "output",
+                    "options": [],
+                    "parameterType": "ApplicationArgument",
+                    "positional": false,
+                    "precious": false,
+                    "readonly": false,
+                    "type": "Event",
+                    "usage": "InputOutput",
+                    "value": ""
+                },
+                {
+                    "defaultValue": "False",
+                    "description": "If set the drop will block a skipping chain until the last producer has finished and is not also skipped.",
+                    "encoding": "pickle",
+                    "id": "f7a9933b-00b7-4e69-b423-03a34a03ed49",
+                    "name": "block_skip",
+                    "options": [],
+                    "parameterType": "ComponentParameter",
+                    "positional": false,
+                    "precious": false,
+                    "readonly": false,
+                    "type": "Boolean",
+                    "usage": "NoPort",
+                    "value": false
+                },
+                {
+                    "defaultValue": "False",
+                    "description": "Specifies whether this data component contains data that should not be deleted after execution",
+                    "encoding": "pickle",
+                    "id": "393d653e-a451-4fdf-ad59-5982e0a37fbc",
+                    "name": "persist",
+                    "options": [],
+                    "parameterType": "ComponentParameter",
+                    "positional": false,
+                    "precious": false,
+                    "readonly": false,
+                    "type": "Boolean",
+                    "usage": "NoPort",
+                    "value": false
+                },
+                {
+                    "defaultValue": "5",
+                    "description": "Estimated size of the data contained in this node",
+                    "encoding": "pickle",
+                    "id": "f38eb74a-0529-4ff6-8186-3b70974786c4",
+                    "name": "data_volume",
+                    "options": [],
+                    "parameterType": "ConstraintParameter",
+                    "positional": false,
+                    "precious": false,
+                    "readonly": false,
+                    "type": "Float",
+                    "usage": "NoPort",
+                    "value": 5
+                },
+                {
+                    "defaultValue": "False",
+                    "description": "Is this node the end of a group?",
+                    "encoding": "pickle",
+                    "id": "b8bc5f2b-bfe6-44f6-b413-09d55f10990a",
+                    "name": "group_end",
+                    "options": [],
+                    "parameterType": "ComponentParameter",
+                    "positional": false,
+                    "precious": false,
+                    "readonly": false,
+                    "type": "Boolean",
+                    "usage": "NoPort",
+                    "value": false
+                },
+                {
+                    "defaultValue": "False",
+                    "description": "Specifies whether this data component streams input and output data",
+                    "encoding": "pickle",
+                    "id": "ad8c5840-2bca-49dc-96c4-e39eeab21b81",
+                    "name": "streaming",
+                    "options": [],
+                    "parameterType": "ComponentParameter",
+                    "positional": false,
+                    "precious": false,
+                    "readonly": false,
+                    "type": "Boolean",
+                    "usage": "NoPort",
+                    "value": false
+                },
+                {
+                    "defaultValue": "dlg.data.drops.memory.InMemoryDROP",
+                    "description": "Drop class",
+                    "encoding": "pickle",
+                    "id": "a7ff60e6-82b9-4bad-b28d-414114420dc8",
+                    "name": "dropclass",
+                    "options": [],
+                    "parameterType": "ComponentParameter",
+                    "positional": false,
+                    "precious": false,
+                    "readonly": false,
+                    "type": "String",
+                    "usage": "NoPort",
+                    "value": "dlg.data.drops.memory.InMemoryDROP"
+                },
+                {
+                    "defaultValue": "memory",
+                    "description": "Base name of application class",
+                    "encoding": "pickle",
+                    "id": "5ae3a6ef-79bf-4355-8150-573d964c287e",
+                    "name": "base_name",
+                    "options": [],
+                    "parameterType": "ComponentParameter",
+                    "positional": false,
+                    "precious": false,
+                    "readonly": false,
+                    "type": "String",
+                    "usage": "NoPort",
+                    "value": "memory"
+                }
+            ],
+            "id": "0231eb5a-a16c-4d49-aca1-3d36b778a8cd",
+            "inputAppFields": [],
+            "inputApplicationDescription": "",
+            "inputApplicationId": null,
+            "inputApplicationName": "",
+            "inputApplicationType": "None",
+            "isGroup": false,
+            "name": "output",
+            "outputAppFields": [],
+            "outputApplicationDescription": "",
+            "outputApplicationId": null,
+            "outputApplicationName": "",
+            "outputApplicationType": "None",
+            "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
+            "parentId": "6a9bc204-6abf-4edc-bb00-223af03c5f89",
+            "repositoryUrl": "https://github.com/ICRAR/daliuge",
+            "subject": null,
+            "x": -1310.2990284152784,
+            "y": 274.6812177873841
         }
     ]
 }

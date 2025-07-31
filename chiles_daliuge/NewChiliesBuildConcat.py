@@ -124,6 +124,7 @@ def prep_build_concat(config: dict, name_list: List, METADATA_DB) -> List:
     """
 
     add_column_if_missing(METADATA_DB, "build_concat_all")
+    add_column_if_missing(METADATA_DB, "build_concat_epoch")
 
     try:
         # region_files_tar = parse_value(config["region_files_tar"]["value"], config["region_files_tar"]["type"])
@@ -151,6 +152,7 @@ def prep_build_concat(config: dict, name_list: List, METADATA_DB) -> List:
         raise
 
     if semesters == 'all' and concatenate:
+        LOG.info("Concatenating all semesters in one")
         grouped = defaultdict(list)
 
         # ✅ Parse and group files by (start_freq, end_freq)
@@ -170,6 +172,27 @@ def prep_build_concat(config: dict, name_list: List, METADATA_DB) -> List:
             )
             entry_data = [str(start), str(end)] + files + [output_name]
             stringified_results.append(stringify_data(entry_data))  # converts to single string
+
+    elif semesters == 'epoch' and concatenate:
+        LOG.info("Concatenating each semester in one.")
+        grouped = defaultdict(list)
+
+        # group by (year, start_freq, end_freq)
+        for entry in name_list:
+            filename, year, start_freq, end_freq = entry.split(";")
+            key = (year, start_freq, end_freq)
+            grouped[key].append(filename)
+
+        stringified_results = []
+        for (year, start, end), files in grouped.items():
+            output_name = generate_hashed_ms_name(
+                ms_name="epoch_concat",
+                year=year,
+                start_freq=start,
+                end_freq=end
+            )
+            entry_data = [year, start, end] + files + [output_name]
+            stringified_results.append(stringify_data(entry_data))
 
     else:
         LOG.info("Wrong arguments for 'semesters' or 'concatenate'")

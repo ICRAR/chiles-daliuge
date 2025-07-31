@@ -60,7 +60,7 @@ def sanitize_broken_dict_str(s: str) -> dict:
 
 
 # --- Main logic ---
-def build_concatenated_ms_all(data: dict, output_directory: str, db_path: str):
+def build_concatenated_ms_epoch(data: dict, output_directory: str, db_path: str):
     # Validate input keys
     required_keys = {"start_freq", "end_freq", "files", "output_name"}
     missing = required_keys - data.keys()
@@ -69,6 +69,7 @@ def build_concatenated_ms_all(data: dict, output_directory: str, db_path: str):
     if missing:
         raise ValueError(f"Missing required keys in input: {missing}")
 
+    year = data["year"]
     start_freq = data["start_freq"]
     end_freq = data["end_freq"]
     files = data["files"]
@@ -89,9 +90,9 @@ def build_concatenated_ms_all(data: dict, output_directory: str, db_path: str):
 
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
-        cursor.execute("SELECT 1 FROM metadata WHERE build_concat_all = ?", (combine_file_final,))
+        cursor.execute("SELECT 1 FROM metadata WHERE build_concat_epoch = ?", (combine_file_final,))
         if cursor.fetchone():
-            LOG.info(f"Skipping {combine_file_final} in build_concat_all, already in metadata DB.")
+            LOG.info(f"Skipping {combine_file_final} in build_concat_epoch, already in metadata DB.")
             return
 
         # Skip if already built
@@ -120,7 +121,7 @@ def build_concatenated_ms_all(data: dict, output_directory: str, db_path: str):
             shutil.move(combine_file_build, combine_file_final)
             LOG.info(f"Build complete: {combine_file_final}")
             for tar_path in files:
-                update_metadata_column(db_path, "uv_sub_path", tar_path, "*", str(start_freq), str(end_freq), "build_concat_all", combine_file_final)
+                update_metadata_column(db_path, "uv_sub_path", tar_path, str(year), str(start_freq), str(end_freq), "build_concat_epoch", combine_file_final)
         else:
             raise RuntimeError("Concat failed — build file not created.")
 
@@ -130,7 +131,7 @@ def main():
         LOG.info(f"[RAW ARGS] {raw_args}")
 
         if len(raw_args) < 3:
-            print("Usage: python build_concatenated_ms_all.py <stringified_list> <output_directory> <db_path>")
+            print("Usage: python build_concatenated_ms_epoch.py <stringified_list> <output_directory> <db_path>")
             sys.exit(1)
 
         # Extract paths from the end
@@ -157,24 +158,26 @@ def main():
         parsed_list = destringify_data_uvsub([arg_str])
         LOG.info(f"[PARSED] {parsed_list}")
 
-        # Unpack the list: [start, end, file1, file2, ..., output_name]
-        if len(parsed_list) < 4:
-            raise ValueError("Parsed input must have at least start, end, 1 file, and output_name")
+        # Unpack the list: [year, start, end, file1, file2, ..., output_name]
+        if len(parsed_list) < 5:
+            raise ValueError("Parsed input must have at least year, start, end, 1 file, and output_name")
 
-        start_freq = parsed_list[0]
-        end_freq = parsed_list[1]
+        year = parsed_list[0]
+        start_freq = parsed_list[1]
+        end_freq = parsed_list[2]
         output_name = parsed_list[-1]
-        files = parsed_list[2:-1]
+        files = parsed_list[3:-1]
 
         # Reconstruct input dict
         data = {
+            "year": str(year),
             "start_freq": int(start_freq),
             "end_freq": int(end_freq),
             "files": files,
             "output_name": output_name
         }
 
-        build_concatenated_ms_all(data, output_directory, db_path)
+        build_concatenated_ms_epoch(data, output_directory, db_path)
 
     except Exception as e:
         LOG.exception("Failed to run build job")
