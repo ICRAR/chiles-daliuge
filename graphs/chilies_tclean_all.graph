@@ -333,7 +333,7 @@
         "generatorCommitHash": "99748785801049ebed287674e774fb633ee0e982",
         "generatorName": "EAGLE",
         "generatorVersion": "v6.7.0",
-        "lastModifiedDatetime": 1753932813.35153,
+        "lastModifiedDatetime": 1753942085.353133,
         "lastModifiedEmail": "",
         "lastModifiedName": "",
         "numLGNodes": 32,
@@ -3358,7 +3358,7 @@
                     "readonly": false,
                     "type": "Integer",
                     "usage": "NoPort",
-                    "value": 1
+                    "value": 3
                 }
             ],
             "id": "80f3ef36-7e11-4626-bde1-d18469454afc",
@@ -3657,7 +3657,7 @@
                     "readonly": false,
                     "type": "Integer",
                     "usage": "NoPort",
-                    "value": 1
+                    "value": 10
                 }
             ],
             "id": "6a9bc204-6abf-4edc-bb00-223af03c5f89",
@@ -3909,8 +3909,8 @@
             "parentId": "6a9bc204-6abf-4edc-bb00-223af03c5f89",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -1261.9061797986406,
-            "y": 166.85843549903208
+            "x": -1274.8663973365929,
+            "y": 136.61792791047682
         },
         {
             "category": "DALiuGEApp",
@@ -4531,8 +4531,8 @@
             "parentId": "6a9bc204-6abf-4edc-bb00-223af03c5f89",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "subject": null,
-            "x": -1604.5543480047318,
-            "y": 172.41686117660046
+            "x": -1598.7942513211974,
+            "y": 218.49763464487518
         },
         {
             "category": "Memory",

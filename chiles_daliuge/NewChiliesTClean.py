@@ -235,16 +235,16 @@ def prep_tclean(config: dict, name_list: List[str], METADATA_DB: str) -> np.ndar
         # group by (start_freq, end_freq)
         grouped = defaultdict(list)
         for entry in name_list:
-            LOG.info(f"entry: {entry}")
-            filename, year, start_str, end_str = entry.split(";")
+            #LOG.info(f"entry: {entry}")
+            filename, year, start_freq, end_freq = entry.split(";")
             try:
                 parsed = ast.literal_eval(filename)
                 if isinstance(parsed, list):
-                    grouped[(start_str, end_str)].extend(parsed)
+                    grouped[(start_freq, end_freq)].extend(parsed)
                 else:
-                    grouped[(start_str, end_str)].append(parsed)
+                    grouped[(start_freq, end_freq)].append(parsed)
             except (SyntaxError, ValueError):
-                grouped[(start_str, end_str)].append(filename)
+                grouped[(start_freq, end_freq)].append(filename)
 
         # for each freq‐group build full arg list
         for (start_freq, end_freq), files in grouped.items():
@@ -254,14 +254,14 @@ def prep_tclean(config: dict, name_list: List[str], METADATA_DB: str) -> np.ndar
                 start_freq=start_freq,
                 end_freq=end_freq
             )
-            arcsec = arcsec_low if int(end_str) < arcsec_cutover else arcsec_high
+            arcsec = arcsec_low if int(end_freq) < arcsec_cutover else arcsec_high
             produce_qa = 'False'
-            LOG.info(f"files: {files}")
+            #LOG.info(f"files: {files}")
             # note: in_ms is the list of filenames for this group
             entry_args: List[Any] = [
                 out_ms,                # <out_ms>
-                start_str,             # <min_freq>
-                end_str,               # <max_freq>
+                start_freq,             # <min_freq>
+                end_freq,               # <max_freq>
                 str(iterations),       # <iterations>
                 str(arcsec),           # <arcsec>
                 str(w_projection_planes),     # <w_projection_planes>
@@ -274,65 +274,73 @@ def prep_tclean(config: dict, name_list: List[str], METADATA_DB: str) -> np.ndar
                 #str(temporary_directory),     # <temporary_directory>
                 files                         # <in_ms>  (stringified list)
             ]
-            LOG.info(f"entry_args: {entry_args}")
+            #LOG.info(f"entry_args: {entry_args}")
             # stringify_data should turn that Python list into a single string
             stringified_results.append(stringify_data(entry_args))
 
     elif semesters == 'epoch' and not concatenate:
         # group by (start_freq, end_freq)
         LOG.info(f"Generating for epoch?: {semesters}")
-        LOG.info(f"name_list: {name_list}")
+        #LOG.info(f"name_list: {name_list}")
         grouped = defaultdict(list)
         for entry in name_list:
-            LOG.info(f"entry: {entry}")
-            filename, year, start_str, end_str = entry.split(";")
+            #LOG.info(f"entry: {entry}")
+            filename, year, start_freq, end_freq = entry.split(";")
 
             try:
                 parsed = ast.literal_eval(filename)
                 if isinstance(parsed, list):
-                    grouped[(year, start_str, end_str)].extend(parsed)
+                    grouped[(year, start_freq, end_freq)].extend(parsed)
                 else:
-                    grouped[(year, start_str, end_str)].append(parsed)
+                    grouped[(year, start_freq, end_freq)].append(parsed)
             except (SyntaxError, ValueError):
-                grouped[(year, start_str, end_str)].append(filename)
+                grouped[(year, start_freq, end_freq)].append(filename)
 
         # for each freq‐group build full arg list
-        for (year, start_freq, end_freq), files in grouped.items():
-            out_ms = generate_hashed_ms_name(
-                ms_name="all",
-                year=str(year),
-                start_freq=start_freq,
-                end_freq=end_freq
-            )
-            arcsec = arcsec_low if int(end_str) < arcsec_cutover else arcsec_high
-            produce_qa = 'False'
-            LOG.info(f"files: {files}")
-            # note: in_ms is the list of filenames for this group
-            entry_args: List[Any] = [
-                out_ms,                # <out_ms>
-                year,
-                start_str,             # <min_freq>
-                end_str,               # <max_freq>
-                str(iterations),       # <iterations>
-                str(arcsec),           # <arcsec>
-                str(w_projection_planes),     # <w_projection_planes>
-                str(clean_weighting_uv),      # <clean_weighting_uv>
-                str(robust),                  # <robust>
-                str(image_size),              # <image_size>
-                str(clean_channel_average),   # <clean_channel_average>
-                str(region_file),             # <region_file>
-                str(produce_qa),              # <produce_qa>
-                #str(temporary_directory),     # <temporary_directory>
-                files                         # <in_ms>  (stringified list)
-            ]
-            LOG.info(f"entry_args: {entry_args}")
-            # stringify_data should turn that Python list into a single string
-            stringified_results.append(stringify_data(entry_args))
+        for (year_str, start_freq, end_freq), files in grouped.items():
+            try:
+                year_list = ast.literal_eval(year_str) if isinstance(year_str, str) else year_str
+            except Exception as e:
+                LOG.error(f"Failed to parse year_str: {year_str} — {e}")
+                continue
+            #LOG.info(f"All Data: year_list: {year_list}, start_freq: {start_freq}, end_freq: {end_freq}, files: {files}")
+            for year_epoch, file_epoch in zip(year_list, files):
+                out_ms = generate_hashed_ms_name(
+                    ms_name=file_epoch,
+                    year=str(year_epoch),
+                    start_freq=start_freq,
+                    end_freq=end_freq
+                )
+                #LOG.info(f"Epoch Data: year_epoch: {year_epoch}, start_freq: {start_freq}, end_freq: {end_freq}, file: {file_epoch}, out_ms {out_ms}")
+                arcsec = arcsec_low if int(end_freq) < arcsec_cutover else arcsec_high
+                produce_qa = 'False'
+                #LOG.info(f"files: {files}")
+                # note: in_ms is the list of filenames for this group
+                entry_args: List[Any] = [
+                    out_ms,                # <out_ms>
+                    year_epoch,
+                    start_freq,             # <min_freq>
+                    end_freq,               # <max_freq>
+                    str(iterations),       # <iterations>
+                    str(arcsec),           # <arcsec>
+                    str(w_projection_planes),     # <w_projection_planes>
+                    str(clean_weighting_uv),      # <clean_weighting_uv>
+                    str(robust),                  # <robust>
+                    str(image_size),              # <image_size>
+                    str(clean_channel_average),   # <clean_channel_average>
+                    str(region_file),             # <region_file>
+                    str(produce_qa),              # <produce_qa>
+                    #str(temporary_directory),     # <temporary_directory>
+                    file_epoch                         # <in_ms>  (stringified list)
+                ]
+                #LOG.info(f"entry_args: {entry_args}")
+                # stringify_data should turn that Python list into a single string
+                stringified_results.append(stringify_data(entry_args))
     else:
         LOG.info("Skipping prep_tclean: concatenate = True")
 
     # return as array of str
-    LOG.info(f"stringified_results: {stringified_results}")
+    #LOG.info(f"stringified_results: {stringified_results}")
     array_out = np.array(stringified_results, dtype=str)
     LOG.info(f"array_out: {array_out}")
     return array_out
