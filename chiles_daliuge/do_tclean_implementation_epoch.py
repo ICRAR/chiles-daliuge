@@ -394,7 +394,7 @@ def do_tclean_implementation_epoch(
     prune_ms_dirs(outdir)
 
     #for ms_in, year_in in zip(in_ms, year):
-    LOG.info(f"Pushing to DB: {db_path}, build_concat_epoch, {in_ms}, {str(year)}, {str(min_freq)}, {str(max_freq)}, tclean_epoch, {outdir}")
+    #LOG.info(f"Pushing to DB: {db_path}, build_concat_epoch, {in_ms}, {str(year)}, {str(min_freq)}, {str(max_freq)}, tclean_epoch, {outdir}")
     update_metadata_column(db_path, "build_concat_epoch", in_ms, str(year), str(min_freq), str(max_freq), "tclean_epoch", outdir)
 
     return True
