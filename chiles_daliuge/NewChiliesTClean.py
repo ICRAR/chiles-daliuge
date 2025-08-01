@@ -154,20 +154,20 @@ def fetch_concat_ms_epoch(
         builds = [b for (_, b) in pairs]
         # unique builds in insertion order
         unique_builds = list(dict.fromkeys(builds))
+        build_to_year = {}
+        for y, b in pairs:
+            if b not in build_to_year:
+                build_to_year[b] = y
 
-        if len(unique_builds) == 1:
+        # now align years with unique_builds
+        unique_years = [build_to_year[b] for b in unique_builds]
+
+        if len(unique_builds) == 1 and len(unique_years) == 1:
             # same file for all years
             matching_concat_names.append(
-                f"{unique_builds[0]};all;{start_f};{end_f}"
+                f"{unique_builds[0]};{unique_years[0]};{start_f};{end_f}"
             )
         else:
-            build_to_year = {}
-            for y, b in pairs:
-                if b not in build_to_year:
-                    build_to_year[b] = y
-
-            # now align years with unique_builds
-            unique_years = [build_to_year[b] for b in unique_builds]
             # multiple distinct files → emit a single list
             matching_concat_names.append(f"{unique_builds};{unique_years};{start_f};{end_f}")
 
@@ -281,7 +281,7 @@ def prep_tclean(config: dict, name_list: List[str], METADATA_DB: str) -> np.ndar
     elif semesters == 'epoch' and not concatenate:
         # group by (start_freq, end_freq)
         LOG.info(f"Generating for epoch?: {semesters}")
-        #LOG.info(f"name_list: {name_list}")
+        LOG.info(f"name_list: {name_list}")
         grouped = defaultdict(list)
         for entry in name_list:
             #LOG.info(f"entry: {entry}")
@@ -299,7 +299,10 @@ def prep_tclean(config: dict, name_list: List[str], METADATA_DB: str) -> np.ndar
         # for each freq‐group build full arg list
         for (year_str, start_freq, end_freq), files in grouped.items():
             try:
-                year_list = ast.literal_eval(year_str) if isinstance(year_str, str) else year_str
+                if isinstance(year_str, str) and year_str.startswith("[") and year_str.endswith("]"):
+                    year_list = ast.literal_eval(year_str)  # safely parse the list
+                else:
+                    year_list = [year_str]  # wrap single year in a list
             except Exception as e:
                 LOG.error(f"Failed to parse year_str: {year_str} — {e}")
                 continue

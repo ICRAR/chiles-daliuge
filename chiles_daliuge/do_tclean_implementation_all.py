@@ -80,14 +80,17 @@ def do_tclean_implementation_all(
     delete_wtsp = True  ## Temp hack till weight spectrum makes sense
 
     if isinstance(in_ms, list):
-        tmpdir_obj = tempfile.TemporaryDirectory(dir=out_dir, prefix="tclean_tmp_")
-        temporary_directory = tmpdir_obj.name  # this is the actual path string
+        if len(in_ms) > 1:
+            tmpdir_obj = tempfile.TemporaryDirectory(dir=out_dir, prefix="tclean_tmp_")
+            temporary_directory = tmpdir_obj.name  # this is the actual path string
 
-        if not Path(temporary_directory).exists():
-            # normally unnecessary, since TemporaryDirectory already made it
-            Path(temporary_directory).mkdir(parents=True, exist_ok=True)
+            if not Path(temporary_directory).exists():
+                # normally unnecessary, since TemporaryDirectory already made it
+                Path(temporary_directory).mkdir(parents=True, exist_ok=True)
 
-        combine_file = join(out_dir, temporary_directory, out_ms)
+            combine_file = join(out_dir, temporary_directory, out_ms)
+        else:
+            combine_file = in_ms[0]
 
     else:
         combine_file = in_ms
@@ -137,7 +140,7 @@ def do_tclean_implementation_all(
             tb.close()
 
     # Combine all the MS into a single MS
-    if isinstance(in_ms, list):
+    if isinstance(in_ms, list) and len(in_ms) > 1:
         concat(vis=in_ms, concatvis=combine_file)
         LOG.info(f"concat(vis={in_ms}, concatvis={combine_file})")
 
@@ -204,7 +207,6 @@ def do_tclean_implementation_all(
             threshold="0.0mJy",
             savemodel="virtual",
         )  # Don't overwrite the model data col
-
 
     # Make a smaller verision of the image cube
     rg = regionmanager()
@@ -389,12 +391,10 @@ def do_tclean_implementation_all(
             pl.savefig(outfile + ".image.beam.svg")
             pl.clf()
         ia.close()
-
     prune_ms_dirs(outdir)
 
     for ms_in in in_ms:
         update_metadata_column(db_path, "build_concat_all", ms_in, "*", str(min_freq), str(max_freq), "tclean_all", outdir)
-
     return True
 
 
