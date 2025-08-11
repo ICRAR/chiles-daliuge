@@ -1,10 +1,14 @@
+import sys
+import os
+import sqlite3
+from subprocess import run, PIPE
+
 from pathlib import Path
 import ast
-from subprocess import run, PIPE
 
 from typing import List
 
-from numpy.core.multiarray import ndarray
+from numpy import ndarray
 
 from chiles_daliuge.common import *
 import logging
@@ -22,14 +26,12 @@ def fetch_original_ms(
         source_dir: str,
         year_list: list[str],
         copy_directory: str,
-        trigger_in: bool,
         METADATA_DB: str,
+        add_to_db: bool = True,
         process_ms: bool = process_ms_flag,
 ) -> list[str]:
-    import os
-    import sqlite3
-    from subprocess import run, PIPE
 
+    copy_directory = os.path.expandvars(copy_directory)
     make_directory = True
     start_freq = "0944"
     end_freq = "1420"
@@ -39,72 +41,69 @@ def fetch_original_ms(
     conn = sqlite3.connect(METADATA_DB)
     cursor = conn.cursor()
 
-    result = run(["rclone", "lsf", source_dir, "--dirs-only"], stdout=PIPE, stderr=PIPE, text=True)
+    result = run(["rclone", "lsjson", source_dir, "-R", "--dirs-only"], stdout=PIPE,
+                 stderr=PIPE, text=True)
     if result.returncode != 0:
         LOG.error(f"Failed to list {source_dir}: {result.stderr}")
         return []
 
-    year_dirs = [line.strip("/") for line in result.stdout.strip().splitlines()]
+    # year_dirs = [line.strip("/") for line in result.stdout.strip().splitlines()]
 
     copy_tasks = []
 
-    for year in year_dirs:
-        if year not in year_list:
-            continue
+    pattern = re.compile(r".+\.ms$") # Only accept path results that end in .ms/
+    dirs = json.loads(result.stdout)
+    all_ms_paths = [e['Path'] for e in dirs if pattern.match(e['Path'])]
+    selected_paths = []
+    for year in year_list:
+        for path in all_ms_paths:
+            if year in path:
+                selected_paths.append({"path": os.path.normpath(f"{source_dir}/{path}"),
+                                      "year": year})
 
-        year_path = f"{source_dir}{year}/"
-        result = run(["rclone", "lsf", year_path, "--dirs-only"], stdout=PIPE, stderr=PIPE, text=True)
-        if result.returncode != 0:
-            LOG.warning(f"Skipping {year_path}: {result.stderr}")
-            continue
+    if make_directory:
+        os.makedirs(copy_directory, exist_ok=True)
 
-        date_dirs = [line.strip("/") for line in result.stdout.strip().splitlines()]
+    for ms_name in selected_paths:
+        base_name = os.path.basename(ms_name["path"])
+        dlg_name = generate_hashed_ms_name(ms_name["path"],
+                                           ms_name["year"],
+                                           start_freq,
+                                            end_freq)
+        ms_path = os.path.join(copy_directory, dlg_name)
 
-        for date in date_dirs:
-            date_path = f"{year_path}{date}/"
-            result = run(["rclone", "lsf", date_path, "--dirs-only"], stdout=PIPE, stderr=PIPE, text=True)
-            if result.returncode != 0:
-                LOG.warning(f"Skipping {date_path}: {result.stderr}")
+        if add_to_db:
+            cursor.execute("SELECT 1 FROM metadata WHERE ms_path = ?", (ms_path,))
+            if cursor.fetchone():
+                LOG.info(f"Skipping fetch of existing MS: {base_name}, already recorded as {ms_path}")
+                name_list.append(str(ms_path))
                 continue
 
-            ms_dirs = [f"{date_path}{line.strip('/')}" for line in result.stdout.strip().splitlines() if line.endswith(".ms/")]
+        command = {
+            "base_name": base_name,
+            "ms_name": ms_name["path"],
+            "ms_path": ms_path,
+            "year": ms_name["year"],
+            "cmd": [
+                "rclone", "copy", ms_name["path"], ms_path,
+                "--progress",
+                "--s3-disable-checksum",
+                "--s3-chunk-size", "1024M",
+                "--s3-upload-concurrency", "8",
+                "--transfers", "4",
+                "--ignore-times",
+                "--retries", "1",
+                "--local-no-set-modtime",
+                "--log-level", "INFO"
+            ]
+        }
 
-            for ms_name in ms_dirs:
-                base_name = os.path.basename(ms_name.strip("/"))
-                dlg_name = generate_hashed_ms_name(ms_name, year, start_freq, end_freq)
-                ms_path = os.path.join(copy_directory, dlg_name)
-
-                cursor.execute("SELECT 1 FROM metadata WHERE ms_path = ?", (ms_path,))
-                if cursor.fetchone():
-                    LOG.info(f"Skipping fetch of existing MS: {base_name}, already recorded as {ms_path}")
-                    name_list.append(str(ms_path))
-                    continue
-
-                if make_directory:
-                    os.makedirs(copy_directory, exist_ok=True)
-
-                LOG.info(f"Queued for copy: {ms_name} → {ms_path}")
-                copy_tasks.append({
-                    "base_name": base_name,
-                    "ms_name": ms_name,
-                    "ms_path": ms_path,
-                    "year": year,
-                    "cmd": [
-                        "rclone", "copy", ms_name, ms_path,
-                        "--progress",
-                        "--s3-disable-checksum",
-                        "--s3-chunk-size", "1024M",
-                        "--s3-upload-concurrency", "8",
-                        "--transfers", "4",
-                        "--ignore-times",
-                        "--retries", "1",
-                        "--local-no-set-modtime",
-                        "--log-level", "INFO"
-                    ]
-                })
+        LOG.info(f"Adding command: {command['cmd']}")
+        LOG.info(f"Queued for copy: {ms_name['path']} → {ms_path}")
+        copy_tasks.append(command)
 
     # Execute copy tasks in parallel (max 5 at a time)
-    with ThreadPoolExecutor(max_workers=5) as executor:
+    with ThreadPoolExecutor(max_workers=1) as executor:
         futures = {executor.submit(run, task["cmd"], stdout=PIPE, stderr=PIPE, text=True): task for task in copy_tasks}
         for future in as_completed(futures):
             task = futures[future]
@@ -122,6 +121,8 @@ def fetch_original_ms(
 
             if cp_result.returncode == 0:
                 LOG.info(f"Copied MS to: {ms_path}")
+                if not os.path.exists(ms_path):
+                    LOG.error("%s does not exist!", ms_path)
                 size_result = run(["rclone", "size", ms_path], stdout=PIPE, stderr=PIPE, text=True)
                 if size_result.returncode == 0:
                     for line in size_result.stdout.strip().splitlines():
