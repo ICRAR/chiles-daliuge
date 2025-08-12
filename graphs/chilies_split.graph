@@ -2448,8 +2448,8 @@
             "id": "8619a7bc-d0a3-40c3-a260-e42edad52493",
             "name": "export_metadata_to_csv",
             "description": "Export the entire 'metadata' table from a SQLite database to a CSV file.\n\n    Parameters\n    ----------\n    trigger_in:\n        to make function wait\n    db_path : str\n        Path to the SQLite database file (e.g., METADATA_DB).\n    csv_path : str\n        Path to the output CSV file (e.g., METADATA_CSV).\n\n    Returns\n    -------\n    None",
-            "x": -132.45139112768615,
-            "y": 521.0301726024661,
+            "x": -225.762043242544,
+            "y": 551.1766909780353,
             "subject": null,
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "commitHash": "483b909",
@@ -2641,7 +2641,7 @@
                     "encoding": "path",
                     "id": "5c600a08-47c4-49e4-8857-7bcd1381cb27",
                     "parameterType": "ApplicationArgument",
-                    "usage": "InputPort"
+                    "usage": "OutputPort"
                 },
                 {
                     "name": "trigger_in",
@@ -2679,8 +2679,8 @@
             "id": "0ff1bcd1-eb8b-4e8d-a9a4-23a62dfcdde5",
             "name": "csv_path",
             "description": "A standard file on a filesystem mounted to the deployment machine",
-            "x": -425.885110009295,
-            "y": 148.3847004766904,
+            "x": -476.1293073019106,
+            "y": 636.4711884621,
             "subject": null,
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "commitHash": "483b909",
@@ -2703,10 +2703,10 @@
                     "usage": "OutputPort"
                 },
                 {
-                    "name": "filepath",
+                    "name": "csv_path",
                     "value": "$DLG_ROOT/Chilies_metadata.csv",
                     "defaultValue": "None",
-                    "description": "File path for this file. In many cases this does not need to be specified. If it has a \\/ at the end it will be treated as a directory name and the filename will be generated. If it does not have a \\/, the last part will be treated as a filename. If filepath does not start with \\/ (relative path) then the session directory will be prepended to make the path absolute.\"",
+                    "description": "",
                     "readonly": false,
                     "type": "String",
                     "precious": false,
@@ -2715,7 +2715,7 @@
                     "encoding": "pickle",
                     "id": "09046b83-92ec-48fd-8c35-5919f8405762",
                     "parameterType": "ApplicationArgument",
-                    "usage": "NoPort"
+                    "usage": "InputPort"
                 },
                 {
                     "name": "check_filepath_exists",
@@ -3537,8 +3537,8 @@
             "id": "3852b90f-e209-439e-90c6-0861a55db49e",
             "name": "initialize_metadata_environment",
             "description": "Ensure the metadata database and metadata table exist.\n\n    Parameters\n    ----------\n    db_path : str\n        Full path to the SQLite database file.\n\n    Notes\n    -----\n    - Creates the SQLite database file and metadata table if not present.\n    - Creates the parent directory of `db_path` if it does not exist.",
-            "x": -1059.6012301793885,
-            "y": 370.49606397088866,
+            "x": -1144.2985913297978,
+            "y": 450.88677963907367,
             "subject": null,
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "commitHash": "483b909",
@@ -3719,7 +3719,7 @@
                 },
                 {
                     "name": "db_path",
-                    "value": "",
+                    "value": "$DLT_ROOT/Chilies_metadata.db",
                     "defaultValue": "",
                     "description": "",
                     "readonly": false,
@@ -3730,7 +3730,7 @@
                     "encoding": "path",
                     "id": "d6e7dccb-3ee4-4483-9299-11044183bf2e",
                     "parameterType": "ApplicationArgument",
-                    "usage": "InputPort"
+                    "usage": "OutputPort"
                 },
                 {
                     "name": "initialized",
@@ -3917,8 +3917,8 @@
             "id": "616b0e64-8c8f-4ccd-9139-af015daa1bf4",
             "name": "list_len",
             "description": "An application that wraps a python function. The inputs of the application are treated as the arguments of the function. Conversely, the output of the function is treated as the output of the application. If the application has more than one output, the result of calling the function is treated as an iterable, with each individual object being written to its corresponding output.",
-            "x": -567.7851155266189,
-            "y": 90.5077312235378,
+            "x": -510.3631757636299,
+            "y": 63.232309836117885,
             "subject": null,
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "commitHash": "117d50e",
@@ -4133,8 +4133,8 @@
             "id": "e67761d4-53e2-4071-a27e-a3b0f6ab8561",
             "name": "export_metadata_to_csv",
             "description": "Export the entire 'metadata' table from a SQLite database to a CSV file.\n\n    Parameters\n    ----------\n    trigger_in:\n        to make function wait\n    db_path : str\n        Path to the SQLite database file (e.g., METADATA_DB).\n    csv_path : str\n        Path to the output CSV file (e.g., METADATA_CSV).\n\n    Returns\n    -------\n    None",
-            "x": -439.3032506147398,
-            "y": 438.6807383233701,
+            "x": -363.21918042877905,
+            "y": 244.88169162328128,
             "subject": null,
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "commitHash": "483b909",
@@ -4326,7 +4326,7 @@
                     "encoding": "path",
                     "id": "175d99b1-562a-4e8e-b5a2-f766b65f7902",
                     "parameterType": "ApplicationArgument",
-                    "usage": "InputPort"
+                    "usage": "OutputPort"
                 },
                 {
                     "name": "trigger_in",
@@ -4364,8 +4364,8 @@
             "id": "1624f4fb-ab39-4d51-ad31-bb981d399fb0",
             "name": "trigger_in",
             "description": "In-memory storage of intermediate data products",
-            "x": -556.9494901978276,
-            "y": 174.39121125900724,
+            "x": -364.58599199181333,
+            "y": 118.40481999009265,
             "subject": null,
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "commitHash": "117d50e",
@@ -4513,8 +4513,8 @@
             "id": "6c86cd68-852c-42f5-965c-f1027f61f6a6",
             "name": "db_path",
             "description": "A standard file on a filesystem mounted to the deployment machine",
-            "x": -283.06735630464664,
-            "y": 5.135265605889735,
+            "x": -1019.5037337649846,
+            "y": 303.72935237343404,
             "subject": null,
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "commitHash": "117d50e",
@@ -4537,10 +4537,10 @@
                     "usage": "OutputPort"
                 },
                 {
-                    "name": "filepath",
-                    "value": "$DLT_ROOT/Chilies_metadata.db",
+                    "name": "db_path",
+                    "value": "",
                     "defaultValue": "None",
-                    "description": "File path for this file. In many cases this does not need to be specified. If it has a \\/ at the end it will be treated as a directory name and the filename will be generated. If it does not have a \\/, the last part will be treated as a filename. If filepath does not start with \\/ (relative path) then the session directory will be prepended to make the path absolute.\"",
+                    "description": "",
                     "readonly": false,
                     "type": "String",
                     "precious": false,
@@ -4549,7 +4549,7 @@
                     "encoding": "pickle",
                     "id": "e300c46c-b422-4582-a40f-33cbc4e0dba3",
                     "parameterType": "ApplicationArgument",
-                    "usage": "NoPort"
+                    "usage": "InputPort"
                 },
                 {
                     "name": "check_filepath_exists",
@@ -5732,8 +5732,8 @@
             "id": "75ace9fd-e15b-475e-bd76-cfe94e79272e",
             "name": "trigger_db",
             "description": "Determines whether the input should trigger a database operation.\n\n    Returns True if:\n    - The input is a non-empty NumPy array and its first element is NOT a string.\n    - The input is an empty NumPy array.\n    - The input is not a NumPy array.\n\n    Returns False only if the input is a non-empty NumPy array and the first element is a string.",
-            "x": 99.4944718310675,
-            "y": 239.64351848003986,
+            "x": 70.78350194957287,
+            "y": 134.8484784125843,
             "subject": null,
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "commitHash": "117d50e",
@@ -5948,8 +5948,8 @@
             "id": "77db1f13-4311-47de-9670-6f1b24fa4323",
             "name": "trigger_in",
             "description": "In-memory storage of intermediate data products",
-            "x": 58.10566368685302,
-            "y": 306.22300085657486,
+            "x": 9.297014888312107,
+            "y": 194.25021831874568,
             "subject": null,
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "commitHash": "117d50e",
@@ -6097,8 +6097,8 @@
             "id": "8c883ead-4d61-4e09-a9ab-60c276b1b3ce",
             "name": "verify_db_integrity",
             "description": "Verify that all file references in the metadata SQLite database exist on disk,\n    and clean up invalid or missing references accordingly.\n\n    This function performs the following actions:\n    - If `trigger_in` is False, the function exits early without performing any checks.\n    - For each row in the `metadata` table:\n        - If no referenced files (in `dlg_name` or any dynamic column after `size`) exist on disk,\n          the row is deleted.\n        - If only some files are missing, the corresponding column(s) are cleared (set to NULL).\n\n    Parameters\n    ----------\n    db_path : str\n        Path to the SQLite metadata database file.\n    trigger_in : bool\n        If True, triggers the integrity check. If False, the function exits immediately.\n\n    Returns\n    -------\n    bool\n        True if the database was verified (i.e., `trigger_in` was True and the check completed).\n        False otherwise (e.g., if the database file does not exist or `trigger_in` is False).\n\n    Notes\n    -----\n    - Fixed columns (`dir_path`, `dlg_name`, `base_name`, `year`, `start_freq`, `end_freq`, `bandwidth`, `size`)\n      are never cleared.\n    - All other columns are treated as dynamic file references and are individually validated.\n    - Uses `rowid` to identify and modify/delete rows.\n    - Changes are committed in-place and logged.",
-            "x": -54.42150011336227,
-            "y": 350.18255074731275,
+            "x": -84.56801848893166,
+            "y": 284.14732001987505,
             "subject": null,
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "commitHash": "483b909",
@@ -6328,8 +6328,8 @@
             "id": "2eb66c54-ee18-4200-be3e-5448099629a9",
             "name": "trigger_in",
             "description": "In-memory storage of intermediate data products",
-            "x": -159.9833562691732,
-            "y": 267.5931432626346,
+            "x": -227.45413549068573,
+            "y": 389.61476525898684,
             "subject": null,
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "commitHash": "117d50e",
@@ -6477,8 +6477,8 @@
             "id": "fe649335-82a1-45ad-b3a2-341547a6675b",
             "name": "export_metadata_to_csv",
             "description": "Export the entire 'metadata' table from a SQLite database to a CSV file.\n\n    Parameters\n    ----------\n    trigger_in:\n        to make function wait\n    db_path : str\n        Path to the SQLite database file (e.g., METADATA_DB).\n    csv_path : str\n        Path to the output CSV file (e.g., METADATA_CSV).\n\n    Returns\n    -------\n    None",
-            "x": -278.57938625844304,
-            "y": 245.09775875046267,
+            "x": -702.0661920104893,
+            "y": 424.5413205098043,
             "subject": null,
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "commitHash": "483b909",
@@ -6670,7 +6670,7 @@
                     "encoding": "path",
                     "id": "0bed44dc-7630-4bcc-9a5e-c47d82e634dd",
                     "parameterType": "ApplicationArgument",
-                    "usage": "InputPort"
+                    "usage": "OutputPort"
                 },
                 {
                     "name": "trigger_in",
@@ -8149,14 +8149,6 @@
             "closesLoop": false
         },
         {
-            "from": "0ff1bcd1-eb8b-4e8d-a9a4-23a62dfcdde5",
-            "fromPort": "384292b7-e5fd-4c50-ab4b-d42e4fb28d83",
-            "to": "8619a7bc-d0a3-40c3-a260-e42edad52493",
-            "toPort": "5c600a08-47c4-49e4-8857-7bcd1381cb27",
-            "loop_aware": "0",
-            "closesLoop": false
-        },
-        {
             "from": "5c3ed741-2291-4420-8a90-1556e8743afb",
             "fromPort": "93380d43-6813-42ca-97a7-33a4b5b843e7",
             "to": "fa85e15e-95b3-458c-99bc-2fbad49609a8",
@@ -8233,22 +8225,6 @@
             "fromPort": "a68627aa-61f9-4ef0-927d-779bd2a01799",
             "to": "e67761d4-53e2-4071-a27e-a3b0f6ab8561",
             "toPort": "6a0b5618-226f-4273-8656-19539abe8a00",
-            "loop_aware": "0",
-            "closesLoop": false
-        },
-        {
-            "from": "0ff1bcd1-eb8b-4e8d-a9a4-23a62dfcdde5",
-            "fromPort": "384292b7-e5fd-4c50-ab4b-d42e4fb28d83",
-            "to": "e67761d4-53e2-4071-a27e-a3b0f6ab8561",
-            "toPort": "175d99b1-562a-4e8e-b5a2-f766b65f7902",
-            "loop_aware": "0",
-            "closesLoop": false
-        },
-        {
-            "from": "6c86cd68-852c-42f5-965c-f1027f61f6a6",
-            "fromPort": "de7b46f0-1976-4110-b4ce-c98f7f03385f",
-            "to": "3852b90f-e209-439e-90c6-0861a55db49e",
-            "toPort": "d6e7dccb-3ee4-4483-9299-11044183bf2e",
             "loop_aware": "0",
             "closesLoop": false
         },
@@ -8385,14 +8361,6 @@
             "fromPort": "8baa6644-457c-4c63-bb49-f37aaa8996eb",
             "to": "8c883ead-4d61-4e09-a9ab-60c276b1b3ce",
             "toPort": "d3f31afe-7464-4d16-801d-d8341c47ec06",
-            "loop_aware": "0",
-            "closesLoop": false
-        },
-        {
-            "from": "0ff1bcd1-eb8b-4e8d-a9a4-23a62dfcdde5",
-            "fromPort": "384292b7-e5fd-4c50-ab4b-d42e4fb28d83",
-            "to": "fe649335-82a1-45ad-b3a2-341547a6675b",
-            "toPort": "0bed44dc-7630-4bcc-9a5e-c47d82e634dd",
             "loop_aware": "0",
             "closesLoop": false
         },
@@ -8538,6 +8506,38 @@
             "to": "0654573a-ac68-4f53-8532-c44fa443d728",
             "toPort": "331dce40-8995-440a-be9c-1634cd16b899",
             "loop_aware": "1",
+            "closesLoop": false
+        },
+        {
+            "from": "3852b90f-e209-439e-90c6-0861a55db49e",
+            "fromPort": "d6e7dccb-3ee4-4483-9299-11044183bf2e",
+            "to": "6c86cd68-852c-42f5-965c-f1027f61f6a6",
+            "toPort": "e300c46c-b422-4582-a40f-33cbc4e0dba3",
+            "loop_aware": "0",
+            "closesLoop": false
+        },
+        {
+            "from": "e67761d4-53e2-4071-a27e-a3b0f6ab8561",
+            "fromPort": "175d99b1-562a-4e8e-b5a2-f766b65f7902",
+            "to": "0ff1bcd1-eb8b-4e8d-a9a4-23a62dfcdde5",
+            "toPort": "09046b83-92ec-48fd-8c35-5919f8405762",
+            "loop_aware": "0",
+            "closesLoop": false
+        },
+        {
+            "from": "fe649335-82a1-45ad-b3a2-341547a6675b",
+            "fromPort": "0bed44dc-7630-4bcc-9a5e-c47d82e634dd",
+            "to": "0ff1bcd1-eb8b-4e8d-a9a4-23a62dfcdde5",
+            "toPort": "09046b83-92ec-48fd-8c35-5919f8405762",
+            "loop_aware": "0",
+            "closesLoop": false
+        },
+        {
+            "from": "8619a7bc-d0a3-40c3-a260-e42edad52493",
+            "fromPort": "5c600a08-47c4-49e4-8857-7bcd1381cb27",
+            "to": "0ff1bcd1-eb8b-4e8d-a9a4-23a62dfcdde5",
+            "toPort": "09046b83-92ec-48fd-8c35-5919f8405762",
+            "loop_aware": "0",
             "closesLoop": false
         }
     ]
