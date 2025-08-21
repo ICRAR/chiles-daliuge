@@ -1,6 +1,7 @@
 import tempfile
 from os.path import join
-
+import subprocess
+from pathlib import Path
 from casatools import quanta
 from typing import Union, List
 from chiles_daliuge.common import *
@@ -9,84 +10,244 @@ process_ms_flag = True
 
 LOG = logging.getLogger(__name__)
 
+#
+# def copy_sky_model(sky_model_source: Union[str, bytes], temporary_directory: str) -> str:
+#     """
+#     Copy or extract a sky model archive or directory into a temporary directory,
+#     and convert any absolute symbolic links into relative links.
+#
+#     Parameters
+#     ----------
+#     sky_model_source : str or bytes
+#         Path to the sky model source. This can be either:
+#         - A `.tar` file containing the sky model, which will be extracted.
+#         - A directory containing the sky model, which will be recursively copied.
+#         Absolute symbolic links within the source will be rewritten as relative
+#         if they point within the original source tree.
+#
+#     temporary_directory : str
+#         Destination directory where the sky model will be placed.
+#
+#     Returns
+#     -------
+#     str
+#         Path to the extracted or copied sky model inside the temporary directory.
+#
+#     Raises
+#     ------
+#     ValueError
+#         If `sky_model_source` is neither a `.tar` file nor a valid directory.
+#
+#     Notes
+#     -----
+#     - If the `.tar` file does not extract into a subdirectory, the function returns `temporary_directory`.
+#     - Relative symbolic links help preserve portability across filesystems and environments.
+#     """
+#
+#     def make_symlinks_relative(target_dir: str):
+#         for root, dirs, files in os.walk(target_dir):
+#             for name in dirs + files:
+#                 full_path = os.path.join(root, name)
+#                 if os.path.islink(full_path):
+#                     link_target = os.readlink(full_path)
+#                     # Only rewrite absolute symlinks that are within the original source tree
+#                     if os.path.isabs(link_target):
+#                         abs_target_path = os.path.realpath(link_target)
+#                         if abs_target_path.startswith(os.path.realpath(sky_model_source)):
+#                             rel_target_path = os.path.relpath(abs_target_path, start=os.path.dirname(full_path))
+#                             os.remove(full_path)
+#                             os.symlink(rel_target_path, full_path)
+#
+#     if isinstance(sky_model_source, str) and sky_model_source.endswith(".tar"):
+#         LOG.info(f"Untarring {sky_model_source} to {temporary_directory}")
+#         untar_file(sky_model_source, temporary_directory, gz=False)
+#
+#         # Infer the directory created during untar
+#         basename = os.path.basename(sky_model_source).replace(".tar", "")
+#         dest_path = os.path.join(temporary_directory, basename)
+#
+#         if not os.path.exists(dest_path):
+#             # fallback: return temporary_directory if .tar file doesn't untar into a named subfolder
+#             return temporary_directory
+#
+#         make_symlinks_relative(dest_path)
+#         return dest_path
+#
+#     elif os.path.isdir(sky_model_source):
+#         LOG.info(f"Copying directory {sky_model_source} to {temporary_directory}")
+#         basename = os.path.basename(os.path.abspath(sky_model_source))
+#         dest_path = os.path.join(temporary_directory, basename)
+#
+#         if os.path.exists(dest_path):
+#             shutil.rmtree(dest_path)
+#
+#         shutil.copytree(sky_model_source, dest_path, symlinks=True)
+#         make_symlinks_relative(dest_path)
+#         return dest_path
+#
+#     else:
+#         raise ValueError(f"Invalid sky model input: {sky_model_source} is neither a .tar file nor a directory.")
+#
 
-def copy_sky_model(sky_model_source: Union[str, bytes], temporary_directory: str) -> str:
+import os
+import shutil
+import subprocess
+from pathlib import Path
+from typing import Union
+
+# Assumes LOG and untar_file are available in scope
+
+def ensure_local_sky_model(
+    sky_model_local: Union[str, bytes],
+    acacia_bucket: str = "acacia-chiles:2025-04-chiles01/LSM.tar"
+) -> str:
     """
-    Copy or extract a sky model archive or directory into a temporary directory,
-    and convert any absolute symbolic links into relative links.
+    Ensure a local sky model directory exists.
 
-    Parameters
-    ----------
-    sky_model_source : str or bytes
-        Path to the sky model source. This can be either:
-        - A `.tar` file containing the sky model, which will be extracted.
-        - A directory containing the sky model, which will be recursively copied.
-        Absolute symbolic links within the source will be rewritten as relative
-        if they point within the original source tree.
-
-    temporary_directory : str
-        Destination directory where the sky model will be placed.
+    Behavior:
+    - If `sky_model_local` is a directory and exists -> return it.
+    - If `sky_model_local` is a .tar file and exists -> untar next to it (creating sibling dir) and return the dir.
+    - If neither a dir nor a .tar exists:
+        * rclone copy LSM.tar from `acacia_bucket` to the expected local .tar location,
+        * untar next to it (creating sibling dir),
+        * return the created directory path.
 
     Returns
     -------
     str
-        Path to the extracted or copied sky model inside the temporary directory.
+        Local directory path of the sky model.
+    """
+    if not isinstance(sky_model_local, str):
+        raise ValueError("sky_model_local must be a filesystem path string")
 
-    Raises
-    ------
-    ValueError
-        If `sky_model_source` is neither a `.tar` file nor a valid directory.
+    src = Path(sky_model_local)
 
-    Notes
-    -----
-    - If the `.tar` file does not extract into a subdirectory, the function returns `temporary_directory`.
-    - Relative symbolic links help preserve portability across filesystems and environments.
+    def _rclone_copyto(remote: str, local: str):
+        Path(local).parent.mkdir(parents=True, exist_ok=True)
+        LOG.info(f"Fetching {remote} -> {local} via rclone")
+        subprocess.run(["rclone", "copyto", remote, local], check=True)
+
+    # Case 1: caller passed a directory path
+    if src.suffix == "":
+        dir_path = src
+        tar_path = dir_path.with_suffix(".tar")
+        if dir_path.is_dir():
+            LOG.info(f"[ensure] Found local directory: {dir_path}")
+            return str(dir_path)
+
+        # Directory missing → ensure tar exists; if not, fetch it
+        if not tar_path.exists():
+            LOG.info(f"[ensure] {dir_path} not found. {tar_path} not found. Attempting rclone fetch.")
+            _rclone_copyto(acacia_bucket, str(tar_path))
+        else:
+            LOG.info(f"[ensure] Using existing tar: {tar_path}")
+
+        # Untar to the tar's parent, producing sibling directory
+        LOG.info(f"[ensure] Untarring {tar_path} to parent {tar_path.parent}")
+        untar_file(str(tar_path), str(tar_path.parent), gz=False)
+
+        # Directory should now exist (named after tar basename without .tar)
+        produced_dir = tar_path.parent / tar_path.stem
+        if produced_dir.is_dir():
+            LOG.info(f"[ensure] Created directory: {produced_dir}")
+            return str(produced_dir)
+        else:
+            # Fallback: tar didn’t produce a named subfolder; return parent
+            LOG.warning(f"[ensure] Tar did not produce a named subfolder. Returning {tar_path.parent}")
+            return str(tar_path.parent)
+
+    # Case 2: caller passed a .tar path
+    elif src.suffix == ".tar":
+        tar_path = src
+        dir_path = tar_path.parent / tar_path.stem
+
+        if dir_path.is_dir():
+            LOG.info(f"[ensure] Found local directory next to tar: {dir_path}")
+            return str(dir_path)
+
+        if not tar_path.exists():
+            LOG.info(f"[ensure] {tar_path} not found. Attempting rclone fetch.")
+            _rclone_copyto(acacia_bucket, str(tar_path))
+        else:
+            LOG.info(f"[ensure] Using existing tar: {tar_path}")
+
+        LOG.info(f"[ensure] Untarring {tar_path} to parent {tar_path.parent}")
+        untar_file(str(tar_path), str(tar_path.parent), gz=False)
+
+        if dir_path.is_dir():
+            LOG.info(f"[ensure] Created directory: {dir_path}")
+            return str(dir_path)
+        else:
+            LOG.warning(f"[ensure] Tar did not produce a named subfolder. Returning {tar_path.parent}")
+            return str(tar_path.parent)
+
+    # Case 3: caller passed something else (file with other suffix or non-existent)
+    else:
+        # Treat it as a directory intent; normalize to sibling .tar and repeat logic
+        guessed_dir = src
+        tar_path = guessed_dir.with_suffix(".tar")
+        if guessed_dir.is_dir():
+            LOG.info(f"[ensure] Found local directory: {guessed_dir}")
+            return str(guessed_dir)
+
+        if not tar_path.exists():
+            LOG.info(f"[ensure] {guessed_dir} not found. {tar_path} not found. Attempting rclone fetch.")
+            _rclone_copyto(acacia_bucket, str(tar_path))
+        else:
+            LOG.info(f"[ensure] Using existing tar: {tar_path}")
+
+        LOG.info(f"[ensure] Untarring {tar_path} to parent {tar_path.parent}")
+        untar_file(str(tar_path), str(tar_path.parent), gz=False)
+
+        produced_dir = tar_path.parent / tar_path.stem
+        if produced_dir.is_dir():
+            LOG.info(f"[ensure] Created directory: {produced_dir}")
+            return str(produced_dir)
+        else:
+            LOG.warning(f"[ensure] Tar did not produce a named subfolder. Returning {tar_path.parent}")
+            return str(tar_path.parent)
+
+
+def copy_sky_model(
+    sky_model_dir: Union[str, bytes],
+    temporary_directory: str,
+) -> str:
+    """
+    Copy the local sky model directory (ensured by ensure_local_sky_model) into a
+    temporary directory and convert any absolute symbolic links into relative links.
+
+    This preserves original external behavior while delegating presence/fetch/untar
+    to `ensure_local_sky_model`.
     """
 
-    def make_symlinks_relative(target_dir: str):
+    def make_symlinks_relative(target_dir: str, source_root: str):
         for root, dirs, files in os.walk(target_dir):
             for name in dirs + files:
                 full_path = os.path.join(root, name)
                 if os.path.islink(full_path):
                     link_target = os.readlink(full_path)
-                    # Only rewrite absolute symlinks that are within the original source tree
                     if os.path.isabs(link_target):
                         abs_target_path = os.path.realpath(link_target)
-                        if abs_target_path.startswith(os.path.realpath(sky_model_source)):
+                        # Only rewrite absolute symlinks that point within the original source tree
+                        if abs_target_path.startswith(os.path.realpath(source_root)):
                             rel_target_path = os.path.relpath(abs_target_path, start=os.path.dirname(full_path))
                             os.remove(full_path)
                             os.symlink(rel_target_path, full_path)
 
-    if isinstance(sky_model_source, str) and sky_model_source.endswith(".tar"):
-        LOG.info(f"Untarring {sky_model_source} to {temporary_directory}")
-        untar_file(sky_model_source, temporary_directory, gz=False)
+    # 2) Copy directory into `temporary_directory`
+    basename = os.path.basename(sky_model_dir.rstrip(os.sep))
+    dest_path = os.path.join(temporary_directory, basename)
 
-        # Infer the directory created during untar
-        basename = os.path.basename(sky_model_source).replace(".tar", "")
-        dest_path = os.path.join(temporary_directory, basename)
+    LOG.info(f"Copying directory {sky_model_dir} to {dest_path}")
+    if os.path.exists(dest_path):
+        shutil.rmtree(dest_path)
 
-        if not os.path.exists(dest_path):
-            # fallback: return temporary_directory if .tar file doesn't untar into a named subfolder
-            return temporary_directory
+    shutil.copytree(sky_model_dir, dest_path, symlinks=True)
 
-        make_symlinks_relative(dest_path)
-        return dest_path
+    # 3) Rewrite absolute symlinks (within original source tree) to relative
+    make_symlinks_relative(dest_path, source_root=sky_model_dir)
 
-    elif os.path.isdir(sky_model_source):
-        LOG.info(f"Copying directory {sky_model_source} to {temporary_directory}")
-        basename = os.path.basename(os.path.abspath(sky_model_source))
-        dest_path = os.path.join(temporary_directory, basename)
-
-        if os.path.exists(dest_path):
-            shutil.rmtree(dest_path)
-
-        shutil.copytree(sky_model_source, dest_path, symlinks=True)
-        make_symlinks_relative(dest_path)
-        return dest_path
-
-    else:
-        raise ValueError(f"Invalid sky model input: {sky_model_source} is neither a .tar file nor a directory.")
-
+    return dest_path
 
 def fetch_split_ms(
         year_list: List[str],
@@ -146,7 +307,7 @@ def fetch_split_ms(
     return matching_dlg_names
 
 
-def do_uvsub(names_list, save_dir, sky_model_tar_file,
+def do_uvsub(names_list, save_dir, sky_model_dir,
              taylor_terms, outliers, channel_average, produce_qa, w_projection_planes, METADATA_DB):
     """
     Prepares data for UV subtraction by checking for existing processed entries,
@@ -158,7 +319,7 @@ def do_uvsub(names_list, save_dir, sky_model_tar_file,
         List of semicolon-separated strings of the form "split_name;year;freq_start;freq_end".
     save_dir : str
         Path to the directory to save tar files.
-    sky_model_tar_file : str
+    sky_model_dir : str
         Path to the tar file containing the sky model to be used.
     taylor_terms : list of str
         File paths to Taylor term sky models.
@@ -189,7 +350,7 @@ def do_uvsub(names_list, save_dir, sky_model_tar_file,
 
     temporary_sky_model = tempfile.mkdtemp(dir=save_dir, prefix="__SKY_TEMP__")
     if sky_model_location is None:
-        sky_model_location = copy_sky_model(sky_model_tar_file, temporary_sky_model)
+        sky_model_location = copy_sky_model(sky_model_dir, temporary_sky_model)
 
     conn = sqlite3.connect(METADATA_DB)
 

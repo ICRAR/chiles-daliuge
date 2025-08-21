@@ -38,13 +38,47 @@ def list_lsm_and_region(bucket_path: str) -> List[str]:
         print(f"[ERROR] JSON parse error on {bucket_path}: {e}", file=sys.stderr)
         return []
 
+
+def find_lsm_tar(bucket_path: str) -> List[str]:
+    """
+    Search only for 'LSM.tar' inside the given bucket_path.
+    Returns a list of matching paths (should normally be at most one).
+    """
+    try:
+        result = subprocess.run(
+            ["rclone", "lsjson", "--recursive", bucket_path],
+            capture_output=True, text=True, check=True
+        )
+        entries = json.loads(result.stdout)
+        matches: List[str] = []
+
+        for e in entries:
+            name = e.get("Name", "")
+            if not e.get("IsDir", False) and name == "LSM.tar":
+                full = f"{bucket_path}/{e['Path']}"
+                print(f"[FOUND] {full}")
+                matches.append(full)
+
+        if not matches:
+            print(f"[INFO] No LSM.tar found in {bucket_path}")
+
+        return matches
+
+    except subprocess.CalledProcessError as e:
+        print(f"[ERROR] rclone failed on {bucket_path}: {e.stderr}", file=sys.stderr)
+        return []
+    except json.JSONDecodeError as e:
+        print(f"[ERROR] JSON parse error on {bucket_path}: {e}", file=sys.stderr)
+        return []
+
 if __name__ == "__main__":
     target_buckets = [
         "acacia-chiles:2025-04-chiles01",
-        "acacia-chiles:2025-04-chiles01-lsm",
-        "acacia-chiles:chiles"
+        #"acacia-chiles:2025-04-chiles01-lsm",
+        #"acacia-chiles:chiles"
     ]
 
     for bucket in target_buckets:
         print(f"\n=== Scanning bucket: {bucket} ===")
-        list_lsm_and_region(bucket)
+        #list_lsm_and_region(bucket)
+        find_lsm_tar(bucket)
