@@ -180,36 +180,38 @@ def ensure_local_sky_model(
         else:
             LOG.warning(f"[ensure] Tar did not produce a named subfolder. Returning {tar_path.parent}")
             return str(tar_path.parent)
-
-    # Case 3: caller passed something else (file with other suffix or non-existent)
     else:
-        # Treat it as a directory intent; normalize to sibling .tar and repeat logic
-        guessed_dir = src
-        tar_path = guessed_dir.with_suffix(".tar")
-        if guessed_dir.is_dir():
-            LOG.info(f"[ensure] Found local directory: {guessed_dir}")
-            return str(guessed_dir)
-
-        if not tar_path.exists():
-            LOG.info(f"[ensure] {guessed_dir} not found. {tar_path} not found. Attempting rclone fetch.")
-            _rclone_copyto(acacia_bucket, str(tar_path))
-        else:
-            LOG.info(f"[ensure] Using existing tar: {tar_path}")
-
-        LOG.info(f"[ensure] Untarring {tar_path} to parent {tar_path.parent}")
-        untar_file(str(tar_path), str(tar_path.parent), gz=False)
-
-        produced_dir = tar_path.parent / tar_path.stem
-        if produced_dir.is_dir():
-            LOG.info(f"[ensure] Created directory: {produced_dir}")
-            return str(produced_dir)
-        else:
-            LOG.warning(f"[ensure] Tar did not produce a named subfolder. Returning {tar_path.parent}")
-            return str(tar_path.parent)
+        LOG.warning(f"[Warning] Unable to locate LSM.")
+        return ""
+    # # Case 3: caller passed something else (file with other suffix or non-existent)
+    # else:
+    #     # Treat it as a directory intent; normalize to sibling .tar and repeat logic
+    #     guessed_dir = src
+    #     tar_path = guessed_dir.with_suffix(".tar")
+    #     if guessed_dir.is_dir():
+    #         LOG.info(f"[ensure] Found local directory: {guessed_dir}")
+    #         return str(guessed_dir)
+    #
+    #     if not tar_path.exists():
+    #         LOG.info(f"[ensure] {guessed_dir} not found. {tar_path} not found. Attempting rclone fetch.")
+    #         _rclone_copyto(acacia_bucket, str(tar_path))
+    #     else:
+    #         LOG.info(f"[ensure] Using existing tar: {tar_path}")
+    #
+    #     LOG.info(f"[ensure] Untarring {tar_path} to parent {tar_path.parent}")
+    #     untar_file(str(tar_path), str(tar_path.parent), gz=False)
+    #
+    #     produced_dir = tar_path.parent / tar_path.stem
+    #     if produced_dir.is_dir():
+    #         LOG.info(f"[ensure] Created directory: {produced_dir}")
+    #         return str(produced_dir)
+    #     else:
+    #         LOG.warning(f"[ensure] Tar did not produce a named subfolder. Returning {tar_path.parent}")
+    #         return str(tar_path.parent)
 
 
 def copy_sky_model(
-    sky_model_dir: Union[str, bytes],
+    sky_model_dir: list,
     temporary_directory: str,
 ) -> str:
     """
@@ -235,7 +237,17 @@ def copy_sky_model(
                             os.symlink(rel_target_path, full_path)
 
     # 2) Copy directory into `temporary_directory`
-    basename = os.path.basename(sky_model_dir.rstrip(os.sep))
+    #basename = os.path.basename(sky_model_dir.rstrip(os.sep))
+
+    LOG.info(f"copy: sky_model_dir: {sky_model_dir}")
+
+    # Ensure basename is a string path
+    basename = os.path.basename(os.path.normpath(sky_model_dir))
+
+    # Ensure temporary_directory is a string (not a function)
+    if callable(temporary_directory):
+        temporary_directory = temporary_directory()
+
     dest_path = os.path.join(temporary_directory, basename)
 
     LOG.info(f"Copying directory {sky_model_dir} to {dest_path}")
@@ -243,11 +255,10 @@ def copy_sky_model(
         shutil.rmtree(dest_path)
 
     shutil.copytree(sky_model_dir, dest_path, symlinks=True)
-
-    # 3) Rewrite absolute symlinks (within original source tree) to relative
     make_symlinks_relative(dest_path, source_root=sky_model_dir)
 
     return dest_path
+
 
 def fetch_split_ms(
         year_list: List[str],
@@ -340,7 +351,7 @@ def do_uvsub(names_list, save_dir, sky_model_dir,
         Array of stringified configuration entries for UV subtraction tasks,
         excluding any already present in the metadata database.
     """
-
+    LOG.info(f"sky_model_dir: {sky_model_dir}")
     os.makedirs(save_dir, exist_ok=True)
 
     sky_model_location = None
