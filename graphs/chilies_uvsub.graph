@@ -478,6 +478,15 @@
             "loop_aware": "0",
             "to": "49a90ca2-3db0-4d48-a08e-6d3e656513b4",
             "toPort": "1ff33601-49c2-46c3-9c47-286c5a3e8c7e"
+        },
+        {
+            "closesLoop": false,
+            "comment": "",
+            "from": "f76f72da-9d2e-4819-b94f-3b93323387b3",
+            "fromPort": "3d6a768a-6819-47e9-8081-fb1d9a1278f9",
+            "loop_aware": "0",
+            "to": "57cfb385-2a90-4b7f-bf37-e730a98d7bb8",
+            "toPort": "1a3bdc90-5f8d-4c02-b809-e1263c10666b"
         }
     ],
     "modelData": {
@@ -489,7 +498,7 @@
         "generatorCommitHash": "8566c0d3db3eb8ddca7b3342a6eecc023269b147",
         "generatorName": "EAGLE",
         "generatorVersion": "v6.8.0",
-        "lastModifiedDatetime": 1755763523.282783,
+        "lastModifiedDatetime": 1756441774.892426,
         "lastModifiedEmail": "",
         "lastModifiedName": "",
         "numLGNodes": 43,
@@ -1387,7 +1396,7 @@
                 {
                     "defaultValue": "",
                     "description": "",
-                    "encoding": "utf-8",
+                    "encoding": "pickle",
                     "id": "1ff33601-49c2-46c3-9c47-286c5a3e8c7e",
                     "name": "sky_model_dir",
                     "options": [],
@@ -1395,7 +1404,7 @@
                     "positional": false,
                     "precious": false,
                     "readonly": false,
-                    "type": "String",
+                    "type": "list",
                     "usage": "InputPort",
                     "value": ""
                 },
@@ -1813,7 +1822,7 @@
             ],
             "inputApplicationComment": "",
             "inputApplicationDescription": "",
-            "inputApplicationId": "b8005604-15b7-43dd-b50d-d9b068881d44",
+            "inputApplicationId": "bfe01134-38a6-48a9-9cc0-3b3982074ec5",
             "inputApplicationName": "GenericScatterApp",
             "inputApplicationType": "DALiuGEApp",
             "isGroup": true,
@@ -7386,7 +7395,7 @@
                 {
                     "defaultValue": "",
                     "description": "",
-                    "encoding": "pickle",
+                    "encoding": "path",
                     "id": "1a3bdc90-5f8d-4c02-b809-e1263c10666b",
                     "name": "base_dir",
                     "options": [],
@@ -7395,7 +7404,7 @@
                     "precious": false,
                     "readonly": false,
                     "type": "String",
-                    "usage": "NoPort",
+                    "usage": "InputPort",
                     "value": "/home/00103780/dlg/MeasurementSets/"
                 },
                 {
@@ -7431,8 +7440,8 @@
             "outputApplicationType": "None",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master-template.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
-            "x": 41.261398279779726,
-            "y": 458.11706370985036
+            "x": -517.3733463197018,
+            "y": 278.13014464067004
         },
         {
             "category": "PyFuncApp",
@@ -7629,7 +7638,7 @@
                     "readonly": false,
                     "type": "String",
                     "usage": "InputPort",
-                    "value": "/home/00103780/dlg/MeasurementSets/"
+                    "value": ""
                 },
                 {
                     "defaultValue": "",
@@ -8214,7 +8223,7 @@
                 {
                     "defaultValue": "",
                     "description": "",
-                    "encoding": "utf-8",
+                    "encoding": "pickle",
                     "id": "edf1884b-4ebd-4b00-8291-67acd8c5f914",
                     "name": "sky_model_dir",
                     "options": [],
@@ -8222,7 +8231,7 @@
                     "positional": false,
                     "precious": false,
                     "readonly": false,
-                    "type": "String",
+                    "type": "list",
                     "usage": "OutputPort",
                     "value": ""
                 },
@@ -8418,7 +8427,7 @@
                     "positional": false,
                     "precious": false,
                     "readonly": false,
-                    "type": "String",
+                    "type": "list",
                     "usage": "InputOutput",
                     "value": ""
                 }
