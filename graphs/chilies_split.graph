@@ -1101,8 +1101,8 @@
             "name": "fetch_original_ms",
             "description": "Fetches Measurement Set (.ms) directories from a remote directory structure using rclone,\n    and tracks them using metadata stored in an SQLite database.\n\n    The function navigates a remote source directory structured by year/date (e.g., /remote/2013/01/)\n    to locate .ms directories. It either creates placeholder files (if `process_ms=False`) or copies\n    the MS directories locally (if `process_ms=True`) into a destination folder using rclone.\n\n    Metadata such as hashed names, frequency information, and sizes are recorded in a persistent\n    SQLite database. Previously recorded MS entries are skipped.\n\n    Parameters\n    ----------\n    source_dir : str\n        Root remote directory containing year/date subfolders with .ms directories.\n    year_list : list of str\n        List of years to include in the search (e.g., [\"2013\", \"2014\"]).\n    copy_directory : str\n        Local destination where .ms files or placeholders will be stored.\n    trigger_in : bool\n        Currently unused; placeholder for future logic or triggering conditions.\n    METADATA_DB : str\n        Path to the SQLite database used to store and check MS metadata.\n    process_ms : bool, optional\n        If True, rclone will copy full .ms directories to `copy_directory`.\n        If False, only empty placeholder files will be created. Default is taken from `process_ms_flag`.\n\n    Returns\n    -------\n    list of str\n        List of hashed .ms names (real or placeholder) that were processed or already recorded.\n\n    Notes\n    -----\n    - Uses rclone commands (`lsf`, `copy`, `size`) to interact with the remote filesystem.\n    - Assumes MS directories have `.ms/` suffix.\n    - Avoids reprocessing MS sets that already exist in the metadata database.\n    - Logs all significant actions and errors.",
             "comment": "",
-            "x": -755.6484227573844,
-            "y": -38.77951999837583,
+            "x": -751.7233898491,
+            "y": -40.74203645251805,
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "commitHash": "8059e41",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master-template.palette",
@@ -2930,7 +2930,7 @@
                 },
                 {
                     "name": "log_level",
-                    "value": "NOTSET",
+                    "value": "DEBUG",
                     "defaultValue": "NOTSET",
                     "description": "Set the log level for this drop",
                     "readonly": false,
@@ -7339,7 +7339,7 @@
             "fields": [
                 {
                     "name": "db_path",
-                    "value": "$HOME/Chilies_metadata.db",
+                    "value": "/home/00087932/dlg/Chilies_metadata.db",
                     "defaultValue": "",
                     "description": "",
                     "readonly": false,
