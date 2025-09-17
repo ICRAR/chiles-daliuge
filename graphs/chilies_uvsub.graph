@@ -464,29 +464,29 @@
         {
             "closesLoop": false,
             "comment": "",
-            "from": "27aaff35-ba1c-4c51-889e-c67d20b4928a",
-            "fromPort": "edf1884b-4ebd-4b00-8291-67acd8c5f914",
-            "loop_aware": "0",
-            "to": "f70274b2-e15a-4181-9b63-6e6e7c93d122",
-            "toPort": "21a2a920-6089-4ff0-9713-2e73f9a573b5"
-        },
-        {
-            "closesLoop": false,
-            "comment": "",
-            "from": "f70274b2-e15a-4181-9b63-6e6e7c93d122",
-            "fromPort": "21a2a920-6089-4ff0-9713-2e73f9a573b5",
-            "loop_aware": "0",
-            "to": "49a90ca2-3db0-4d48-a08e-6d3e656513b4",
-            "toPort": "1ff33601-49c2-46c3-9c47-286c5a3e8c7e"
-        },
-        {
-            "closesLoop": false,
-            "comment": "",
             "from": "f76f72da-9d2e-4819-b94f-3b93323387b3",
             "fromPort": "3d6a768a-6819-47e9-8081-fb1d9a1278f9",
             "loop_aware": "0",
             "to": "57cfb385-2a90-4b7f-bf37-e730a98d7bb8",
             "toPort": "1a3bdc90-5f8d-4c02-b809-e1263c10666b"
+        },
+        {
+            "closesLoop": false,
+            "comment": "",
+            "from": "27aaff35-ba1c-4c51-889e-c67d20b4928a",
+            "fromPort": "edf1884b-4ebd-4b00-8291-67acd8c5f914",
+            "loop_aware": "0",
+            "to": "eab8e2f8-7186-4fcb-a8f9-089e23998d30",
+            "toPort": "f786208e-1410-40f0-81bd-2223969b7e3b"
+        },
+        {
+            "closesLoop": false,
+            "comment": "",
+            "from": "eab8e2f8-7186-4fcb-a8f9-089e23998d30",
+            "fromPort": "f786208e-1410-40f0-81bd-2223969b7e3b",
+            "loop_aware": "0",
+            "to": "49a90ca2-3db0-4d48-a08e-6d3e656513b4",
+            "toPort": "1ff33601-49c2-46c3-9c47-286c5a3e8c7e"
         }
     ],
     "modelData": {
@@ -498,7 +498,7 @@
         "generatorCommitHash": "8566c0d3db3eb8ddca7b3342a6eecc023269b147",
         "generatorName": "EAGLE",
         "generatorVersion": "v6.8.0",
-        "lastModifiedDatetime": 1756441774.892426,
+        "lastModifiedDatetime": 1758085006.792925,
         "lastModifiedEmail": "",
         "lastModifiedName": "",
         "numLGNodes": 43,
@@ -1396,7 +1396,7 @@
                 {
                     "defaultValue": "",
                     "description": "",
-                    "encoding": "pickle",
+                    "encoding": "path",
                     "id": "1ff33601-49c2-46c3-9c47-286c5a3e8c7e",
                     "name": "sky_model_dir",
                     "options": [],
@@ -1404,7 +1404,7 @@
                     "positional": false,
                     "precious": false,
                     "readonly": false,
-                    "type": "list",
+                    "type": "String",
                     "usage": "InputPort",
                     "value": ""
                 },
@@ -1724,7 +1724,7 @@
                     "readonly": false,
                     "type": "Integer",
                     "usage": "NoPort",
-                    "value": 3
+                    "value": 1
                 }
             ],
             "id": "f8e48658-8294-4c35-8854-ea27752317b9",
@@ -1822,7 +1822,7 @@
             ],
             "inputApplicationComment": "",
             "inputApplicationDescription": "",
-            "inputApplicationId": "bfe01134-38a6-48a9-9cc0-3b3982074ec5",
+            "inputApplicationId": "1fc46c42-9e18-4b61-9f12-7e28c8f60c01",
             "inputApplicationName": "GenericScatterApp",
             "inputApplicationType": "DALiuGEApp",
             "isGroup": true,
@@ -8143,7 +8143,7 @@
                     "readonly": false,
                     "type": "String",
                     "usage": "NoPort",
-                    "value": "fetch_split_ms"
+                    "value": "ensure_local_sky_model"
                 },
                 {
                     "defaultValue": "5",
@@ -8223,7 +8223,7 @@
                 {
                     "defaultValue": "",
                     "description": "",
-                    "encoding": "pickle",
+                    "encoding": "path",
                     "id": "edf1884b-4ebd-4b00-8291-67acd8c5f914",
                     "name": "sky_model_dir",
                     "options": [],
@@ -8231,9 +8231,9 @@
                     "positional": false,
                     "precious": false,
                     "readonly": false,
-                    "type": "list",
+                    "type": "String",
                     "usage": "OutputPort",
-                    "value": ""
+                    "value": "/home/00103780/dlg/LSM"
                 },
                 {
                     "defaultValue": "",
@@ -8249,21 +8249,6 @@
                     "type": "String",
                     "usage": "NoPort",
                     "value": "acacia-chiles:2025-04-chiles01/LSM.tar"
-                },
-                {
-                    "defaultValue": "",
-                    "description": "",
-                    "encoding": "path",
-                    "id": "8cca161a-6c24-425c-b5f7-32a79e91e54e",
-                    "name": "sky_model_local",
-                    "options": [],
-                    "parameterType": "ApplicationArgument",
-                    "positional": false,
-                    "precious": false,
-                    "readonly": false,
-                    "type": "String",
-                    "usage": "NoPort",
-                    "value": "/home/00103780/dlg/LSM"
                 }
             ],
             "id": "27aaff35-ba1c-4c51-889e-c67d20b4928a",
@@ -8283,69 +8268,54 @@
             "outputApplicationType": "None",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master-template.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
-            "x": -778.5593867994343,
-            "y": -209.40315913961592
+            "x": -1080.8816462653876,
+            "y": -324.96263283509614
         },
         {
-            "category": "Memory",
+            "category": "Data",
             "categoryType": "Data",
             "color": "#2c2c2c",
             "comment": "",
-            "commitHash": "e76d9b0",
-            "dataHash": "6a0582245c5a9b27e63fb9ca483146a3e48450c972d2614bccb2bb51e0998aeb",
-            "description": "In-memory storage of intermediate data products",
+            "commitHash": "fb279b3",
+            "dataHash": "9331defded36f335bf4846ccda6efb48548038f38ddb796c41122ee1f467a8a5",
+            "description": "A DataDROP that represents a filesystem directory.",
             "drawOrderHint": 0,
             "fields": [
                 {
-                    "defaultValue": "None",
-                    "description": "Data to be loaded into memory",
+                    "defaultValue": "dlg.data.drops.directory.DirectoryDROP",
+                    "description": "Drop class",
                     "encoding": "pickle",
-                    "id": "54904f39-20ec-4bcf-b473-6438c8e24bfb",
-                    "name": "pydata",
-                    "options": [],
-                    "parameterType": "ApplicationArgument",
-                    "positional": false,
-                    "precious": false,
-                    "readonly": false,
-                    "type": "Object",
-                    "usage": "NoPort",
-                    "value": "None"
-                },
-                {
-                    "defaultValue": "False",
-                    "description": "If set the drop will block a skipping chain until the last producer has finished and is not also skipped.",
-                    "encoding": "pickle",
-                    "id": "748227f4-3611-477e-b7b1-d617bc5b0d64",
-                    "name": "block_skip",
+                    "id": "45d18ff2-706a-46c3-aedb-463d0c43b2d5",
+                    "name": "dropclass",
                     "options": [],
                     "parameterType": "ComponentParameter",
                     "positional": false,
                     "precious": false,
                     "readonly": false,
-                    "type": "Boolean",
+                    "type": "String",
                     "usage": "NoPort",
-                    "value": false
+                    "value": "dlg.data.drops.directory.DirectoryDROP"
                 },
                 {
-                    "defaultValue": "False",
-                    "description": "Specifies whether this data component contains data that should not be deleted after execution",
+                    "defaultValue": "directorycontainer",
+                    "description": "Base name of application class",
                     "encoding": "pickle",
-                    "id": "15b29de9-55ac-4209-a224-004e862ba789",
-                    "name": "persist",
+                    "id": "b010d81c-c67c-43c7-bcd4-5193acf1f65d",
+                    "name": "base_name",
                     "options": [],
                     "parameterType": "ComponentParameter",
                     "positional": false,
                     "precious": false,
                     "readonly": false,
-                    "type": "Boolean",
+                    "type": "String",
                     "usage": "NoPort",
-                    "value": false
+                    "value": "directorycontainer"
                 },
                 {
                     "defaultValue": "5",
                     "description": "Estimated size of the data contained in this node",
                     "encoding": "pickle",
-                    "id": "fc45d5ff-f528-45d1-8652-823b059e5b3a",
+                    "id": "2d39e4c6-4872-4978-b307-37ed626ef3e0",
                     "name": "data_volume",
                     "options": [],
                     "parameterType": "ConstraintParameter",
@@ -8360,7 +8330,7 @@
                     "defaultValue": "False",
                     "description": "Is this node the end of a group?",
                     "encoding": "pickle",
-                    "id": "deefab7d-e0b5-41e1-a03e-d34809418fc8",
+                    "id": "fa864807-2a99-4fb6-b03e-b1e96ea8e16c",
                     "name": "group_end",
                     "options": [],
                     "parameterType": "ComponentParameter",
@@ -8372,11 +8342,56 @@
                     "value": false
                 },
                 {
-                    "defaultValue": "False",
-                    "description": "Specifies whether this data component streams input and output data",
+                    "defaultValue": "false",
+                    "description": "Perform a check to make sure the file path exists before proceeding with the application",
                     "encoding": "pickle",
-                    "id": "1b18ea03-5cce-4079-9aa5-d4be95d67569",
-                    "name": "streaming",
+                    "id": "10dfd77a-7e3c-4f9b-8a3a-d42aa3a61d89",
+                    "name": "check_exists",
+                    "options": [],
+                    "parameterType": "ApplicationArgument",
+                    "positional": false,
+                    "precious": false,
+                    "readonly": false,
+                    "type": "Boolean",
+                    "usage": "NoPort",
+                    "value": false
+                },
+                {
+                    "defaultValue": "",
+                    "description": "Directory name/path",
+                    "encoding": "pickle",
+                    "id": "52dbab16-4dec-4640-b711-ab9f08bdc759",
+                    "name": "dirname",
+                    "options": [],
+                    "parameterType": "ApplicationArgument",
+                    "positional": false,
+                    "precious": false,
+                    "readonly": false,
+                    "type": "String",
+                    "usage": "NoPort",
+                    "value": ""
+                },
+                {
+                    "defaultValue": "",
+                    "description": "Overwrite existing directory if exists",
+                    "encoding": "pickle",
+                    "id": "c33a63d0-adec-4f93-ad86-a6677da71dea",
+                    "name": "overwrite_existing",
+                    "options": [],
+                    "parameterType": "ApplicationArgument",
+                    "positional": false,
+                    "precious": false,
+                    "readonly": false,
+                    "type": "Boolean",
+                    "usage": "NoPort",
+                    "value": false
+                },
+                {
+                    "defaultValue": "False",
+                    "description": "If set the drop will block a skipping chain until the last producer has finished and is not also skipped.",
+                    "encoding": "pickle",
+                    "id": "c6e3088e-82f4-4cc8-9663-6fbb6f4c1c63",
+                    "name": "block_skip",
                     "options": [],
                     "parameterType": "ComponentParameter",
                     "positional": false,
@@ -8387,52 +8402,22 @@
                     "value": false
                 },
                 {
-                    "defaultValue": "dlg.data.drops.memory.InMemoryDROP",
-                    "description": "Drop class",
-                    "encoding": "pickle",
-                    "id": "52d3d1ce-aa03-40a3-8248-a6484121ce8e",
-                    "name": "dropclass",
-                    "options": [],
-                    "parameterType": "ComponentParameter",
-                    "positional": false,
-                    "precious": false,
-                    "readonly": false,
-                    "type": "String",
-                    "usage": "NoPort",
-                    "value": "dlg.data.drops.memory.InMemoryDROP"
-                },
-                {
-                    "defaultValue": "memory",
-                    "description": "Base name of application class",
-                    "encoding": "pickle",
-                    "id": "ecd79a25-6701-486d-bc22-08786f1577a6",
-                    "name": "base_name",
-                    "options": [],
-                    "parameterType": "ComponentParameter",
-                    "positional": false,
-                    "precious": false,
-                    "readonly": false,
-                    "type": "String",
-                    "usage": "NoPort",
-                    "value": "memory"
-                },
-                {
                     "defaultValue": "",
                     "description": "",
                     "encoding": "pickle",
-                    "id": "21a2a920-6089-4ff0-9713-2e73f9a573b5",
+                    "id": "f786208e-1410-40f0-81bd-2223969b7e3b",
                     "name": "sky_model_dir",
                     "options": [],
                     "parameterType": "ApplicationArgument",
                     "positional": false,
                     "precious": false,
                     "readonly": false,
-                    "type": "list",
+                    "type": "Object",
                     "usage": "InputOutput",
                     "value": ""
                 }
             ],
-            "id": "f70274b2-e15a-4181-9b63-6e6e7c93d122",
+            "id": "eab8e2f8-7186-4fcb-a8f9-089e23998d30",
             "inputAppFields": [],
             "inputApplicationComment": "",
             "inputApplicationDescription": "",
@@ -8447,10 +8432,10 @@
             "outputApplicationId": null,
             "outputApplicationName": "",
             "outputApplicationType": "None",
-            "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
+            "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/c655269621c5bea980dc6796ad195cdcc3cee07b/daliuge/daliuge-360_merge.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
-            "x": -658.2758628345078,
-            "y": -211.97873962436924
+            "x": -914.9939139706436,
+            "y": -385.51657630613
         }
     ]
 }

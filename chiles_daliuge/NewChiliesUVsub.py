@@ -89,81 +89,68 @@ LOG = logging.getLogger(__name__)
 #         raise ValueError(f"Invalid sky model input: {sky_model_source} is neither a .tar file nor a directory.")
 #
 
-import os
-import shutil
-import subprocess
-from pathlib import Path
-from typing import Union
-
-# Assumes LOG and untar_file are available in scope
 
 def ensure_local_sky_model(
-    sky_model_local: Union[str, bytes],
     acacia_bucket: str = "acacia-chiles:2025-04-chiles01/LSM.tar"
-) -> str:
+):
+    sky_model_dir = "/home/00103780/dlg/LSM"
     """
-    Ensure a local sky model directory exists.
-
-    Behavior:
-    - If `sky_model_local` is a directory and exists -> return it.
-    - If `sky_model_local` is a .tar file and exists -> untar next to it (creating sibling dir) and return the dir.
-    - If neither a dir nor a .tar exists:
-        * rclone copy LSM.tar from `acacia_bucket` to the expected local .tar location,
-        * untar next to it (creating sibling dir),
-        * return the created directory path.
-
-    Returns
-    -------
-    str
-        Local directory path of the sky model.
+    Ensure a local sky model directory exists and return its absolute path as str.
+    Raises on failure (never returns an empty string).
     """
-    if not isinstance(sky_model_local, str):
+    LOG.info(f"Starting ensure_local_sky_model")
+    if isinstance(sky_model_dir, bytes):
+        sky_model_dir = sky_model_dir.decode("utf-8")
+
+    if not isinstance(sky_model_dir, str):
         raise ValueError("sky_model_local must be a filesystem path string")
 
-    src = Path(sky_model_local)
+    src = Path(sky_model_dir)
+    src = src.expanduser().resolve()
 
     def _rclone_copyto(remote: str, local: str):
         Path(local).parent.mkdir(parents=True, exist_ok=True)
         LOG.info(f"Fetching {remote} -> {local} via rclone")
         subprocess.run(["rclone", "copyto", remote, local], check=True)
 
-    # Case 1: caller passed a directory path
-    if src.suffix == "":
+    # If caller passed a directory (or a path without suffix they intend to be a dir)
+    if src.suffix == "" or src.is_dir():
         dir_path = src
-        tar_path = dir_path.with_suffix(".tar")
+        tar_path = (dir_path if dir_path.suffix == ".tar" else dir_path.with_suffix(".tar"))
+
         if dir_path.is_dir():
             LOG.info(f"[ensure] Found local directory: {dir_path}")
-            return str(dir_path)
+            return
 
-        # Directory missing → ensure tar exists; if not, fetch it
+        # Ensure we have a tar to untar
         if not tar_path.exists():
             LOG.info(f"[ensure] {dir_path} not found. {tar_path} not found. Attempting rclone fetch.")
             _rclone_copyto(acacia_bucket, str(tar_path))
         else:
             LOG.info(f"[ensure] Using existing tar: {tar_path}")
 
-        # Untar to the tar's parent, producing sibling directory
         LOG.info(f"[ensure] Untarring {tar_path} to parent {tar_path.parent}")
         untar_file(str(tar_path), str(tar_path.parent), gz=False)
 
-        # Directory should now exist (named after tar basename without .tar)
         produced_dir = tar_path.parent / tar_path.stem
         if produced_dir.is_dir():
             LOG.info(f"[ensure] Created directory: {produced_dir}")
-            return str(produced_dir)
-        else:
-            # Fallback: tar didn’t produce a named subfolder; return parent
-            LOG.warning(f"[ensure] Tar did not produce a named subfolder. Returning {tar_path.parent}")
-            return str(tar_path.parent)
+            return
 
-    # Case 2: caller passed a .tar path
-    elif src.suffix == ".tar":
+        # Fallback: sometimes tars expand flat. Use parent if it now contains files.
+        if any(p.is_dir() or p.is_file() for p in tar_path.parent.iterdir()):
+            LOG.warning(f"[ensure] Tar did not produce a named subfolder. Returning parent {tar_path.parent}")
+
+        raise FileNotFoundError(f"[ensure] After untar, no directory found for {tar_path}")
+
+    # If caller passed a .tar file
+    if src.suffix == ".tar":
         tar_path = src
         dir_path = tar_path.parent / tar_path.stem
 
         if dir_path.is_dir():
             LOG.info(f"[ensure] Found local directory next to tar: {dir_path}")
-            return str(dir_path)
+            return
 
         if not tar_path.exists():
             LOG.info(f"[ensure] {tar_path} not found. Attempting rclone fetch.")
@@ -176,38 +163,17 @@ def ensure_local_sky_model(
 
         if dir_path.is_dir():
             LOG.info(f"[ensure] Created directory: {dir_path}")
-            return str(dir_path)
-        else:
-            LOG.warning(f"[ensure] Tar did not produce a named subfolder. Returning {tar_path.parent}")
-            return str(tar_path.parent)
-    else:
-        LOG.warning(f"[Warning] Unable to locate LSM.")
-        return ""
-    # # Case 3: caller passed something else (file with other suffix or non-existent)
-    # else:
-    #     # Treat it as a directory intent; normalize to sibling .tar and repeat logic
-    #     guessed_dir = src
-    #     tar_path = guessed_dir.with_suffix(".tar")
-    #     if guessed_dir.is_dir():
-    #         LOG.info(f"[ensure] Found local directory: {guessed_dir}")
-    #         return str(guessed_dir)
-    #
-    #     if not tar_path.exists():
-    #         LOG.info(f"[ensure] {guessed_dir} not found. {tar_path} not found. Attempting rclone fetch.")
-    #         _rclone_copyto(acacia_bucket, str(tar_path))
-    #     else:
-    #         LOG.info(f"[ensure] Using existing tar: {tar_path}")
-    #
-    #     LOG.info(f"[ensure] Untarring {tar_path} to parent {tar_path.parent}")
-    #     untar_file(str(tar_path), str(tar_path.parent), gz=False)
-    #
-    #     produced_dir = tar_path.parent / tar_path.stem
-    #     if produced_dir.is_dir():
-    #         LOG.info(f"[ensure] Created directory: {produced_dir}")
-    #         return str(produced_dir)
-    #     else:
-    #         LOG.warning(f"[ensure] Tar did not produce a named subfolder. Returning {tar_path.parent}")
-    #         return str(tar_path.parent)
+            return
+
+        if any(p.is_dir() or p.is_file() for p in tar_path.parent.iterdir()):
+            LOG.warning(f"[ensure] Tar did not produce a named subfolder. Returning parent {tar_path.parent}")
+            return
+
+        raise FileNotFoundError(f"[ensure] After untar, no directory found for {tar_path}")
+
+    # Unsupported suffix
+    raise ValueError(f"[ensure] Unsupported path: {src} (suffix {src.suffix})")
+
 
 
 def copy_sky_model(
