@@ -498,7 +498,7 @@
         "generatorCommitHash": "8566c0d3db3eb8ddca7b3342a6eecc023269b147",
         "generatorName": "EAGLE",
         "generatorVersion": "v6.8.0",
-        "lastModifiedDatetime": 1758176768.420946,
+        "lastModifiedDatetime": 1758175307.659746,
         "lastModifiedEmail": "",
         "lastModifiedName": "",
         "numLGNodes": 43,
@@ -1396,7 +1396,7 @@
                 {
                     "defaultValue": "",
                     "description": "",
-                    "encoding": "pickle",
+                    "encoding": "path",
                     "id": "1ff33601-49c2-46c3-9c47-286c5a3e8c7e",
                     "name": "sky_model_dir",
                     "options": [],
@@ -1532,8 +1532,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master-template.palette",
             "parentId": "f8e48658-8294-4c35-8854-ea27752317b9",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
-            "x": -369.21957788682516,
-            "y": -239.71068986444757
+            "x": -341.7075336133745,
+            "y": -231.52672732740842
         },
         {
             "category": "Memory",
@@ -1724,7 +1724,7 @@
                     "readonly": false,
                     "type": "Integer",
                     "usage": "NoPort",
-                    "value": 3
+                    "value": 1
                 }
             ],
             "id": "f8e48658-8294-4c35-8854-ea27752317b9",
@@ -1822,7 +1822,7 @@
             ],
             "inputApplicationComment": "",
             "inputApplicationDescription": "",
-            "inputApplicationId": "28ef2be4-1b2c-4363-ab82-9f93ed00b6aa",
+            "inputApplicationId": "7c653a44-886f-4b3f-bfb8-9b64db16b174",
             "inputApplicationName": "GenericScatterApp",
             "inputApplicationType": "DALiuGEApp",
             "isGroup": true,
@@ -8223,7 +8223,7 @@
                 {
                     "defaultValue": "",
                     "description": "",
-                    "encoding": "pickle",
+                    "encoding": "utf-8",
                     "id": "edf1884b-4ebd-4b00-8291-67acd8c5f914",
                     "name": "sky_model_dir",
                     "options": [],
@@ -8400,21 +8400,6 @@
                     "type": "String",
                     "usage": "InputOutput",
                     "value": ""
-                },
-                {
-                    "defaultValue": "",
-                    "description": "",
-                    "encoding": "pickle",
-                    "id": "46127bf7-4df9-42a5-8950-fd22be7e91ff",
-                    "name": "pydata",
-                    "options": [],
-                    "parameterType": "ApplicationArgument",
-                    "positional": false,
-                    "precious": false,
-                    "readonly": false,
-                    "type": "String",
-                    "usage": "NoPort",
-                    "value": "None"
                 }
             ],
             "id": "b11db587-22f7-4536-ba64-fe3b91244d44",
@@ -8434,7 +8419,7 @@
             "outputApplicationType": "None",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
-            "x": -900.7844366056146,
+            "x": -903.1384591637237,
             "y": -314.05741257307443
         }
     ]

@@ -2,9 +2,8 @@ import tempfile
 from os.path import join
 import subprocess
 from pathlib import Path
-from casatools import quanta
-from typing import Union, List
 from chiles_daliuge.common import *
+import logging
 
 process_ms_flag = True
 
@@ -91,17 +90,14 @@ LOG = logging.getLogger(__name__)
 
 
 def ensure_local_sky_model(
-    acacia_bucket: str = "acacia-chiles:2025-04-chiles01/LSM.tar"
-):
-    sky_model_dir = "/home/00103780/dlg/LSM"
+    acacia_bucket: str
+) -> str:
     """
     Ensure a local sky model directory exists and return its absolute path as str.
     Raises on failure (never returns an empty string).
     """
     LOG.info(f"Starting ensure_local_sky_model")
-    if isinstance(sky_model_dir, bytes):
-        sky_model_dir = sky_model_dir.decode("utf-8")
-
+    sky_model_dir = "/home/00103780/dlg/LSM"
     if not isinstance(sky_model_dir, str):
         raise ValueError("sky_model_local must be a filesystem path string")
 
@@ -120,7 +116,7 @@ def ensure_local_sky_model(
 
         if dir_path.is_dir():
             LOG.info(f"[ensure] Found local directory: {dir_path}")
-            return
+            return sky_model_dir
 
         # Ensure we have a tar to untar
         if not tar_path.exists():
@@ -135,7 +131,7 @@ def ensure_local_sky_model(
         produced_dir = tar_path.parent / tar_path.stem
         if produced_dir.is_dir():
             LOG.info(f"[ensure] Created directory: {produced_dir}")
-            return
+            return sky_model_dir
 
         # Fallback: sometimes tars expand flat. Use parent if it now contains files.
         if any(p.is_dir() or p.is_file() for p in tar_path.parent.iterdir()):
@@ -150,7 +146,7 @@ def ensure_local_sky_model(
 
         if dir_path.is_dir():
             LOG.info(f"[ensure] Found local directory next to tar: {dir_path}")
-            return
+            return sky_model_dir
 
         if not tar_path.exists():
             LOG.info(f"[ensure] {tar_path} not found. Attempting rclone fetch.")
@@ -163,17 +159,16 @@ def ensure_local_sky_model(
 
         if dir_path.is_dir():
             LOG.info(f"[ensure] Created directory: {dir_path}")
-            return
+            return sky_model_dir
 
         if any(p.is_dir() or p.is_file() for p in tar_path.parent.iterdir()):
             LOG.warning(f"[ensure] Tar did not produce a named subfolder. Returning parent {tar_path.parent}")
-            return
+            return sky_model_dir
 
         raise FileNotFoundError(f"[ensure] After untar, no directory found for {tar_path}")
 
     # Unsupported suffix
     raise ValueError(f"[ensure] Unsupported path: {src} (suffix {src.suffix})")
-
 
 
 def copy_sky_model(
