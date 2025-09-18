@@ -167,7 +167,7 @@ def do_single_uvsub(
         Start frequency of the sub-band.
     freq_en : str
         End frequency of the sub-band.
-    uv_sub_name : str
+    uvsub_name : str
         Base name for the output MS and tar file after UV subtraction.
     METADATA_DB : str
         Path to the SQLite metadata database to be updated after processing.
