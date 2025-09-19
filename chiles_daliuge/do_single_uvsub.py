@@ -11,7 +11,17 @@ import pylab as pl
 from casaplotms import plotms
 from casatasks import uvsub, statwt, split, phaseshift
 from casatools import imager, ms, table, quanta, image
+from casatools import msmetadata as _msmetadata
 from typing import List, Tuple, Union
+
+try:
+    from casatasks import plotms  # preferred if available
+except ImportError:
+    # Some CASA builds ship plotms in a separate module
+    from casaplotms import plotms
+
+# Instantiate the msmetadata tool
+msmd = _msmetadata()
 
 # Set up logging
 LOG = logging.getLogger(__name__)
@@ -222,10 +232,8 @@ def do_single_uvsub(
         tmp_name1 = f"{tmp_name}.0"
         tmp_name2 = f"{tmp_name}.1"
 
-        if produce_qa:
-            png_directory = uv_sub_path + "_qa_pngs"  # changed from uv_sub_path to tmp_name
-            if not exists(png_directory):
-                makedirs(png_directory)
+        # if produce_qa:
+
 
         try:
             im = imager()
@@ -268,48 +276,170 @@ def do_single_uvsub(
                 # Now do the subtraction
                 uvsub(vis=in_ms, reverse=False)
 
+
                 if produce_qa:
-                    LOG.info(f"Starting QA plot generation A.")
-                    ret_d = plotms(
-                        vis=in_ms,
-                        xaxis="freq",
-                        yaxis="real",
-                        avgtime="43200",
-                        overwrite=True,
-                        avgbaseline=True,
-                        showgui=False,
-                        ydatacolumn="data",
-                        xdatacolumn="data",
-                        plotfile=join(png_directory, in_ms.rsplit("/")[-1] + "_infield_subtraction_data.png")
+                    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+                    png_directory = uv_sub_path + "_qa_pngs"
+                    os.makedirs(png_directory, exist_ok=True)
+
+                    # --- Helper: pick a safe SPW + central channel range to allow avgbaseline later ---
+                    def central_spw_slice(ms_path: str):
+                        """
+                        Return a safe central SPW:channel selection string like 'spw:lo~hi',
+                        or ('', None) if unavailable.
+                        """
+                        try:
+                            msmd.open(ms_path)
+                            # Prefer first field’s SPWs; fall back to first observation’s SPWs
+                            fields = msmd.fields()
+                            spws = msmd.spwsforfield(fields[0]) if fields else msmd.spwsforobs(0)
+                            if not len(spws):
+                                return "", None
+                            spw = int(spws[0])
+                            nchan = int(msmd.nchan(spw))
+                            msmd.close()
+
+                            if nchan <= 0:
+                                return "", None
+
+                            lo = int(0.25 * nchan)
+                            hi = max(lo + 16, int(0.75 * nchan) - 1)
+                            return f"{spw}:{lo}~{hi}", (spw, lo, hi)
+
+                        except Exception as e:
+                            try:
+                                msmd.close()
+                            except Exception:
+                                pass
+                            # Log and fall back to full band
+                            LOG.warning(f"[msmd] metadata fallback due to: {e}")
+                            return "", None
+
+
+                    def _safe_plotms(ms_path: str, ycol: str, xcol: str, suffix: str, yaxis: str = "real", spw: str = ""):
+                        out_png = join(png_directory, f"{basename(ms_path)}_{suffix}.png")
+                        configs = [
+                            # 1) Medium detail but safe: longer time avg, milder channel avg (better S/N across band)
+                            dict(averagedata=True, avgtime="900s", avgchannel="4", avgbaseline=False, spw=spw),
+                            # 2) Heavier channel avg, same time (good for noisier data)
+                            dict(averagedata=True, avgtime="900s", avgchannel="8", avgbaseline=False, spw=spw),
+                            # 3) Shorter time avg, no channel avg (preserve more spectral detail)
+                            dict(averagedata=True, avgtime="120s", avgchannel="0", avgbaseline=False, spw=spw),
+                        ]
+                        last_ret = None
+                        for i, cfg in enumerate(configs, 1):
+                            try:
+                                LOG.info(f"[plotms] attempt {i} for {suffix} with cfg={cfg}")
+                                last_ret = plotms(
+                                    vis=ms_path,
+                                    xaxis="freq", yaxis=yaxis,
+                                    xdatacolumn=xcol, ydatacolumn=ycol,
+                                    transform=False,
+                                    showgui=False, clearplots=True,
+                                    plotfile=out_png, expformat="png",
+                                    highres=True, dpi=150, overwrite=True,
+                                    verbose=True,
+                                    **cfg
+                                )
+                                if last_ret not in (False, None):
+                                    break
+                            except Exception as e:
+                                LOG.exception(f"[plotms] failed attempt {i} for {suffix}: {e}")
+                        return last_ret
+
+                    LOG.info("Starting QA plot generation (enriched, still-safe).")
+
+                    # A) Full band (no avgbaseline), but with richer averaging than before
+                    ret_d_real = _safe_plotms(in_ms, "data",      "data",      "qa_data_real")
+                    ret_m_real = _safe_plotms(in_ms, "model",     "model",     "qa_model_real")
+                    ret_c_real = _safe_plotms(in_ms, "corrected", "corrected", "qa_corrected_real")
+
+                    # Also amplitude & phase (super useful to spot calibration/subtraction issues)
+                    ret_d_amp  = _safe_plotms(in_ms, "data",      "data",      "qa_data_amp",  yaxis="amp")
+                    ret_c_amp  = _safe_plotms(in_ms, "corrected", "corrected", "qa_corrected_amp", yaxis="amp")
+                    ret_d_phs  = _safe_plotms(in_ms, "data",      "data",      "qa_data_phase", yaxis="phase")
+                    ret_c_phs  = _safe_plotms(in_ms, "corrected", "corrected", "qa_corrected_phase", yaxis="phase")
+
+                    # B) NOW, try baseline-averaging but only on a central SPW slice (keeps it tractable)
+                    spw_slice, meta = central_spw_slice(in_ms)
+                    if spw_slice:
+                        def _plot_baseline_avg(ms_path: str, ycol: str, xcol: str, suffix: str):
+                            out_png = join(png_directory, f"{basename(ms_path)}_{suffix}.png")
+                            try:
+                                LOG.info(f"[plotms] baseline-avg on slice spw='{spw_slice}' → {suffix}")
+                                return plotms(
+                                    vis=ms_path,
+                                    xaxis="freq", yaxis="amp",
+                                    xdatacolumn=xcol, ydatacolumn=ycol,
+                                    transform=False, showgui=False, clearplots=True,
+                                    plotfile=out_png, expformat="png",
+                                    highres=True, dpi=150, overwrite=True, verbose=True,
+                                    averagedata=True, avgtime="1800s", avgchannel="16",
+                                    avgbaseline=True, spw=spw_slice
+                                )
+                            except Exception as e:
+                                LOG.exception(f"[plotms] avgbaseline slice failed for {suffix}: {e}")
+                                return None
+
+                        ret_d_base = _plot_baseline_avg(in_ms, "data",      "data",      "qa_data_amp_baselineAvg_slice")
+                        ret_c_base = _plot_baseline_avg(in_ms, "corrected", "corrected", "qa_corrected_amp_baselineAvg_slice")
+                    else:
+                        ret_d_base = ret_c_base = None
+                        LOG.info("[plotms] Skipping baseline-avg slice (no SPW/channel info).")
+
+                    LOG.info(
+                        "QA results: "
+                        f"d_real={ret_d_real}, m_real={ret_m_real}, c_real={ret_c_real}, "
+                        f"d_amp={ret_d_amp}, c_amp={ret_c_amp}, d_phs={ret_d_phs}, c_phs={ret_c_phs}, "
+                        f"d_base={ret_d_base}, c_base={ret_c_base}"
                     )
-                    ret_m = plotms(
-                        vis=in_ms,
-                        xaxis="freq",
-                        yaxis="real",
-                        avgtime="43200",
-                        overwrite=True,
-                        avgbaseline=True,
-                        showgui=False,
-                        ydatacolumn="model",
-                        xdatacolumn="model",
-                        plotfile=join(
-                            png_directory,
-                            + in_ms.rsplit("/")[-1]
-                            + "_infield_subtraction_model.png"
-                        )
-                    )
-                    ret_c = plotms(
-                        vis=in_ms,
-                        xaxis="freq",
-                        yaxis="real",
-                        avgtime="43200",
-                        overwrite=True,
-                        avgbaseline=True,
-                        showgui=False,
-                        ydatacolumn="corrected",
-                        xdatacolumn="corrected",
-                        plotfile=join(png_directory,in_ms.rsplit("/")[-1] + "_infield_subtraction_corrected.png")
-                    )
+
+
+                # if produce_qa:
+                #     png_directory = uv_sub_path + "_qa_pngs_A"  # changed from uv_sub_path to tmp_name
+                #     if not exists(png_directory):
+                #         makedirs(png_directory)
+                #     LOG.info(f"Starting QA plot generation A.")
+                #     ret_d = plotms(
+                #         vis=in_ms,
+                #         xaxis="freq",
+                #         yaxis="real",
+                #         avgtime="43200",
+                #         overwrite=True,
+                #         avgbaseline=True,
+                #         showgui=False,
+                #         ydatacolumn="data",
+                #         xdatacolumn="data",
+                #         plotfile=join(png_directory, in_ms.rsplit("/")[-1] + "_infield_subtraction_data.png")
+                #     )
+                #     ret_m = plotms(
+                #         vis=in_ms,
+                #         xaxis="freq",
+                #         yaxis="real",
+                #         avgtime="43200",
+                #         overwrite=True,
+                #         avgbaseline=True,
+                #         showgui=False,
+                #         ydatacolumn="model",
+                #         xdatacolumn="model",
+                #         plotfile=join(
+                #             png_directory,
+                #             + in_ms.rsplit("/")[-1]
+                #             + "_infield_subtraction_model.png"
+                #         )
+                #     )
+                #     ret_c = plotms(
+                #         vis=in_ms,
+                #         xaxis="freq",
+                #         yaxis="real",
+                #         avgtime="43200",
+                #         overwrite=True,
+                #         avgbaseline=True,
+                #         showgui=False,
+                #         ydatacolumn="corrected",
+                #         xdatacolumn="corrected",
+                #         plotfile=join(png_directory,in_ms.rsplit("/")[-1] + "_infield_subtraction_corrected.png")
+                #     )
                     if not (ret_d & ret_c & ret_m):
                         LOG.info(
                             f"Reporting In-field PlotMS Failure! State for Data, Corrected and Model is: {ret_d}&{ret_c}&{ret_m}"
@@ -463,6 +593,9 @@ def do_single_uvsub(
                     )
                     # End of run through outlier models
                 if produce_qa:
+                    png_directory = uv_sub_path + "_qa_pngs_B"  # changed from uv_sub_path to tmp_name
+                    if not exists(png_directory):
+                        makedirs(png_directory)
                     LOG.info(f"Starting QA plot generation B.")
                     ret_d = plotms(
                         vis=tmp_name1,
@@ -543,6 +676,9 @@ def do_single_uvsub(
             if calc_stats:
                 statwt(vis=tmp_name, chanbin=1, timebin="64s", datacolumn="data")
                 if produce_qa:
+                    png_directory = uv_sub_path + "_qa_pngs_C"  # changed from uv_sub_path to tmp_name
+                    if not exists(png_directory):
+                        makedirs(png_directory)
                     LOG.info(f"Starting QA plot generation C.")
                     ret_d = plotms(
                         vis=tmp_name,
@@ -571,32 +707,54 @@ def do_single_uvsub(
             LOG.exception("*********\nUVSub exception: \n***********")
 
         # Clean up the temporary files
-        tmp_name = join(temporary_directory, f"{out_ms}.tmp")
-        tmp_name1 = f"{tmp_name}.0"
-        tmp_name2 = f"{tmp_name}.1"
-        if exists(tmp_name):
-            remove_file_directory(tmp_name)
+        # tmp_name = join(temporary_directory, f"{out_ms}.tmp")
+        # tmp_name1 = f"{tmp_name}.0"
+        # tmp_name2 = f"{tmp_name}.1"
 
-        if exists(tmp_name1):
-            remove_file_directory(tmp_name1)
+        from pathlib import Path
+        p = Path(uv_sub_path)
 
-        if exists(tmp_name2):
-            remove_file_directory(tmp_name2)
+        # --- Preflight checks ---
+        if not p.exists():
+            LOG.error(f"Path does not exist, skipping: {p}")
+        else:
+            if p.is_dir():
+                # Readability + non-empty dir check
+                if not os.access(p, os.R_OK):
+                    LOG.error(f"Directory not readable: {p}")
+                else:
+                    try:
+                        it = p.iterdir()
+                        first = next(it, None)
+                        if first is None:
+                            LOG.warning(f"Directory is empty, skipping: {p}")
+                        else:
+                            LOG.info(f"Tarring file: {uv_sub_path}")
+                            create_tar_file(uv_sub_path, suffix="temp")
 
-        LOG.info(f"Tarring file: {uv_sub_path}")
-        create_tar_file(uv_sub_path, suffix="temp")
+                            # Clean up the measurement sets
+                            if exists(uv_sub_tar):
+                                LOG.info(f"Removing {uv_sub_tar}")
+                                remove_file_directory(uv_sub_tar)
 
-        # Clean up the measurement sets
-        if exists(uv_sub_tar):
-            LOG.info(f"Removing {uv_sub_tar}")
-            remove_file_directory(uv_sub_tar)
+                            rename(
+                                f"{uv_sub_tar}.temp",
+                                uv_sub_tar,
+                            )
 
-        rename(
-            f"{uv_sub_tar}.temp",
-            uv_sub_tar,
-        )
+                            if exists(tmp_name):
+                                remove_file_directory(tmp_name)
 
-        update_metadata_column(METADATA_DB, "ms_path", tar_file_split, year, freq_st, freq_en, "uv_sub_path", uv_sub_tar)
+                            if exists(tmp_name1):
+                                remove_file_directory(tmp_name1)
+
+                            if exists(tmp_name2):
+                                remove_file_directory(tmp_name2)
+
+                            update_metadata_column(METADATA_DB, "ms_path", tar_file_split, year, freq_st, freq_en, "uv_sub_path", uv_sub_tar)
+
+                    except Exception as e:
+                        LOG.exception(f"Could not iterate directory {p}: {e}")
 
     LOG.info("Finished uvsub")
 
