@@ -11,17 +11,7 @@ import pylab as pl
 from casaplotms import plotms
 from casatasks import uvsub, statwt, split, phaseshift
 from casatools import imager, ms, table, quanta, image
-from casatools import msmetadata as _msmetadata
 from typing import List, Tuple, Union
-
-try:
-    from casatasks import plotms  # preferred if available
-except ImportError:
-    # Some CASA builds ship plotms in a separate module
-    from casaplotms import plotms
-
-# Instantiate the msmetadata tool
-msmd = _msmetadata()
 
 # Set up logging
 LOG = logging.getLogger(__name__)
@@ -276,55 +266,26 @@ def do_single_uvsub(
                 # Now do the subtraction
                 uvsub(vis=in_ms, reverse=False)
 
-
                 if produce_qa:
+                    # Force headless Qt in some CASA builds (harmless if already set)
                     os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
-                    png_directory = uv_sub_path + "_qa_pngs"
+
+                    png_directory = uv_sub_path + "_qa_pngs"  # keep one stable suffix
                     os.makedirs(png_directory, exist_ok=True)
 
-                    # --- Helper: pick a safe SPW + central channel range to allow avgbaseline later ---
-                    def central_spw_slice(ms_path: str):
+                    def _safe_plotms(ms_path: str, ycol: str, xcol: str, suffix: str):
                         """
-                        Return a safe central SPW:channel selection string like 'spw:lo~hi',
-                        or ('', None) if unavailable.
+                        Try exporting a plot with increasingly lighter configs to minimise freeze risk.
+                        Returns the last plotms() return value (or None on failure).
                         """
-                        try:
-                            msmd.open(ms_path)
-                            # Prefer first field’s SPWs; fall back to first observation’s SPWs
-                            fields = msmd.fields()
-                            spws = msmd.spwsforfield(fields[0]) if fields else msmd.spwsforobs(0)
-                            if not len(spws):
-                                return "", None
-                            spw = int(spws[0])
-                            nchan = int(msmd.nchan(spw))
-                            msmd.close()
-
-                            if nchan <= 0:
-                                return "", None
-
-                            lo = int(0.25 * nchan)
-                            hi = max(lo + 16, int(0.75 * nchan) - 1)
-                            return f"{spw}:{lo}~{hi}", (spw, lo, hi)
-
-                        except Exception as e:
-                            try:
-                                msmd.close()
-                            except Exception:
-                                pass
-                            # Log and fall back to full band
-                            LOG.warning(f"[msmd] metadata fallback due to: {e}")
-                            return "", None
-
-
-                    def _safe_plotms(ms_path: str, ycol: str, xcol: str, suffix: str, yaxis: str = "real", spw: str = ""):
                         out_png = join(png_directory, f"{basename(ms_path)}_{suffix}.png")
                         configs = [
-                            # 1) Medium detail but safe: longer time avg, milder channel avg (better S/N across band)
-                            dict(averagedata=True, avgtime="900s", avgchannel="4", avgbaseline=False, spw=spw),
-                            # 2) Heavier channel avg, same time (good for noisier data)
-                            dict(averagedata=True, avgtime="900s", avgchannel="8", avgbaseline=False, spw=spw),
-                            # 3) Shorter time avg, no channel avg (preserve more spectral detail)
-                            dict(averagedata=True, avgtime="120s", avgchannel="0", avgbaseline=False, spw=spw),
+                            # Start modest: small time avg, light channel avg, no baseline avg, no transforms.
+                            dict(averagedata=True, avgtime="300",  avgchannel="8",  avgbaseline=False),
+                            # Lighter fallback: shorter time, heavier channel average.
+                            dict(averagedata=True, avgtime="60",   avgchannel="32", avgbaseline=False),
+                            # Final fallback: no time avg, strong channel average.
+                            dict(averagedata=True, avgtime="0",    avgchannel="64", avgbaseline=False),
                         ]
                         last_ret = None
                         for i, cfg in enumerate(configs, 1):
@@ -332,68 +293,28 @@ def do_single_uvsub(
                                 LOG.info(f"[plotms] attempt {i} for {suffix} with cfg={cfg}")
                                 last_ret = plotms(
                                     vis=ms_path,
-                                    xaxis="freq", yaxis=yaxis,
+                                    xaxis="freq", yaxis="real",
                                     xdatacolumn=xcol, ydatacolumn=ycol,
-                                    transform=False,
+                                    transform=False,            # avoid unnecessary frame work
                                     showgui=False, clearplots=True,
                                     plotfile=out_png, expformat="png",
                                     highres=True, dpi=150, overwrite=True,
                                     verbose=True,
                                     **cfg
                                 )
+                                # If plotms returned something truthy, consider it a success and stop.
                                 if last_ret not in (False, None):
                                     break
                             except Exception as e:
                                 LOG.exception(f"[plotms] failed attempt {i} for {suffix}: {e}")
                         return last_ret
 
-                    LOG.info("Starting QA plot generation (enriched, still-safe).")
+                    LOG.info("Starting QA plot generation (safe mode).")
+                    ret_d = _safe_plotms(in_ms, "data",      "data",      "infield_subtraction_data")
+                    ret_m = _safe_plotms(in_ms, "model",     "model",     "infield_subtraction_model")
+                    ret_c = _safe_plotms(in_ms, "corrected", "corrected", "infield_subtraction_corrected")
 
-                    # A) Full band (no avgbaseline), but with richer averaging than before
-                    ret_d_real = _safe_plotms(in_ms, "data",      "data",      "qa_data_real")
-                    ret_m_real = _safe_plotms(in_ms, "model",     "model",     "qa_model_real")
-                    ret_c_real = _safe_plotms(in_ms, "corrected", "corrected", "qa_corrected_real")
-
-                    # Also amplitude & phase (super useful to spot calibration/subtraction issues)
-                    ret_d_amp  = _safe_plotms(in_ms, "data",      "data",      "qa_data_amp",  yaxis="amp")
-                    ret_c_amp  = _safe_plotms(in_ms, "corrected", "corrected", "qa_corrected_amp", yaxis="amp")
-                    ret_d_phs  = _safe_plotms(in_ms, "data",      "data",      "qa_data_phase", yaxis="phase")
-                    ret_c_phs  = _safe_plotms(in_ms, "corrected", "corrected", "qa_corrected_phase", yaxis="phase")
-
-                    # B) NOW, try baseline-averaging but only on a central SPW slice (keeps it tractable)
-                    spw_slice, meta = central_spw_slice(in_ms)
-                    if spw_slice:
-                        def _plot_baseline_avg(ms_path: str, ycol: str, xcol: str, suffix: str):
-                            out_png = join(png_directory, f"{basename(ms_path)}_{suffix}.png")
-                            try:
-                                LOG.info(f"[plotms] baseline-avg on slice spw='{spw_slice}' → {suffix}")
-                                return plotms(
-                                    vis=ms_path,
-                                    xaxis="freq", yaxis="amp",
-                                    xdatacolumn=xcol, ydatacolumn=ycol,
-                                    transform=False, showgui=False, clearplots=True,
-                                    plotfile=out_png, expformat="png",
-                                    highres=True, dpi=150, overwrite=True, verbose=True,
-                                    averagedata=True, avgtime="1800s", avgchannel="16",
-                                    avgbaseline=True, spw=spw_slice
-                                )
-                            except Exception as e:
-                                LOG.exception(f"[plotms] avgbaseline slice failed for {suffix}: {e}")
-                                return None
-
-                        ret_d_base = _plot_baseline_avg(in_ms, "data",      "data",      "qa_data_amp_baselineAvg_slice")
-                        ret_c_base = _plot_baseline_avg(in_ms, "corrected", "corrected", "qa_corrected_amp_baselineAvg_slice")
-                    else:
-                        ret_d_base = ret_c_base = None
-                        LOG.info("[plotms] Skipping baseline-avg slice (no SPW/channel info).")
-
-                    LOG.info(
-                        "QA results: "
-                        f"d_real={ret_d_real}, m_real={ret_m_real}, c_real={ret_c_real}, "
-                        f"d_amp={ret_d_amp}, c_amp={ret_c_amp}, d_phs={ret_d_phs}, c_phs={ret_c_phs}, "
-                        f"d_base={ret_d_base}, c_base={ret_c_base}"
-                    )
-
+                    LOG.info(f"QA plot results: data={ret_d}, model={ret_m}, corrected={ret_c}")
 
                 # if produce_qa:
                 #     png_directory = uv_sub_path + "_qa_pngs_A"  # changed from uv_sub_path to tmp_name
