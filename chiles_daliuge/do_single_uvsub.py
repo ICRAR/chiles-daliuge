@@ -223,7 +223,7 @@ def do_single_uvsub(
         tmp_name2 = f"{tmp_name}.1"
 
         if produce_qa:
-            png_directory = join(uv_sub_path, "qa_pngs")
+            png_directory = uv_sub_path + "_qa_pngs"  # changed from uv_sub_path to tmp_name
             if not exists(png_directory):
                 makedirs(png_directory)
 
@@ -251,6 +251,7 @@ def do_single_uvsub(
 
             ntt = len(taylor_terms)
             if ntt > 0:  # In-beam models
+
                 im.settaylorterms(ntaylorterms=ntt, reffreq=fq)
 
                 #
@@ -266,7 +267,9 @@ def do_single_uvsub(
 
                 # Now do the subtraction
                 uvsub(vis=in_ms, reverse=False)
+
                 if produce_qa:
+                    LOG.info(f"Starting QA plot generation A.")
                     ret_d = plotms(
                         vis=in_ms,
                         xaxis="freq",
@@ -460,6 +463,7 @@ def do_single_uvsub(
                     )
                     # End of run through outlier models
                 if produce_qa:
+                    LOG.info(f"Starting QA plot generation B.")
                     ret_d = plotms(
                         vis=tmp_name1,
                         xaxis="freq",
@@ -539,6 +543,7 @@ def do_single_uvsub(
             if calc_stats:
                 statwt(vis=tmp_name, chanbin=1, timebin="64s", datacolumn="data")
                 if produce_qa:
+                    LOG.info(f"Starting QA plot generation C.")
                     ret_d = plotms(
                         vis=tmp_name,
                         xaxis="Frequency",

@@ -493,12 +493,12 @@
         "commitHash": "",
         "detailedDescription": "",
         "downloadUrl": "",
-        "filePath": "chilies_uvsub_A.graph",
+        "filePath": "chilies_uvsub.graph",
         "fileType": "Graph",
         "generatorCommitHash": "8566c0d3db3eb8ddca7b3342a6eecc023269b147",
         "generatorName": "EAGLE",
         "generatorVersion": "v6.8.0",
-        "lastModifiedDatetime": 1758176768.420946,
+        "lastModifiedDatetime": 1758179155.143988,
         "lastModifiedEmail": "",
         "lastModifiedName": "",
         "numLGNodes": 43,
@@ -1698,8 +1698,8 @@
             "outputApplicationType": "None",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
-            "x": -772.0219052653532,
-            "y": -393.08298919414494
+            "x": -813.7783300838016,
+            "y": -292.86756962986993
         },
         {
             "category": "Scatter",
@@ -1822,7 +1822,7 @@
             ],
             "inputApplicationComment": "",
             "inputApplicationDescription": "",
-            "inputApplicationId": "28ef2be4-1b2c-4363-ab82-9f93ed00b6aa",
+            "inputApplicationId": "a54539b9-2b45-4753-9b2d-b9c98d2cb817",
             "inputApplicationName": "GenericScatterApp",
             "inputApplicationType": "DALiuGEApp",
             "isGroup": true,
@@ -2813,7 +2813,7 @@
                     "readonly": false,
                     "type": "Integer",
                     "usage": "NoPort",
-                    "value": 2
+                    "value": 3
                 }
             ],
             "id": "efb14612-3fc8-4079-bfb1-888be7ec5855",
@@ -7673,8 +7673,8 @@
             "outputApplicationType": "None",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master-template.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
-            "x": 466.38788389777966,
-            "y": -121.4751414818407
+            "x": -577.5227365634232,
+            "y": -745.0377521039997
         },
         {
             "category": "Memory",
@@ -8268,8 +8268,8 @@
             "outputApplicationType": "None",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master-template.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
-            "x": -1075.4767747142857,
-            "y": -326.7613587557316
+            "x": -1114.4494378781708,
+            "y": -510.4896279569031
         },
         {
             "category": "Memory",
@@ -8434,8 +8434,8 @@
             "outputApplicationType": "None",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
-            "x": -900.7844366056146,
-            "y": -314.05741257307443
+            "x": -881.2981050236721,
+            "y": -461.5967802649243
         }
     ]
 }
