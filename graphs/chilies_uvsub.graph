@@ -347,29 +347,11 @@
         {
             "closesLoop": false,
             "comment": "",
-            "from": "17999b43-edfd-4933-9f7a-228bbfc3c6b6",
-            "fromPort": "b737e4ac-6731-4ef1-b783-153435a22220",
-            "loop_aware": "0",
-            "to": "6f876771-3be1-4f12-8561-12c261baa5ac",
-            "toPort": "2f0cfbc9-3575-4497-837a-972780f24b97"
-        },
-        {
-            "closesLoop": false,
-            "comment": "",
             "from": "1d2968f2-6c97-4263-b517-a3a2a37bfe26",
             "fromPort": "d7136c2e-53e5-4e66-b17c-00e12775c06e",
             "loop_aware": "0",
             "to": "57cfb385-2a90-4b7f-bf37-e730a98d7bb8",
             "toPort": "14a47970-293f-4101-82c1-9188ee4561ca"
-        },
-        {
-            "closesLoop": false,
-            "comment": "",
-            "from": "f76f72da-9d2e-4819-b94f-3b93323387b3",
-            "fromPort": "3d6a768a-6819-47e9-8081-fb1d9a1278f9",
-            "loop_aware": "0",
-            "to": "6f876771-3be1-4f12-8561-12c261baa5ac",
-            "toPort": "8c890d0d-f372-44d7-acc4-2344a3a9b99f"
         },
         {
             "closesLoop": false,
@@ -480,10 +462,10 @@
         "generatorCommitHash": "8566c0d3db3eb8ddca7b3342a6eecc023269b147",
         "generatorName": "EAGLE",
         "generatorVersion": "v6.8.0",
-        "lastModifiedDatetime": 1758870272.724533,
+        "lastModifiedDatetime": 1758870828.955164,
         "lastModifiedEmail": "",
         "lastModifiedName": "",
-        "numLGNodes": 42,
+        "numLGNodes": 41,
         "readonly": false,
         "repo": "",
         "repoBranch": "",
@@ -1485,8 +1467,8 @@
             "outputApplicationType": "None",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
-            "x": -778.0365462565406,
-            "y": -297.07248537425346
+            "x": -872.9597477194125,
+            "y": -349.21339885385845
         },
         {
             "category": "Scatter",
@@ -2286,8 +2268,8 @@
             "outputApplicationType": "None",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
-            "x": -424.17269008178823,
-            "y": 440.1395225979512
+            "x": -883.6765221050599,
+            "y": 565.4587495133891
         },
         {
             "category": "Loop",
@@ -3081,8 +3063,8 @@
             "outputApplicationType": "None",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master-template.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
-            "x": -303.3139986444644,
-            "y": 544.5967951171364
+            "x": -394.4552545829643,
+            "y": 466.74697233633367
         },
         {
             "category": "PyFuncApp",
@@ -3987,8 +3969,8 @@
             "outputApplicationType": "None",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master-template.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
-            "x": -242.2519334178474,
-            "y": 352.36193771490036
+            "x": -232.7580525909203,
+            "y": 289.7023242571815
         },
         {
             "category": "Memory",
@@ -4138,8 +4120,8 @@
             "outputApplicationType": "None",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
-            "x": -267.91691265506137,
-            "y": 443.63395760673234
+            "x": -311.58876445892616,
+            "y": 377.1767918182428
         },
         {
             "category": "Memory",
@@ -4909,8 +4891,8 @@
             "outputApplicationType": "None",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master-template.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
-            "x": -553.9846080053788,
-            "y": 418.24823310712304
+            "x": -647.0246401092637,
+            "y": 351.7910673186333
         },
         {
             "category": "PyFuncApp",
@@ -5142,8 +5124,8 @@
             "outputApplicationType": "None",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master-template.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
-            "x": -773.1722098276258,
-            "y": 281.46312289082886
+            "x": -807.3501808045636,
+            "y": 300.450884544683
         },
         {
             "category": "Memory",
@@ -5293,8 +5275,8 @@
             "outputApplicationType": "None",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
-            "x": -684.304683797102,
-            "y": 195.31691268681337
+            "x": -819.1177915394668,
+            "y": 134.55607539448002
         },
         {
             "category": "PyFuncApp",
@@ -5511,8 +5493,8 @@
             "outputApplicationType": "None",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master-template.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
-            "x": -601.976117162898,
-            "y": 132.46994508842687
+            "x": -731.0928964091071,
+            "y": 56.5188984730101
         },
         {
             "category": "Branch",
@@ -6322,8 +6304,8 @@
             "outputApplicationType": "None",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
-            "x": -681.7113420749922,
-            "y": 319.42801662331004
+            "x": -713.9905368865449,
+            "y": 260.5659554963622
         },
         {
             "category": "PyFuncApp",
@@ -6941,239 +6923,6 @@
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "x": -517.3733463197018,
             "y": 278.13014464067004
-        },
-        {
-            "category": "PyFuncApp",
-            "categoryType": "Application",
-            "color": "#0059a5",
-            "comment": "",
-            "commitHash": "b3c8baf",
-            "dataHash": "83264c2930d04314860785d5395539788fbd510809b6fb49a6ad704f92481eb2",
-            "description": "Removes all temporary directories in the given base directory that start with a specific prefix.\n\n    Parameters\n    ----------\n    trigger_in:\n        to make function wait\n    base_dir : str\n        The directory in which to search for temp directories.\n    prefix : str\n        The prefix of temp directories to be deleted.\n\n    Returns\n    -------\n    None",
-            "drawOrderHint": 0,
-            "fields": [
-                {
-                    "defaultValue": "",
-                    "description": "Python function name",
-                    "encoding": "pickle",
-                    "id": "e2ac9fd2-b26c-41a0-a8cb-87cfdca35bf0",
-                    "name": "func_name",
-                    "options": [],
-                    "parameterType": "ComponentParameter",
-                    "positional": false,
-                    "precious": false,
-                    "readonly": false,
-                    "type": "String",
-                    "usage": "NoPort",
-                    "value": "chiles_daliuge.common.remove_temp_dir"
-                },
-                {
-                    "defaultValue": "",
-                    "description": "Python function code, e.g. 'def func_name(args): return args'. Note that func_name above needs to match the defined name here.",
-                    "encoding": "pickle",
-                    "id": "aa075c2b-266f-4051-8e60-48676609d84c",
-                    "name": "func_code",
-                    "options": [],
-                    "parameterType": "ComponentParameter",
-                    "positional": false,
-                    "precious": false,
-                    "readonly": false,
-                    "type": "String",
-                    "usage": "NoPort",
-                    "value": ""
-                },
-                {
-                    "defaultValue": "NOTSET",
-                    "description": "Set the log level for this drop",
-                    "encoding": "pickle",
-                    "id": "533afeb5-9520-4de4-8073-2a97335b79ee",
-                    "name": "log_level",
-                    "options": [
-                        "NOTSET",
-                        "DEBUG",
-                        "INFO",
-                        "WARNING",
-                        "ERROR",
-                        "CRITICAL"
-                    ],
-                    "parameterType": "ComponentParameter",
-                    "positional": false,
-                    "precious": false,
-                    "readonly": false,
-                    "type": "Select",
-                    "usage": "NoPort",
-                    "value": "NOTSET"
-                },
-                {
-                    "defaultValue": "dlg.apps.pyfunc.PyFuncApp",
-                    "description": "Application class",
-                    "encoding": "pickle",
-                    "id": "cfa4a3e3-2b77-4382-a4bb-4cf99cc06a44",
-                    "name": "dropclass",
-                    "options": [],
-                    "parameterType": "ComponentParameter",
-                    "positional": false,
-                    "precious": false,
-                    "readonly": false,
-                    "type": "String",
-                    "usage": "NoPort",
-                    "value": "dlg.apps.pyfunc.PyFuncApp"
-                },
-                {
-                    "defaultValue": "pyfunc",
-                    "description": "Base name of application class",
-                    "encoding": "pickle",
-                    "id": "95cb3243-9ef9-4c65-95a2-35f18c753740",
-                    "name": "base_name",
-                    "options": [],
-                    "parameterType": "ComponentParameter",
-                    "positional": false,
-                    "precious": false,
-                    "readonly": false,
-                    "type": "String",
-                    "usage": "NoPort",
-                    "value": "remove_file_or_directory"
-                },
-                {
-                    "defaultValue": "5",
-                    "description": "Estimated execution time",
-                    "encoding": "pickle",
-                    "id": "72d8b733-9651-4ee2-a83a-b3474fae3a58",
-                    "name": "execution_time",
-                    "options": [],
-                    "parameterType": "ConstraintParameter",
-                    "positional": false,
-                    "precious": false,
-                    "readonly": false,
-                    "type": "Float",
-                    "usage": "NoPort",
-                    "value": 5
-                },
-                {
-                    "defaultValue": "1",
-                    "description": "Number of cores used",
-                    "encoding": "pickle",
-                    "id": "d5ead539-b4e3-46cb-94db-d955c62d7433",
-                    "name": "num_cpus",
-                    "options": [],
-                    "parameterType": "ConstraintParameter",
-                    "positional": false,
-                    "precious": false,
-                    "readonly": false,
-                    "type": "Integer",
-                    "usage": "NoPort",
-                    "value": 1
-                },
-                {
-                    "defaultValue": "False",
-                    "description": "Is this node the start of a group?",
-                    "encoding": "pickle",
-                    "id": "5810a4a8-0e1b-48d7-9384-61d9f618e6b7",
-                    "name": "group_start",
-                    "options": [],
-                    "parameterType": "ComponentParameter",
-                    "positional": false,
-                    "precious": false,
-                    "readonly": false,
-                    "type": "Boolean",
-                    "usage": "NoPort",
-                    "value": false
-                },
-                {
-                    "defaultValue": "0",
-                    "description": "The allowed failure rate of the inputs (in percent), before this component goes to ERROR state and is not executed",
-                    "encoding": "pickle",
-                    "id": "59cd10dd-6976-4d7b-a84b-795dbd45b3e4",
-                    "name": "input_error_threshold",
-                    "options": [],
-                    "parameterType": "ComponentParameter",
-                    "positional": false,
-                    "precious": false,
-                    "readonly": false,
-                    "type": "Integer",
-                    "usage": "NoPort",
-                    "value": 0
-                },
-                {
-                    "defaultValue": "1",
-                    "description": "Specifies the number of times the 'run' method will be executed before finally giving up Mapping from argname to default value. Should match only the last part of the argnames list. Values are interpreted as Python code literals and that means string values need to be quoted.",
-                    "encoding": "pickle",
-                    "id": "e4db163f-78b4-45a8-a883-b47eb5d7f42c",
-                    "name": "n_tries",
-                    "options": [],
-                    "parameterType": "ComponentParameter",
-                    "positional": false,
-                    "precious": false,
-                    "readonly": false,
-                    "type": "Integer",
-                    "usage": "NoPort",
-                    "value": 1
-                },
-                {
-                    "defaultValue": "",
-                    "description": "",
-                    "encoding": "pickle",
-                    "id": "2f0cfbc9-3575-4497-837a-972780f24b97",
-                    "name": "trigger_in",
-                    "options": [],
-                    "parameterType": "ComponentParameter",
-                    "positional": false,
-                    "precious": false,
-                    "readonly": false,
-                    "type": "Object.Array",
-                    "usage": "InputPort",
-                    "value": "false"
-                },
-                {
-                    "defaultValue": "",
-                    "description": "",
-                    "encoding": "path",
-                    "id": "8c890d0d-f372-44d7-acc4-2344a3a9b99f",
-                    "name": "base_dir",
-                    "options": [],
-                    "parameterType": "ApplicationArgument",
-                    "positional": false,
-                    "precious": false,
-                    "readonly": false,
-                    "type": "String",
-                    "usage": "InputPort",
-                    "value": ""
-                },
-                {
-                    "defaultValue": "",
-                    "description": "",
-                    "encoding": "pickle",
-                    "id": "02a45876-7c1a-40b1-8154-15e2237eb39a",
-                    "name": "prefix",
-                    "options": [],
-                    "parameterType": "ApplicationArgument",
-                    "positional": false,
-                    "precious": false,
-                    "readonly": false,
-                    "type": "String",
-                    "usage": "NoPort",
-                    "value": "__SKY_TEMP__"
-                }
-            ],
-            "id": "6f876771-3be1-4f12-8561-12c261baa5ac",
-            "inputAppFields": [],
-            "inputApplicationComment": "",
-            "inputApplicationDescription": "",
-            "inputApplicationId": null,
-            "inputApplicationName": "",
-            "inputApplicationType": "None",
-            "isGroup": false,
-            "name": "remove_temp_dir",
-            "outputAppFields": [],
-            "outputApplicationComment": "",
-            "outputApplicationDescription": "",
-            "outputApplicationId": null,
-            "outputApplicationName": "",
-            "outputApplicationType": "None",
-            "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master-template.palette",
-            "repositoryUrl": "https://github.com/ICRAR/daliuge",
-            "x": -577.5227365634232,
-            "y": -745.0377521039997
         },
         {
             "category": "PyFuncApp",
