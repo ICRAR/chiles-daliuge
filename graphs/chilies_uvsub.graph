@@ -498,7 +498,7 @@
         "generatorCommitHash": "8566c0d3db3eb8ddca7b3342a6eecc023269b147",
         "generatorName": "EAGLE",
         "generatorVersion": "v6.8.0",
-        "lastModifiedDatetime": 1758179155.143988,
+        "lastModifiedDatetime": 1758857871.473505,
         "lastModifiedEmail": "",
         "lastModifiedName": "",
         "numLGNodes": 43,
@@ -1724,7 +1724,7 @@
                     "readonly": false,
                     "type": "Integer",
                     "usage": "NoPort",
-                    "value": 3
+                    "value": 2
                 }
             ],
             "id": "f8e48658-8294-4c35-8854-ea27752317b9",
@@ -2813,7 +2813,7 @@
                     "readonly": false,
                     "type": "Integer",
                     "usage": "NoPort",
-                    "value": 3
+                    "value": 10
                 }
             ],
             "id": "efb14612-3fc8-4079-bfb1-888be7ec5855",
@@ -2942,7 +2942,7 @@
                     "readonly": false,
                     "type": "Integer",
                     "usage": "NoPort",
-                    "value": 1
+                    "value": 3
                 },
                 {
                     "defaultValue": "False",
