@@ -273,12 +273,12 @@ def do_single_uvsub(
                     png_directory = uv_sub_path + "_qa_pngs"  # keep one stable suffix
                     os.makedirs(png_directory, exist_ok=True)
 
-                    def _safe_plotms(ms_path: str, ycol: str, xcol: str, suffix: str):
+                    def _safe_plotms(in_ms: str,out_ms: str, ycol: str, xcol: str, suffix: str):
                         """
                         Try exporting a plot with increasingly lighter configs to minimise freeze risk.
                         Returns the last plotms() return value (or None on failure).
                         """
-                        out_png = join(png_directory, f"{basename(ms_path)}_{suffix}.png")
+                        out_png = join(png_directory, f"{out_ms}_{suffix}.png")
                         configs = [
                             # Start modest: small time avg, light channel avg, no baseline avg, no transforms.
                             dict(averagedata=True, avgtime="300",  avgchannel="8",  avgbaseline=False),
@@ -292,7 +292,7 @@ def do_single_uvsub(
                             try:
                                 LOG.info(f"[plotms] attempt {i} for {suffix} with cfg={cfg}")
                                 last_ret = plotms(
-                                    vis=ms_path,
+                                    vis=in_ms,
                                     xaxis="freq", yaxis="real",
                                     xdatacolumn=xcol, ydatacolumn=ycol,
                                     transform=False,            # avoid unnecessary frame work
@@ -310,9 +310,9 @@ def do_single_uvsub(
                         return last_ret
 
                     LOG.info("Starting QA plot generation (safe mode).")
-                    ret_d = _safe_plotms(in_ms, "data",      "data",      "infield_subtraction_data")
-                    ret_m = _safe_plotms(in_ms, "model",     "model",     "infield_subtraction_model")
-                    ret_c = _safe_plotms(in_ms, "corrected", "corrected", "infield_subtraction_corrected")
+                    ret_d = _safe_plotms(in_ms, out_ms, "data",      "data",      "infield_subtraction_data")
+                    ret_m = _safe_plotms(in_ms, out_ms, "model",     "model",     "infield_subtraction_model")
+                    ret_c = _safe_plotms(in_ms, out_ms, "corrected", "corrected", "infield_subtraction_corrected")
 
                     LOG.info(f"QA plot results: data={ret_d}, model={ret_m}, corrected={ret_c}")
 
