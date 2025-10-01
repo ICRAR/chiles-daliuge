@@ -185,7 +185,13 @@ def do_single_uvsub_dir(
     - QA plots are written to `qa_pngs/` within the output MS directory if `produce_qa=True`.
     """
     _, split_name = os.path.split(tar_file_split)
-    save_dir, uvsub_name = os.path.split(uv_sub_path)
+
+    save_dir = uv_sub_path
+
+    uv_sub_path = join(uv_sub_path, basename(tar_file_split)[:-4])
+
+    #uvsub_name = basename(tar_file_split)[:-4]
+
 
     with tempfile.TemporaryDirectory(
             dir=save_dir, prefix=f"__{split_name}__TEMP__"
