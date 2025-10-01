@@ -685,7 +685,7 @@ def main(uvsub_data: list) -> None:
 
 if __name__ == "__main__":
     try:
-        uvsub_data_in = sys.argv[1]
+        uvsub_data_in = sys.argv[1:-1]
         LOG.info(f"uvsub_data_in before destringifying: {uvsub_data_in}")
 
         uvsub_path_in = sys.argv[-1]
