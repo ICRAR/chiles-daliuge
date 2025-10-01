@@ -13,7 +13,7 @@ import numpy as np
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-LOG = logging.getLogger(__name__)
+LOG = logging.getLogger(f"dlg.{__name__}")
 logging.basicConfig(level=logging.INFO)
 
 process_ms_flag = True

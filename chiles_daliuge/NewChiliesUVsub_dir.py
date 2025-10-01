@@ -2,7 +2,7 @@ import tempfile
 from os.path import join
 import subprocess
 from pathlib import Path
-from chiles_daliuge.common import *
+from chiles_daliuge.common_dir import *
 import logging
 
 process_ms_flag = True
@@ -178,9 +178,15 @@ def fetch_split_ms(
         List of matching entries formatted as:
         "ms_path;year;start_freq;end_freq"
     """
+    LOG.info(f"Adding 'uv_sub_path' column to DB.")
+    add_column_if_missing(db_path, "uv_sub_path")
+
     freq_set = {tuple(freq_pair) for freq_pair in frequencies}
     query = """
-        SELECT ms_path, year, start_freq, end_freq, size FROM metadata
+        SELECT ms_path, year, start_freq, end_freq, size
+        FROM metadata
+        WHERE uv_sub_path IS NULL
+           OR TRIM(uv_sub_path) = ''
     """
 
     matching_dlg_names = []
@@ -189,7 +195,7 @@ def fetch_split_ms(
         cursor = conn.cursor()
         for row in cursor.execute(query):
             ms_path, year, start_freq, end_freq , size = row
-            # print(f"\nChecking row: ms_path={ms_path}, year={year}, start_freq={start_freq}, end_freq={end_freq}")
+            print(f"\nChecking row: ms_path={ms_path}, year={year}, start_freq={start_freq}, end_freq={end_freq}")
 
             if float(size) > 0:
                 freq_tuple = (int(start_freq), int(end_freq))  # ✅ convert to int
@@ -199,9 +205,6 @@ def fetch_split_ms(
                     matching_dlg_names.append(f"{ms_path};{year};{freq_tuple[0]};{freq_tuple[1]}")
             else:
                 LOG.warning(f"Measurement Set with following details is not valid, ignoring it for uvsub list. {ms_path}, {year}, {start_freq}, {end_freq}")
-
-    LOG.info(f"Adding 'uv_sub_path' column to DB.")
-    add_column_if_missing(db_path, "uv_sub_path")
 
     return matching_dlg_names
 
@@ -244,52 +247,51 @@ def do_uvsub(names_list, save_dir, sky_model_dir,
 
     sky_model_location = None
 
-
     uvsub_data_all = []
 
     temporary_sky_model = tempfile.mkdtemp(dir=save_dir, prefix="__SKY_TEMP__")
     if sky_model_location is None:
         sky_model_location = copy_sky_model(sky_model_dir, temporary_sky_model)
 
-    conn = sqlite3.connect(METADATA_DB)
+    # conn = sqlite3.connect(METADATA_DB)
 
     for name in names_list:
         tar_file_split, year, freq_st, freq_en = name.split(";")
-        freq_start = int(freq_st)
-        freq_end = int(freq_en)
+        # freq_start = int(freq_st)
+        # freq_end = int(freq_en)
 
-        LOG.info("#" * 60)
-        LOG.info("#" * 60)
-        LOG.info(f"Processing: {name}")
-
-        #tar_file_split = join(
-        #    source_dir, split_name
-        #)
-        LOG.info(f"Checking: {tar_file_split}")
-
-        uv_sub_name = generate_hashed_ms_name(str(tar_file_split), year, str(freq_start), str(freq_end))
-        uv_sub_path = join(
-            save_dir, uv_sub_name
-        )
-        LOG.info(f"uv_sub_path: {uv_sub_path}")
-        uv_sub_tar_path = f"{uv_sub_path}.tar"
-        LOG.info(f"uv_sub_tar_path: {uv_sub_tar_path}")
-        cursor = conn.cursor()
-        cursor.execute("SELECT 1 FROM metadata WHERE uv_sub_path = ?", (uv_sub_tar_path,))
-        if cursor.fetchone():
-            LOG.info(f"Skipping {uv_sub_tar_path}, already in metadata DB.")
-            continue
+        # LOG.info("#" * 60)
+        # LOG.info("#" * 60)
+        # #LOG.info(f"Processing: {name}")
+        #
+        # #tar_file_split = join(
+        # #    source_dir, split_name
+        # #)
+        # LOG.info(f"Checking: {tar_file_split}")
+        #
+        # uv_sub_name = generate_hashed_ms_name(str(tar_file_split), year, str(freq_start), str(freq_end))
+        # uv_sub_path = join(
+        #     save_dir, uv_sub_name
+        # )
+        # LOG.info(f"uv_sub_path: {uv_sub_path}")
+        # uv_sub_tar_path = f"{uv_sub_path}.tar"
+        # LOG.info(f"uv_sub_tar_path: {uv_sub_tar_path}")
+        # cursor = conn.cursor()
+        # cursor.execute("SELECT 1 FROM metadata WHERE uv_sub_path = ?", (uv_sub_tar_path,))
+        # if cursor.fetchone():
+        #     LOG.info(f"Skipping {uv_sub_tar_path}, already in metadata DB.")
+        #     continue
 
         combined_data = [
             taylor_terms, outliers, channel_average, produce_qa, w_projection_planes,
             sky_model_location,
-            tar_file_split, year, freq_st, freq_en, uv_sub_path, METADATA_DB
+            tar_file_split, year, freq_st, freq_en, METADATA_DB
         ]
 
         uvsub_data_all.append(stringify_data(combined_data))
 
-    conn.close()
-    # sky_model_location = str(sky_model_location)
+    # conn.close()
+
     uvsub_data_all = np.array(uvsub_data_all, dtype=str)
 
     LOG.info(f"uvsub_data_all: {uvsub_data_all}")

@@ -12,7 +12,7 @@ import sqlite3
 from chiles_daliuge.common import *
 import ast
 
-LOG = logging.getLogger(__name__)
+LOG = logging.getLogger(f"dlg.{__name__}")
 
 SEMESTER_VALUES = ["2013-2014", "2015", "2016", "2017-2018", "2019"]
 

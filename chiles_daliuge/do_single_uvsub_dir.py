@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import sys
 from os.path import join
-from chiles_daliuge.common import *
+from chiles_daliuge.common_dir import *
 import json
 import tempfile
 import logging
@@ -127,10 +127,10 @@ def rejig_paths(taylor_terms: List[str],
     return taylor_terms_, outliers_
 
 
-def do_single_uvsub(
+def do_single_uvsub_dir(
         taylor_terms, outliers, channel_average, produce_qa, w_projection_planes,
         sky_model_location,
-        tar_file_split, year, freq_st, freq_en, uv_sub_path, METADATA_DB
+        tar_file_split, year, freq_st, freq_en, METADATA_DB, uv_sub_path
 ):
 
     """
@@ -155,11 +155,9 @@ def do_single_uvsub(
         Whether to generate QA plots using `plotms`.
     w_projection_planes : int
         Number of W-projection planes to use for FT modeling.
-    source_dir : str
-        Path to the directory containing input and output MS files.
     sky_model_location : str
         Directory containing untarred sky models.
-    split_name : str
+    tar_file_split : str
         Name of the input tarred measurement set file (e.g., `split_1234.ms.tar`).
     year : str
         Observation year used for bookkeeping and naming.
@@ -167,8 +165,8 @@ def do_single_uvsub(
         Start frequency of the sub-band.
     freq_en : str
         End frequency of the sub-band.
-    uvsub_name : str
-        Base name for the output MS and tar file after UV subtraction.
+    uv_sub_path : str
+        Path and name for the output MS and tar file after UV subtraction.
     METADATA_DB : str
         Path to the SQLite metadata database to be updated after processing.
 
@@ -682,15 +680,19 @@ def do_single_uvsub(
 
 def main(uvsub_data: list) -> None:
     LOG.info(f"uvsub_data (parsed): {uvsub_data}")
-    do_single_uvsub(*uvsub_data)
+    do_single_uvsub_dir(*uvsub_data)
 
 
 if __name__ == "__main__":
     try:
-        raw_args = sys.argv[1:]
-        LOG.info(f"raw_args before destringifying: {raw_args}")
+        uvsub_data_in = sys.argv[1]
+        LOG.info(f"uvsub_data_in before destringifying: {uvsub_data_in}")
 
-        uvsub_data = destringify_data_uvsub(raw_args)  # This should already return final list
+        uvsub_path_in = sys.argv[-1]
+        LOG.info(f"uvsub_path_in: {uvsub_path_in}")
+
+        uvsub_data = destringify_data_uvsub(uvsub_data_in)  # This should already return final list
+        uvsub_data.append(uvsub_path_in)
         LOG.info(f"uvsub_data going to function: {uvsub_data}")
 
         main(uvsub_data)
