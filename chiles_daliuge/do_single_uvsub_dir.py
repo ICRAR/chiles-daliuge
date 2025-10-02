@@ -186,6 +186,8 @@ def do_single_uvsub_dir(
     """
     _, split_name = os.path.split(tar_file_split)
 
+    os.makedirs(uv_sub_path, exist_ok=True)
+
     save_dir = uv_sub_path
 
     uv_sub_path = join(uv_sub_path, basename(tar_file_split)[:-4])

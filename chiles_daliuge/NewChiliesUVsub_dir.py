@@ -242,6 +242,7 @@ def do_uvsub(names_list, save_dir, sky_model_dir,
         Array of stringified configuration entries for UV subtraction tasks,
         excluding any already present in the metadata database.
     """
+
     LOG.info(f"sky_model_dir: {sky_model_dir}")
     os.makedirs(save_dir, exist_ok=True)
 
