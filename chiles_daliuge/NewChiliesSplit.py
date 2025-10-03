@@ -70,10 +70,15 @@ def fetch_original_ms(
                 dlg_name = generate_hashed_ms_name(ms_name, year, start_freq, end_freq)
                 ms_path = os.path.join(copy_directory, dlg_name)
 
-                cursor.execute("SELECT 1 FROM metadata WHERE ms_path = ?", (ms_path,))
+                cursor.execute("""
+                    SELECT 1 FROM metadata
+                    WHERE base_name = ? AND year = ? AND start_freq = ? AND end_freq = ?
+                    LIMIT 1
+                """, (base_name, year, start_freq, end_freq))
+
                 if cursor.fetchone():
-                    LOG.info(f"Skipping fetch of existing MS: {base_name}, already recorded as {ms_path}")
-                    name_list.append(str(ms_path))
+                    LOG.info(f"Skipping fetch of existing MS: {base_name} ({year}, {start_freq}-{end_freq}); already recorded.")
+                    name_list.append(str(ms_path))  # keep using the computed destination path
                     continue
 
                 if make_directory:

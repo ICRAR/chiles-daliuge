@@ -190,7 +190,7 @@ def do_single_uvsub_dir(
 
     save_dir = uv_sub_path
 
-    uv_sub_path = join(uv_sub_path, basename(tar_file_split)[:-4])
+    #uv_sub_path = join(uv_sub_path, basename(tar_file_split)[:-4])
 
     #uvsub_name = basename(tar_file_split)[:-4]
 

@@ -408,7 +408,7 @@
         "generatorCommitHash": "8566c0d3db3eb8ddca7b3342a6eecc023269b147",
         "generatorName": "EAGLE",
         "generatorVersion": "v6.8.0",
-        "lastModifiedDatetime": 1759464771.676246,
+        "lastModifiedDatetime": 1759474430.015109,
         "lastModifiedEmail": "",
         "lastModifiedName": "",
         "numLGNodes": 43,
@@ -7099,7 +7099,7 @@
                     "readonly": false,
                     "type": "String",
                     "usage": "OutputPort",
-                    "value": ""
+                    "value": "{auto}.ms"
                 },
                 {
                     "defaultValue": "",

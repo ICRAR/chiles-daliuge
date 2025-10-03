@@ -50,7 +50,7 @@ def do_ms_transform(transform_data: List[str]) -> None:
     ) = transform_data
 
 
-    uv_split_dir = join(outfile_path, basename(ms_in_path))
+    uv_split_dir = outfile_path # should contain .ms by default as specified in dir drop
 
     os.makedirs(uv_split_dir, exist_ok=True)
 
