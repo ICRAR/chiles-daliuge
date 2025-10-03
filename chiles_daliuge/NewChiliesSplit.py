@@ -1,15 +1,11 @@
-from pathlib import Path
 import ast
-from subprocess import run, PIPE
-
-from typing import List
-
 from numpy.core.multiarray import ndarray
-
 from chiles_daliuge.common import *
 import logging
 import sqlite3
 import numpy as np
+from pathlib import Path
+from os.path import join
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -215,11 +211,7 @@ def split_out_frequencies(
         process_ms: bool = process_ms_flag
 ) -> ndarray:
 
-    os.makedirs(output_directory, exist_ok=True)
-    LOG.info("#" * 60)
-    LOG.info("#" * 60)
     LOG.info(f"Frequencies: {frequencies}")
-
 
     conn = sqlite3.connect(METADATA_DB)
     cursor = conn.cursor()
@@ -239,31 +231,43 @@ def split_out_frequencies(
         for freq_pair in frequencies:
             freq_start = freq_pair[0]
             freq_end = freq_pair[1]
-            outfile_name = generate_hashed_ms_name(
-                ms_name=ms_in,
-                year=str(year),
-                start_freq=str(freq_start),
-                end_freq=str(freq_end)
+
+            year_str  = str(year)
+            start_str = str(freq_start)
+            end_str   = str(freq_end)
+
+            # Only consider rows where ms_path is not NULL/empty
+            cursor.execute(
+                """
+                SELECT ms_path
+                FROM metadata
+                WHERE year = ? AND start_freq = ? AND end_freq = ?
+                  AND ms_path IS NOT NULL
+                  AND TRIM(ms_path) <> ''
+                LIMIT 1
+                """,
+                (year_str, start_str, end_str),
             )
+            row = cursor.fetchone()
 
+            existing_ms_path = (row[0].strip() if row and isinstance(row[0], str) else None)
 
-            outfile_path = os.path.join(output_directory, outfile_name)
-            outfile_tar_path = f"{outfile_path}.tar"
-
-            ms_in_path = os.path.join(output_directory, ms_in)
-            # Check if already exists in DB
-
-            cursor.execute("SELECT 1 FROM metadata WHERE ms_path = ?", (outfile_tar_path,))
-            if cursor.fetchone():
-                LOG.info(f"Skipping {outfile_path}, already in metadata DB.")
-
+            if existing_ms_path and Path(existing_ms_path).expanduser().exists():
+                LOG.info(f"Skipping {existing_ms_path}; entry exists for ({year_str}, {start_str}, {end_str}).")
             else:
-                transform_data = [ms_in_path, base_name, outfile_path, outfile_tar_path,
-                                  str(year), str(freq_start), str(freq_end)]
-
+                # queue work (row absent, or ms_path empty/NULL, or path missing on disk)
+                transform_data = [ms_in, base_name, year_str, start_str, end_str]
                 transform_data_string = stringify_data(transform_data)
                 transform_data_all.append(transform_data_string)
-                LOG.info(f"Queueing {outfile_tar_path} for processing.")
+
+                if row:
+                    LOG.info(
+                        f"Re-queueing {ms_in} for ({year_str}, {start_str}, {end_str}) "
+                        f"because stored ms_path is missing/invalid: {existing_ms_path!r}"
+                    )
+                else:
+                    LOG.info(f"Queueing {ms_in} for processing of year: {year_str}, st_freq: {start_str}, end_freq: {end_str}.")
+
 
 
     conn.close()
@@ -312,91 +316,94 @@ def ensure_list_then_destringify(arg_or_list) -> list[str]:
     else:
         raise TypeError("Expected str or list[str] for transform_data")
 
-
-def update_db_after_transform(transform_data: str, db_path: str) -> None:
-    """
-    Parses transformation metadata and inserts it into a SQLite database.
-
-    This function expects a stringified list containing metadata about a
-    transformed measurement set, including input/output paths and frequency details.
-    It destringifies the input, calculates bandwidth and file size (if available),
-    and appends the entry to the metadata table in the database.
-
-    Parameters
-    ----------
-    transform_data : str
-        A stringified Python-style list with exactly 8 elements:
-        [
-            ms_in_path (str),
-            base_name (str),
-            outfile_path (str),
-            outfile_name_tar (str),
-            year (str or int),
-            freq_start (str or int),
-            freq_end (str or int)
-        ]
-
-    db_path : str
-        Path to the SQLite metadata database file.
-
-    Raises
-    ------
-    ValueError
-        If the input string cannot be parsed into a valid list of 8 elements.
-    OSError
-        If reading the file size of `outfile_name_tar` fails for reasons
-        other than the file not existing.
-
-    Side Effects
-    ------------
-    - Inserts a new row into the `metadata` table of the SQLite database.
-    - Logs messages to the standard logger.
-    """
-    LOG.info(f"transform_data before destringing: {transform_data}")
-    try:
-        # Safely evaluate the string into a Python list
-        data_list = ensure_list_then_destringify(transform_data)
-        if not isinstance(data_list, list) or len(data_list) != 7:
-            raise ValueError("transform_data must be a list of 7 elements")
-    except Exception as e:
-        raise ValueError(f"Invalid transform_data format: {e}")
-
-    LOG.info(f"transform_data after destringing: {data_list}")
-
-    (
-        ms_in_path, base_name, outfile_path, outfile_tar_path, year, freq_start, freq_end
-    ) = data_list
-
-    size_bytes = os.path.getsize(outfile_tar_path) if os.path.exists(outfile_tar_path) else 0
-    size = round(float(size_bytes / (1024 * 1024 * 1024)), 3)
-    bandwidth = int(freq_end) - int(freq_start)
-
-    if size <= 0:
-        size = -1
-        LOG.warning(f"{outfile_tar_path} is not a valid MS. ")
-        try:
-            os.makedirs(os.path.dirname(outfile_tar_path), exist_ok=True)
-            with open(outfile_tar_path, "w"):
-                pass  # equivalent to touch
-        except Exception as e:
-            LOG.error(f"Failed to create dummy file at {outfile_tar_path}: {e}")
-
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-    cursor.execute("""
-        INSERT INTO metadata (
-            ms_path, base_name, year,
-            start_freq, end_freq, bandwidth, size
-        ) VALUES (?, ?, ?, ?, ?, ?, ?)
-    """, (
-        outfile_tar_path, base_name, year,
-        freq_start, freq_end, bandwidth, size
-    ))
-    conn.commit()
-    conn.close()
-
-    LOG.info(f"Appended {outfile_tar_path} to metadata DB.")
-
-
+#
+# def update_db_after_transform(transform_data: str, db_path: str) -> None:
+#     """
+#     Parses transformation metadata and inserts it into a SQLite database.
+#
+#     This function expects a stringified list containing metadata about a
+#     transformed measurement set, including input/output paths and frequency details.
+#     It destringifies the input, calculates bandwidth and file size (if available),
+#     and appends the entry to the metadata table in the database.
+#
+#     Parameters
+#     ----------
+#     transform_data : str
+#         A stringified Python-style list with exactly 8 elements:
+#         [
+#             ms_in_path (str),
+#             base_name (str),
+#             year (str or int),
+#             freq_start (str or int),
+#             freq_end (str or int),
+#             outfile_path (str),
+#         ]
+#
+#     db_path : str
+#         Path to the SQLite metadata database file.
+#
+#     Raises
+#     ------
+#     ValueError
+#         If the input string cannot be parsed into a valid list of 8 elements.
+#     OSError
+#         If reading the file size of `outfile_name_tar` fails for reasons
+#         other than the file not existing.
+#
+#     Side Effects
+#     ------------
+#     - Inserts a new row into the `metadata` table of the SQLite database.
+#     - Logs messages to the standard logger.
+#     """
+#     LOG.info(f"transform_data before destringing: {transform_data}")
+#     try:
+#         # Safely evaluate the string into a Python list
+#         data_list = ensure_list_then_destringify(transform_data)
+#         if not isinstance(data_list, list) or len(data_list) != 7:
+#             raise ValueError("transform_data must be a list of 7 elements")
+#     except Exception as e:
+#         raise ValueError(f"Invalid transform_data format: {e}")
+#
+#     LOG.info(f"transform_data after destringing: {data_list}")
+#
+#     (
+#         ms_in_path, base_name, year, freq_start, freq_end, outfile_path
+#     ) = data_list
+#
+#     uv_split_dir = join(outfile_path, basename(ms_in_path))
+#
+#     outfile_tar_path = f"{uv_split_dir}.tar"
+#
+#     size_bytes = os.path.getsize(outfile_tar_path) if os.path.exists(outfile_tar_path) else 0
+#     size = round(float(size_bytes / (1024 * 1024 * 1024)), 3)
+#     bandwidth = int(freq_end) - int(freq_start)
+#
+#     if size <= 0:
+#         size = -1
+#         LOG.warning(f"{outfile_tar_path} is not a valid MS. ")
+#         try:
+#             os.makedirs(os.path.dirname(outfile_tar_path), exist_ok=True)
+#             with open(outfile_tar_path, "w"):
+#                 pass  # equivalent to touch
+#         except Exception as e:
+#             LOG.error(f"Failed to create dummy file at {outfile_tar_path}: {e}")
+#
+#     conn = sqlite3.connect(db_path)
+#     cursor = conn.cursor()
+#     cursor.execute("""
+#         INSERT INTO metadata (
+#             ms_path, base_name, year,
+#             start_freq, end_freq, bandwidth, size
+#         ) VALUES (?, ?, ?, ?, ?, ?, ?)
+#     """, (
+#         outfile_tar_path, base_name, year,
+#         freq_start, freq_end, bandwidth, size
+#     ))
+#     conn.commit()
+#     conn.close()
+#
+#     LOG.info(f"Appended {outfile_tar_path} to metadata DB.")
+#
+#
 
 

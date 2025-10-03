@@ -11,6 +11,7 @@ import numpy as np
 import json
 import re
 from typing import List, Any
+from pathlib import Path
 
 LOG = logging.getLogger(f"dlg.{__name__}")
 logging.basicConfig(level=logging.INFO)
@@ -309,81 +310,92 @@ def remove_file_or_directory(filename: str, trigger) -> None:
     else:
         LOG.info(f"[{trigger}] Nothing to remove, path does not exist: {filename}")
 
-def verify_db_integrity(db_path: str, trigger_in: bool) -> bool: # , trigger_in: bool
+def verify_db_integrity(db_path: str, trigger_in: bool) -> bool:
     """
-    Verify that all file references in the metadata SQLite database exist on disk,
-    and clean up invalid or missing references accordingly.
+    Verify that file/directory paths stored in the metadata DB actually exist.
+    - Clears invalid path columns to NULL.
+    - Deletes rows where *all* path columns are invalid/missing.
 
-    This verifies the 'ms_path' and all dynamic columns (those not fixed).
-
-    Parameters
-    ----------
-    db_path : str
-        Path to the SQLite metadata database file.
-    trigger_in : bool
-        If True, perform integrity check. If False, skip.
-
-    Returns
-    -------
-    bool
-        True if check was performed and completed successfully.
+    Checked columns (if present):
+      ms_path, uv_sub_path, build_concat_all, tclean_all, build_concat_epoch, tclean_epoch
     """
+    if not trigger_in:
+        return False
+
     if not os.path.exists(db_path):
         LOG.warning(f"[VERIFY] Metadata DB not found at {db_path}. Skipping integrity check.")
         return False
 
+    # Columns we consider as path-bearing (limit to these to avoid nuking non-path fields)
+    PATH_COLUMNS = [
+        "ms_path",
+        "uv_sub_path",
+        "build_concat_all",
+        "tclean_all",
+        "build_concat_epoch",
+        "tclean_epoch",
+    ]
+
+    def _is_real_path(p: str) -> bool:
+        """Return True if p (after strip/expanduser) exists as file or dir."""
+        if not p:
+            return False
+        p = p.strip()
+        if not p:
+            return False
+        # expand ~ and normalize; we don't require absolute here
+        q = Path(p).expanduser()
+        return q.exists()
+
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
-    # Get all columns
+    # Discover which of the PATH_COLUMNS actually exist in the table
     cursor.execute("PRAGMA table_info(metadata);")
-    all_columns = [col[1] for col in cursor.fetchall()]
+    cols_present = {col[1] for col in cursor.fetchall()}
+    path_cols = [c for c in PATH_COLUMNS if c in cols_present]
 
-    # Columns not to be touched
-    fixed_columns = ["ms_path", "base_name", "year", "start_freq", "end_freq", "bandwidth", "size"]
-    dynamic_columns = [col for col in all_columns if col not in fixed_columns]
+    if not path_cols:
+        LOG.info("[VERIFY] No known path columns found; nothing to check.")
+        conn.close()
+        return True
 
-    # Select needed fields
-    select_cols = ["rowid", "ms_path"] + dynamic_columns
+    select_cols = ["rowid"] + path_cols
     cursor.execute(f"SELECT {', '.join(select_cols)} FROM metadata")
     rows = cursor.fetchall()
 
+    # Single transaction for speed & consistency
+    cursor.execute("BEGIN")
     for row in rows:
         rowid = row[0]
-        ms_path = row[1]
-        dynamic_values = dict(zip(dynamic_columns, row[2:]))
+        values_by_col = dict(zip(path_cols, row[1:]))
 
-        existing_refs = []
-        missing_fields = []
+        existing_any = False
+        missing_cols = []
 
-        # Check ms_path
-        if ms_path and os.path.exists(ms_path.strip()):
-            existing_refs.append(ms_path)
-        else:
-            LOG.debug(f"[VERIFY] ms_path missing in row {rowid}")
-
-        # Check dynamic fields
-        for col, val in dynamic_values.items():
-            if not val or not val.strip():
-                continue
-            path = val.strip()
-            if os.path.exists(path):
-                existing_refs.append(path)
+        for col, val in values_by_col.items():
+            val_str = val if isinstance(val, str) else (val.decode() if isinstance(val, bytes) else "")
+            if _is_real_path(val_str):
+                existing_any = True
             else:
-                missing_fields.append(col)
+                # Only mark as missing if the cell is non-empty; empty/NULL stays NULL
+                if val_str:
+                    missing_cols.append(col)
 
-        if not existing_refs:
+        if not existing_any:
             cursor.execute("DELETE FROM metadata WHERE rowid = ?", (rowid,))
-            LOG.info(f"[DELETE] Row {rowid} removed: all file references missing.")
+            LOG.info(f"[DELETE] Row {rowid} removed: all path columns invalid/missing.")
         else:
-            for col in missing_fields:
+            for col in missing_cols:
+                # Column name comes from PRAGMA (trusted), value parameterized
                 cursor.execute(f"UPDATE metadata SET {col} = NULL WHERE rowid = ?", (rowid,))
-                LOG.info(f"[CLEAN] Cleared column '{col}' in row {rowid}: file not found.")
+                LOG.info(f"[CLEAN] Cleared '{col}' in row {rowid}: path not found.")
 
     conn.commit()
     conn.close()
     LOG.info("[VERIFY] Metadata DB integrity check complete.")
     return True
+
 
 
 def export_metadata_to_csv(db_path: str, csv_path: str, trigger_in: bool) -> None:

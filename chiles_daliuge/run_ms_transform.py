@@ -5,7 +5,7 @@ import sys
 from chiles_daliuge.common import *
 import json
 import logging
-
+from os.path import join
 # CASA imports
 from casatasks import mstransform
 from casatools import ms, imager
@@ -46,12 +46,17 @@ def do_ms_transform(transform_data: List[str]) -> None:
     """
 
     (
-        ms_in_path, base_name, outfile_path, outfile_tar_path, year, freq_start, freq_end
+        ms_in_path, base_name, year, freq_start, freq_end, outfile_path, db_path
     ) = transform_data
+
+
+    uv_split_dir = join(outfile_path, basename(ms_in_path))
+
+    os.makedirs(uv_split_dir, exist_ok=True)
 
     CHANNEL_WIDTH = 15625.0  # Hz
 
-    LOG.info(f"Working on: {outfile_path} with freq {freq_start} and {freq_end}.")
+    LOG.info(f"Working on: {uv_split_dir} with freq {freq_start} and {freq_end}.")
 
     im = imager()
     # LOG.info(f"ms_in_path: {ms_in}")
@@ -81,20 +86,20 @@ def do_ms_transform(transform_data: List[str]) -> None:
 
     if len(spw_range):
         for suffix in ["", ".tmp", ".tar"]:
-            path = f"{outfile_path}{suffix}"
+            path = f"{uv_split_dir}{suffix}"
             if os.path.exists(path):
                 LOG.info(f"Removing: {path}")
                 remove_file_or_directory(path, trigger=True)
 
         LOG.info(f"ms_in: {ms_in_path}")
-        LOG.info(f"outfile_ms: {outfile_path}")
+        LOG.info(f"outfile_ms: {uv_split_dir}")
         LOG.info(f"spw_range: {spw_range}")
 
         if len(spw_range.split(",")) == 1:
             # Single spectral window
             mstransform(
                 vis=ms_in_path,
-                outputvis=outfile_path,
+                outputvis=uv_split_dir,
                 regridms=True,
                 restfreq="1420.405752MHz",
                 mode="channel",
@@ -112,7 +117,7 @@ def do_ms_transform(transform_data: List[str]) -> None:
         else:
             # Multi-SPW
             tmp_spws = [entry.split(":")[0] for entry in spw_range.split(",")]
-            outfile_tmp = outfile_path.replace(".ms", ".ms.tmp")
+            outfile_tmp = uv_split_dir.replace(".ms", ".ms.tmp")
             LOG.info(f"outfile_tmp: {outfile_tmp}")
 
             if os.path.exists(outfile_tmp):
@@ -145,7 +150,7 @@ def do_ms_transform(transform_data: List[str]) -> None:
 
             mstransform(
                 vis=outfile_tmp,
-                outputvis=outfile_path,
+                outputvis=uv_split_dir,
                 regridms=True,
                 restfreq="1420.405752MHz",
                 mode="channel",
@@ -165,18 +170,50 @@ def do_ms_transform(transform_data: List[str]) -> None:
 
         # Log SPW info
         ms_ = ms()
-        ms_.open(thems=outfile_path)
+        ms_.open(thems=uv_split_dir)
         LOG.info(
-            f"Created File: {outfile_path}\n"
+            f"Created File: {uv_split_dir}\n"
             f"Spectral Window Range: {spw_range}\n"
             f"Spectral Window Info: {pformat(ms_.getspectralwindowinfo(), indent=2)}\n"
         )
         ms_.close()
 
+
         # Archive output
-        create_tar_file(outfile_path, suffix="tmp")
-        os.rename(f"{outfile_tar_path}.tmp", f"{outfile_tar_path}")
+        create_tar_file(uv_split_dir, suffix="tmp")
+        outfile_tar_path = f"{uv_split_dir}.tar"
+        os.rename(f"{uv_split_dir}.tar.tmp", f"{outfile_tar_path}")
         LOG.info(f"Created final file {outfile_tar_path} from {outfile_tar_path}.tmp")
+
+        size_bytes = os.path.getsize(outfile_tar_path) if os.path.exists(outfile_tar_path) else 0
+        size = round(float(size_bytes / (1024 * 1024 * 1024)), 3)
+        bandwidth = int(freq_end) - int(freq_start)
+
+        if size <= 0:
+            size = -1
+            LOG.warning(f"{outfile_tar_path} is not a valid MS. ")
+            try:
+                os.makedirs(os.path.dirname(outfile_tar_path), exist_ok=True)
+                with open(outfile_tar_path, "w"):
+                    pass  # equivalent to touch
+            except Exception as e:
+                LOG.error(f"Failed to create dummy file at {outfile_tar_path}: {e}")
+
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO metadata (
+                ms_path, base_name, year,
+                start_freq, end_freq, bandwidth, size
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (
+            outfile_tar_path, base_name, year,
+            freq_start, freq_end, bandwidth, size
+        ))
+        conn.commit()
+        conn.close()
+
+        LOG.info(f"Appended {outfile_tar_path} to metadata DB.")
     else:
         LOG.warning("*********\nmstransform spw out of range:\n***********")
 
@@ -192,7 +229,7 @@ def main(transform_data: list) -> None:
     ----------
     transform_data : list
         A list of 7 elements containing:
-        [ms_in_path, base_name, outfile_path, outfile_tar_path, year, freq_start, freq_end]
+        [ms_in_path, base_name, year, freq_start, freq_end, outfile_path]
     """
     LOG.info(f"transform_data: {transform_data}")
     do_ms_transform(transform_data)
@@ -202,13 +239,21 @@ def main(transform_data: list) -> None:
 if __name__ == "__main__":
     if len(sys.argv) != 8:
         print(
-            "Usage: python run_ms_transform.py <ms_in_path> <base_name> <outfile_path> <outfile_tar_path> <year> <freq_start> <freq_end>",
+            "Usage: python run_ms_transform.py <ms_in_path> <base_name> <year> <freq_start> <freq_end> <out_dir> <db_path>",
             file=sys.stderr)
         sys.exit(1)
 
     try:
-        raw_args = sys.argv[1:]
+        raw_args = sys.argv[1:-2]
+        LOG.info(f"raw_args: {raw_args}")
+        out_dir = sys.argv[-2]
+        LOG.info(f"out_dir: {out_dir}")
+        db_path = sys.argv[-1]
+        LOG.info(f"db_path: {db_path}")
         transform_data = destringify_data(raw_args)
+        transform_data.append(out_dir)
+        transform_data.append(db_path)
+        LOG.info(f"transform_data: {transform_data}")
         main(transform_data)
     except Exception as e:
         LOG.error(json.dumps({"status": "error", "message": str(e)}))
