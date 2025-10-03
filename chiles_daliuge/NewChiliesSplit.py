@@ -205,7 +205,6 @@ def split_ms_list(ms_list: list[str], parallel_processes: int) -> list[list[str]
 
 def split_out_frequencies(
         ms_in_list: List[str],
-        output_directory: str,
         frequencies: List[List[int]],
         METADATA_DB: str,
         process_ms: bool = process_ms_flag
