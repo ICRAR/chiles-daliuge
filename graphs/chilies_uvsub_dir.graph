@@ -408,7 +408,7 @@
         "generatorCommitHash": "8566c0d3db3eb8ddca7b3342a6eecc023269b147",
         "generatorName": "EAGLE",
         "generatorVersion": "v6.8.0",
-        "lastModifiedDatetime": 1759455143.140743,
+        "lastModifiedDatetime": 1759464771.676246,
         "lastModifiedEmail": "",
         "lastModifiedName": "",
         "numLGNodes": 43,
@@ -7637,6 +7637,36 @@
                     "type": "String",
                     "usage": "NoPort",
                     "value": "/home/00103780/chiles-daliuge/db/Chilies_metadata.csv"
+                },
+                {
+                    "defaultValue": "dlg.data.drops.environmentvar_drop.EnvironmentVarDROP",
+                    "description": "",
+                    "encoding": "pickle",
+                    "id": "7a00c8fb-884e-4333-ad40-cc5a4f167bf6",
+                    "name": "dropclass",
+                    "options": [],
+                    "parameterType": "ComponentParameter",
+                    "positional": false,
+                    "precious": false,
+                    "readonly": false,
+                    "type": "String",
+                    "usage": "NoPort",
+                    "value": "dlg.data.drops.environmentvar_drop.EnvironmentVarDROP"
+                },
+                {
+                    "defaultValue": "5",
+                    "description": "",
+                    "encoding": "pickle",
+                    "id": "d9d3c399-f35e-4c5b-b993-9eb1c1861799",
+                    "name": "data_volume",
+                    "options": [],
+                    "parameterType": "ConstraintParameter",
+                    "positional": false,
+                    "precious": false,
+                    "readonly": false,
+                    "type": "Float",
+                    "usage": "NoPort",
+                    "value": 5
                 }
             ],
             "id": "1a10a131-6123-4a35-97a1-7a6678348bc6",
@@ -7656,8 +7686,8 @@
             "outputApplicationType": "None",
             "paletteDownloadUrl": "",
             "repositoryUrl": "daliuge-new",
-            "x": 705.0729613780512,
-            "y": -239.79672988291924
+            "x": 666.6910629269261,
+            "y": -490.7552966787374
         },
         {
             "category": "Memory",
