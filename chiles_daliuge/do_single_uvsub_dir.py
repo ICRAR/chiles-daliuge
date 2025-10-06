@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import sys
 from os.path import join
-from chiles_daliuge.common import *
+from chiles_daliuge.common_dir import *
 import json
 import tempfile
 import logging
@@ -14,7 +14,7 @@ from casatools import imager, ms, table, quanta, image
 from typing import List, Tuple, Union
 
 # Set up logging
-LOG = logging.getLogger(__name__)
+LOG = logging.getLogger(f"dlg.{__name__}")
 logging.basicConfig(level=logging.INFO)
 
 
@@ -127,10 +127,10 @@ def rejig_paths(taylor_terms: List[str],
     return taylor_terms_, outliers_
 
 
-def do_single_uvsub(
+def do_single_uvsub_dir(
         taylor_terms, outliers, channel_average, produce_qa, w_projection_planes,
         sky_model_location,
-        tar_file_split, year, freq_st, freq_en, uv_sub_path, METADATA_DB
+        tar_file_split, year, freq_st, freq_en, METADATA_DB, uv_sub_path
 ):
 
     """
@@ -155,11 +155,9 @@ def do_single_uvsub(
         Whether to generate QA plots using `plotms`.
     w_projection_planes : int
         Number of W-projection planes to use for FT modeling.
-    source_dir : str
-        Path to the directory containing input and output MS files.
     sky_model_location : str
         Directory containing untarred sky models.
-    split_name : str
+    tar_file_split : str
         Name of the input tarred measurement set file (e.g., `split_1234.ms.tar`).
     year : str
         Observation year used for bookkeeping and naming.
@@ -167,8 +165,8 @@ def do_single_uvsub(
         Start frequency of the sub-band.
     freq_en : str
         End frequency of the sub-band.
-    uv_sub_name : str
-        Base name for the output MS and tar file after UV subtraction.
+    uv_sub_path : str
+        Path and name for the output MS and tar file after UV subtraction.
     METADATA_DB : str
         Path to the SQLite metadata database to be updated after processing.
 
@@ -187,7 +185,15 @@ def do_single_uvsub(
     - QA plots are written to `qa_pngs/` within the output MS directory if `produce_qa=True`.
     """
     _, split_name = os.path.split(tar_file_split)
-    save_dir, uvsub_name = os.path.split(uv_sub_path)
+
+    os.makedirs(uv_sub_path, exist_ok=True)
+
+    save_dir = uv_sub_path
+
+    #uv_sub_path = join(uv_sub_path, basename(tar_file_split)[:-4])
+
+    #uvsub_name = basename(tar_file_split)[:-4]
+
 
     with tempfile.TemporaryDirectory(
             dir=save_dir, prefix=f"__{split_name}__TEMP__"
@@ -222,10 +228,8 @@ def do_single_uvsub(
         tmp_name1 = f"{tmp_name}.0"
         tmp_name2 = f"{tmp_name}.1"
 
-        if produce_qa:
-            png_directory = join(uv_sub_path, "qa_pngs")
-            if not exists(png_directory):
-                makedirs(png_directory)
+        # if produce_qa:
+
 
         try:
             im = imager()
@@ -251,6 +255,7 @@ def do_single_uvsub(
 
             ntt = len(taylor_terms)
             if ntt > 0:  # In-beam models
+
                 im.settaylorterms(ntaylorterms=ntt, reffreq=fq)
 
                 #
@@ -266,47 +271,102 @@ def do_single_uvsub(
 
                 # Now do the subtraction
                 uvsub(vis=in_ms, reverse=False)
+
                 if produce_qa:
-                    ret_d = plotms(
-                        vis=in_ms,
-                        xaxis="freq",
-                        yaxis="real",
-                        avgtime="43200",
-                        overwrite=True,
-                        avgbaseline=True,
-                        showgui=False,
-                        ydatacolumn="data",
-                        xdatacolumn="data",
-                        plotfile=join(png_directory, in_ms.rsplit("/")[-1] + "_infield_subtraction_data.png")
-                    )
-                    ret_m = plotms(
-                        vis=in_ms,
-                        xaxis="freq",
-                        yaxis="real",
-                        avgtime="43200",
-                        overwrite=True,
-                        avgbaseline=True,
-                        showgui=False,
-                        ydatacolumn="model",
-                        xdatacolumn="model",
-                        plotfile=join(
-                            png_directory,
-                            + in_ms.rsplit("/")[-1]
-                            + "_infield_subtraction_model.png"
-                        )
-                    )
-                    ret_c = plotms(
-                        vis=in_ms,
-                        xaxis="freq",
-                        yaxis="real",
-                        avgtime="43200",
-                        overwrite=True,
-                        avgbaseline=True,
-                        showgui=False,
-                        ydatacolumn="corrected",
-                        xdatacolumn="corrected",
-                        plotfile=join(png_directory,in_ms.rsplit("/")[-1] + "_infield_subtraction_corrected.png")
-                    )
+                    # Force headless Qt in some CASA builds (harmless if already set)
+                    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+
+                    png_directory = uv_sub_path + "_qa_pngs"  # keep one stable suffix
+                    os.makedirs(png_directory, exist_ok=True)
+
+                    def _safe_plotms(in_ms: str,out_ms: str, ycol: str, xcol: str, suffix: str):
+                        """
+                        Try exporting a plot with increasingly lighter configs to minimise freeze risk.
+                        Returns the last plotms() return value (or None on failure).
+                        """
+                        out_png = join(png_directory, f"{out_ms}_{suffix}.png")
+                        configs = [
+                            # Start modest: small time avg, light channel avg, no baseline avg, no transforms.
+                            dict(averagedata=True, avgtime="300",  avgchannel="8",  avgbaseline=False),
+                            # Lighter fallback: shorter time, heavier channel average.
+                            dict(averagedata=True, avgtime="60",   avgchannel="32", avgbaseline=False),
+                            # Final fallback: no time avg, strong channel average.
+                            dict(averagedata=True, avgtime="0",    avgchannel="64", avgbaseline=False),
+                        ]
+                        last_ret = None
+                        for i, cfg in enumerate(configs, 1):
+                            try:
+                                LOG.info(f"[plotms] attempt {i} for {suffix} with cfg={cfg}")
+                                last_ret = plotms(
+                                    vis=in_ms,
+                                    xaxis="freq", yaxis="real",
+                                    xdatacolumn=xcol, ydatacolumn=ycol,
+                                    transform=False,            # avoid unnecessary frame work
+                                    showgui=False, clearplots=True,
+                                    plotfile=out_png, expformat="png",
+                                    highres=True, dpi=150, overwrite=True,
+                                    verbose=True,
+                                    **cfg
+                                )
+                                # If plotms returned something truthy, consider it a success and stop.
+                                if last_ret not in (False, None):
+                                    break
+                            except Exception as e:
+                                LOG.exception(f"[plotms] failed attempt {i} for {suffix}: {e}")
+                        return last_ret
+
+                    LOG.info("Starting QA plot generation (safe mode).")
+                    ret_d = _safe_plotms(in_ms, out_ms, "data",      "data",      "infield_subtraction_data")
+                    ret_m = _safe_plotms(in_ms, out_ms, "model",     "model",     "infield_subtraction_model")
+                    ret_c = _safe_plotms(in_ms, out_ms, "corrected", "corrected", "infield_subtraction_corrected")
+
+                    LOG.info(f"QA plot results: data={ret_d}, model={ret_m}, corrected={ret_c}")
+
+                # if produce_qa:
+                #     png_directory = uv_sub_path + "_qa_pngs_A"  # changed from uv_sub_path to tmp_name
+                #     if not exists(png_directory):
+                #         makedirs(png_directory)
+                #     LOG.info(f"Starting QA plot generation A.")
+                #     ret_d = plotms(
+                #         vis=in_ms,
+                #         xaxis="freq",
+                #         yaxis="real",
+                #         avgtime="43200",
+                #         overwrite=True,
+                #         avgbaseline=True,
+                #         showgui=False,
+                #         ydatacolumn="data",
+                #         xdatacolumn="data",
+                #         plotfile=join(png_directory, in_ms.rsplit("/")[-1] + "_infield_subtraction_data.png")
+                #     )
+                #     ret_m = plotms(
+                #         vis=in_ms,
+                #         xaxis="freq",
+                #         yaxis="real",
+                #         avgtime="43200",
+                #         overwrite=True,
+                #         avgbaseline=True,
+                #         showgui=False,
+                #         ydatacolumn="model",
+                #         xdatacolumn="model",
+                #         plotfile=join(
+                #             png_directory,
+                #             + in_ms.rsplit("/")[-1]
+                #             + "_infield_subtraction_model.png"
+                #         )
+                #     )
+                #     ret_c = plotms(
+                #         vis=in_ms,
+                #         xaxis="freq",
+                #         yaxis="real",
+                #         avgtime="43200",
+                #         overwrite=True,
+                #         avgbaseline=True,
+                #         showgui=False,
+                #         ydatacolumn="corrected",
+                #         xdatacolumn="corrected",
+                #         plotfile=join(png_directory,in_ms.rsplit("/")[-1] + "_infield_subtraction_corrected.png")
+                #     )
                     if not (ret_d & ret_c & ret_m):
                         LOG.info(
                             f"Reporting In-field PlotMS Failure! State for Data, Corrected and Model is: {ret_d}&{ret_c}&{ret_m}"
@@ -460,6 +520,10 @@ def do_single_uvsub(
                     )
                     # End of run through outlier models
                 if produce_qa:
+                    png_directory = uv_sub_path + "_qa_pngs_B"  # changed from uv_sub_path to tmp_name
+                    if not exists(png_directory):
+                        makedirs(png_directory)
+                    LOG.info(f"Starting QA plot generation B.")
                     ret_d = plotms(
                         vis=tmp_name1,
                         xaxis="freq",
@@ -539,6 +603,10 @@ def do_single_uvsub(
             if calc_stats:
                 statwt(vis=tmp_name, chanbin=1, timebin="64s", datacolumn="data")
                 if produce_qa:
+                    png_directory = uv_sub_path + "_qa_pngs_C"  # changed from uv_sub_path to tmp_name
+                    if not exists(png_directory):
+                        makedirs(png_directory)
+                    LOG.info(f"Starting QA plot generation C.")
                     ret_d = plotms(
                         vis=tmp_name,
                         xaxis="Frequency",
@@ -566,47 +634,73 @@ def do_single_uvsub(
             LOG.exception("*********\nUVSub exception: \n***********")
 
         # Clean up the temporary files
-        tmp_name = join(temporary_directory, f"{out_ms}.tmp")
-        tmp_name1 = f"{tmp_name}.0"
-        tmp_name2 = f"{tmp_name}.1"
-        if exists(tmp_name):
-            remove_file_directory(tmp_name)
+        # tmp_name = join(temporary_directory, f"{out_ms}.tmp")
+        # tmp_name1 = f"{tmp_name}.0"
+        # tmp_name2 = f"{tmp_name}.1"
 
-        if exists(tmp_name1):
-            remove_file_directory(tmp_name1)
+        from pathlib import Path
+        p = Path(uv_sub_path)
 
-        if exists(tmp_name2):
-            remove_file_directory(tmp_name2)
+        # --- Preflight checks ---
+        if not p.exists():
+            LOG.error(f"Path does not exist, skipping: {p}")
+        else:
+            if p.is_dir():
+                # Readability + non-empty dir check
+                if not os.access(p, os.R_OK):
+                    LOG.error(f"Directory not readable: {p}")
+                else:
+                    try:
+                        it = p.iterdir()
+                        first = next(it, None)
+                        if first is None:
+                            LOG.warning(f"Directory is empty, skipping: {p}")
+                        else:
+                            LOG.info(f"Tarring file: {uv_sub_path}")
+                            create_tar_file(uv_sub_path, suffix="temp")
 
-        LOG.info(f"Tarring file: {uv_sub_path}")
-        create_tar_file(uv_sub_path, suffix="temp")
+                            # Clean up the measurement sets
+                            if exists(uv_sub_tar):
+                                LOG.info(f"Removing {uv_sub_tar}")
+                                remove_file_directory(uv_sub_tar)
 
-        # Clean up the measurement sets
-        if exists(uv_sub_tar):
-            LOG.info(f"Removing {uv_sub_tar}")
-            remove_file_directory(uv_sub_tar)
+                            rename(
+                                f"{uv_sub_tar}.temp",
+                                uv_sub_tar,
+                            )
 
-        rename(
-            f"{uv_sub_tar}.temp",
-            uv_sub_tar,
-        )
+                            if exists(tmp_name):
+                                remove_file_directory(tmp_name)
 
-        update_metadata_column(METADATA_DB, "ms_path", tar_file_split, year, freq_st, freq_en, "uv_sub_path", uv_sub_tar)
+                            if exists(tmp_name1):
+                                remove_file_directory(tmp_name1)
+
+                            if exists(tmp_name2):
+                                remove_file_directory(tmp_name2)
+
+                            update_metadata_column(METADATA_DB, "ms_path", tar_file_split, year, freq_st, freq_en, "uv_sub_path", uv_sub_tar)
+
+                    except Exception as e:
+                        LOG.exception(f"Could not iterate directory {p}: {e}")
 
     LOG.info("Finished uvsub")
 
 
 def main(uvsub_data: list) -> None:
     LOG.info(f"uvsub_data (parsed): {uvsub_data}")
-    do_single_uvsub(*uvsub_data)
+    do_single_uvsub_dir(*uvsub_data)
 
 
 if __name__ == "__main__":
     try:
-        raw_args = sys.argv[1:]
-        LOG.info(f"raw_args before destringifying: {raw_args}")
+        uvsub_data_in = sys.argv[1:-1]
+        LOG.info(f"uvsub_data_in before destringifying: {uvsub_data_in}")
 
-        uvsub_data = destringify_data_uvsub(raw_args)  # This should already return final list
+        uvsub_path_in = sys.argv[-1]
+        LOG.info(f"uvsub_path_in: {uvsub_path_in}")
+
+        uvsub_data = destringify_data_uvsub(uvsub_data_in)  # This should already return final list
+        uvsub_data.append(uvsub_path_in)
         LOG.info(f"uvsub_data going to function: {uvsub_data}")
 
         main(uvsub_data)

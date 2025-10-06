@@ -133,6 +133,7 @@ def destringify_data_tclean(args: List[str]) -> List[Any]:
 
     return out
 
+
 def destringify_data_uvsub(args: list[str]) -> list:
     """
     Parse and convert a list of stringified command-line arguments into native Python types.
@@ -170,6 +171,7 @@ def destringify_data_uvsub(args: list[str]) -> list:
     if full_str.startswith("[") and full_str.endswith("]"):
         full_str = full_str[1:-1]
 
+    LOG.info(f"full_str: {full_str}")
     # Now split top-level comma-separated values, being careful with quoted strings
     raw_parts = full_str.split(", ")
 
@@ -177,6 +179,7 @@ def destringify_data_uvsub(args: list[str]) -> list:
     temp_buffer = ""
     inside_list = False
 
+    LOG.info(f"raw_parts: {raw_parts}")
     for part in raw_parts:
         part = part.strip()
         # Start of a list
@@ -198,6 +201,7 @@ def destringify_data_uvsub(args: list[str]) -> list:
             parsed_args.append(convert_type(part))
 
     return parsed_args
+
 
 def destringify_concat_input(arg: str) -> tuple:
     """
@@ -310,24 +314,19 @@ def remove_file_or_directory(filename: str, trigger) -> None:
     else:
         LOG.info(f"[{trigger}] Nothing to remove, path does not exist: {filename}")
 
-def verify_db_integrity(db_path: str) -> bool: # , trigger_in: bool
+
+def verify_db_integrity(db_path: str, trigger_in: bool) -> bool:
     """
     Verify that file/directory paths stored in the metadata DB actually exist.
     - Clears invalid path columns to NULL.
     - Deletes rows where *all* path columns are invalid/missing.
 
-    Parameters
-    ----------
-    db_path : str
-        Path to the SQLite metadata database file.
-    trigger_in : bool
-        If True, perform integrity check. If False, skip.
-
-    Returns
-    -------
-    bool
-        True if check was performed and completed successfully.
+    Checked columns (if present):
+      ms_path, uv_sub_path, build_concat_all, tclean_all, build_concat_epoch, tclean_epoch
     """
+    if not trigger_in:
+        return False
+
     if not os.path.exists(db_path):
         LOG.warning(f"[VERIFY] Metadata DB not found at {db_path}. Skipping integrity check.")
         return False
@@ -736,8 +735,8 @@ def untar_file(infile, output_directory, gz=True):
 def generate_hashed_ms_name(
         ms_name: str,
         year: str,
-        start_freq: int,
-        end_freq: int,
+        start_freq: str,
+        end_freq: str,
         prefix: str = "",
         hash_length: int = 16
 ) -> str:

@@ -5,19 +5,22 @@ from subprocess import run, PIPE
 
 from pathlib import Path
 import ast
+from subprocess import run, PIPE
 
 from typing import List
 
-from numpy import ndarray
+from numpy.core.multiarray import ndarray
 
 from chiles_daliuge.common import *
 import logging
 import sqlite3
 import numpy as np
+from pathlib import Path
+from os.path import join
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-LOG = logging.getLogger(__name__)
+LOG = logging.getLogger(f"dlg.{__name__}")
 logging.basicConfig(level=logging.INFO)
 
 process_ms_flag = True
@@ -74,12 +77,16 @@ def fetch_original_ms(
                                             end_freq)
         ms_path = os.path.join(copy_directory, dlg_name)
 
-        if add_to_db:
-            cursor.execute("SELECT 1 FROM metadata WHERE ms_path = ?", (ms_path,))
-            if cursor.fetchone():
-                LOG.info(f"Skipping fetch of existing MS: {base_name}, already recorded as {ms_path}")
-                name_list.append(str(ms_path))
-                continue
+        cursor.execute("""
+            SELECT 1 FROM metadata
+            WHERE base_name = ? AND year = ? AND start_freq = ? AND end_freq = ?
+            LIMIT 1
+        """, (base_name, year, start_freq, end_freq))
+
+        if cursor.fetchone():
+            LOG.info(f"Skipping fetch of existing MS: {base_name} ({year}, {start_freq}-{end_freq}); already recorded.")
+            name_list.append(str(ms_path))  # keep using the computed destination path
+            continue
 
         command = {
             "base_name": base_name,
@@ -212,17 +219,12 @@ def split_ms_list(ms_list: list[str], parallel_processes: int) -> list[list[str]
 
 def split_out_frequencies(
         ms_in_list: List[str],
-        output_directory: str,
         frequencies: List[List[int]],
         METADATA_DB: str,
         process_ms: bool = process_ms_flag
 ) -> ndarray:
 
-    os.makedirs(output_directory, exist_ok=True)
-    LOG.info("#" * 60)
-    LOG.info("#" * 60)
     LOG.info(f"Frequencies: {frequencies}")
-
 
     conn = sqlite3.connect(METADATA_DB)
     cursor = conn.cursor()
@@ -242,31 +244,43 @@ def split_out_frequencies(
         for freq_pair in frequencies:
             freq_start = freq_pair[0]
             freq_end = freq_pair[1]
-            outfile_name = generate_hashed_ms_name(
-                ms_name=ms_in,
-                year=str(year),
-                start_freq=str(freq_start),
-                end_freq=str(freq_end)
+
+            year_str  = str(year)
+            start_str = str(freq_start)
+            end_str   = str(freq_end)
+
+            # Only consider rows where ms_path is not NULL/empty
+            cursor.execute(
+                """
+                SELECT ms_path
+                FROM metadata
+                WHERE year = ? AND start_freq = ? AND end_freq = ?
+                  AND ms_path IS NOT NULL
+                  AND TRIM(ms_path) <> ''
+                LIMIT 1
+                """,
+                (year_str, start_str, end_str),
             )
+            row = cursor.fetchone()
 
+            existing_ms_path = (row[0].strip() if row and isinstance(row[0], str) else None)
 
-            outfile_path = os.path.join(output_directory, outfile_name)
-            outfile_tar_path = f"{outfile_path}.tar"
-
-            ms_in_path = os.path.join(output_directory, ms_in)
-            # Check if already exists in DB
-
-            cursor.execute("SELECT 1 FROM metadata WHERE ms_path = ?", (outfile_tar_path,))
-            if cursor.fetchone():
-                LOG.info(f"Skipping {outfile_path}, already in metadata DB.")
-
+            if existing_ms_path and Path(existing_ms_path).expanduser().exists():
+                LOG.info(f"Skipping {existing_ms_path}; entry exists for ({year_str}, {start_str}, {end_str}).")
             else:
-                transform_data = [ms_in_path, base_name, outfile_path, outfile_tar_path,
-                                  str(year), str(freq_start), str(freq_end)]
-
+                # queue work (row absent, or ms_path empty/NULL, or path missing on disk)
+                transform_data = [ms_in, base_name, year_str, start_str, end_str]
                 transform_data_string = stringify_data(transform_data)
                 transform_data_all.append(transform_data_string)
-                LOG.info(f"Queueing {outfile_tar_path} for processing.")
+
+                if row:
+                    LOG.info(
+                        f"Re-queueing {ms_in} for ({year_str}, {start_str}, {end_str}) "
+                        f"because stored ms_path is missing/invalid: {existing_ms_path!r}"
+                    )
+                else:
+                    LOG.info(f"Queueing {ms_in} for processing of year: {year_str}, st_freq: {start_str}, end_freq: {end_str}.")
+
 
 
     conn.close()
