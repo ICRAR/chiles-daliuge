@@ -309,7 +309,7 @@ def remove_file_or_directory(filename: str, trigger) -> None:
     else:
         LOG.info(f"[{trigger}] Nothing to remove, path does not exist: {filename}")
 
-def verify_db_integrity(db_path: str, trigger_in: bool) -> bool: # , trigger_in: bool
+def verify_db_integrity(db_path: str) -> bool: # , trigger_in: bool
     """
     Verify that all file references in the metadata SQLite database exist on disk,
     and clean up invalid or missing references accordingly.
@@ -719,8 +719,8 @@ def untar_file(infile, output_directory, gz=True):
 def generate_hashed_ms_name(
         ms_name: str,
         year: str,
-        start_freq: str,
-        end_freq: str,
+        start_freq: int,
+        end_freq: int,
         prefix: str = "",
         hash_length: int = 16
 ) -> str:

@@ -28,16 +28,18 @@ def fetch_original_ms(
         copy_directory: str,
         METADATA_DB: str,
         add_to_db: bool = True,
+        start_freq = 944,
+        end_freq = 1420,
         process_ms: bool = process_ms_flag,
 ) -> list[str]:
 
     copy_directory = os.path.expandvars(copy_directory)
     make_directory = True
-    start_freq = "0944"
-    end_freq = "1420"
-    bandwidth = int(end_freq) - int(start_freq)
+    # start_freq = "0944"
+    # end_freq = "1420"
+    bandwidth = end_freq - start_freq
     name_list = []
-
+    print(METADATA_DB)
     conn = sqlite3.connect(METADATA_DB)
     cursor = conn.cursor()
 
