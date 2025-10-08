@@ -12,7 +12,7 @@ from casaplotms import plotms
 from casatasks import uvsub, statwt, split, phaseshift
 from casatools import imager, ms, table, quanta, image
 from typing import List, Tuple, Union
-
+from pathlib import Path
 # Set up logging
 LOG = logging.getLogger(f"dlg.{__name__}")
 logging.basicConfig(level=logging.INFO)
@@ -212,13 +212,7 @@ def do_single_uvsub_dir(
 
     temp_uvsub = save_dir.replace(".ms", "")
 
-    #os.makedirs(save_dir, exist_ok=True)
     os.makedirs(temp_uvsub, exist_ok=True)
-
-    #uv_sub_path = join(uv_sub_path, basename(tar_file_split)[:-4])
-
-    #uvsub_name = basename(tar_file_split)[:-4]
-
 
     with tempfile.TemporaryDirectory(
             dir=temp_uvsub, prefix=f"__{split_name}__TEMP__"
@@ -252,9 +246,6 @@ def do_single_uvsub_dir(
         tmp_name = join(temporary_directory, f"{out_ms}.tmp")
         tmp_name1 = f"{tmp_name}.0"
         tmp_name2 = f"{tmp_name}.1"
-
-        # if produce_qa:
-
 
         try:
             im = imager()
@@ -614,12 +605,7 @@ def do_single_uvsub_dir(
         except Exception:
             LOG.exception("*********\nUVSub exception: \n***********")
 
-        # Clean up the temporary files
-        # tmp_name = join(temporary_directory, f"{out_ms}.tmp")
-        # tmp_name1 = f"{tmp_name}.0"
-        # tmp_name2 = f"{tmp_name}.1"
 
-        from pathlib import Path
         p = Path(save_dir)
 
         # --- Preflight checks ---
@@ -650,7 +636,7 @@ def do_single_uvsub_dir(
                                 uv_sub_tar,
                             )
 
-                            if exists(temp_uvsub):
+                            if exists(temp_uvsub): # The mother dir for all the temp dirs
                                 remove_file_directory(temp_uvsub)
 
                             update_metadata_column(METADATA_DB, "ms_path", tar_file_split, year, freq_st, freq_en, "uv_sub_path", uv_sub_tar)

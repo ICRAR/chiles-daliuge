@@ -408,7 +408,7 @@
         "generatorCommitHash": "8566c0d3db3eb8ddca7b3342a6eecc023269b147",
         "generatorName": "EAGLE",
         "generatorVersion": "v6.8.0",
-        "lastModifiedDatetime": 1759909127.706689,
+        "lastModifiedDatetime": 1759910261.093953,
         "lastModifiedEmail": "",
         "lastModifiedName": "",
         "numLGNodes": 43,
@@ -868,7 +868,7 @@
                     "value": ""
                 },
                 {
-                    "defaultValue": "",
+                    "defaultValue": "4",
                     "description": "",
                     "encoding": "pickle",
                     "id": "af9e2ea2-9d16-4583-bcb3-5c2322c81088",
