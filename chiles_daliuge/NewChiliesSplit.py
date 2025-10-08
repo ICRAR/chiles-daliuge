@@ -71,14 +71,16 @@ def fetch_original_ms(
                 ms_path = os.path.join(copy_directory, dlg_name)
 
                 cursor.execute("""
-                    SELECT 1 FROM metadata
+                    SELECT ms_path FROM metadata
                     WHERE base_name = ? AND year = ? AND start_freq = ? AND end_freq = ?
                     LIMIT 1
                 """, (base_name, year, start_freq, end_freq))
 
-                if cursor.fetchone():
-                    LOG.info(f"Skipping fetch of existing MS: {base_name} ({year}, {start_freq}-{end_freq}); already recorded.")
-                    name_list.append(str(ms_path))  # keep using the computed destination path
+                row = cursor.fetchone()
+                if row:
+                    ms_path_db = row[0]
+                    LOG.info(f"Skipping fetch of existing MS: {base_name} ({year}, {start_freq}-{end_freq}); already fetched at {ms_path_db}.")
+                    name_list.append(str(ms_path_db))  # keep using the computed destination path
                     continue
 
                 if make_directory:

@@ -49,8 +49,10 @@ def do_ms_transform(transform_data: List[str]) -> None:
         ms_in_path, base_name, year, freq_start, freq_end, outfile_path, db_path
     ) = transform_data
 
-
-    uv_split_dir = outfile_path # should contain .ms by default as specified in dir drop
+    if outfile_path.endswith(".ms"): # should contain .ms by default as specified in dirdrop, if {auto}.ms works
+        uv_split_dir = outfile_path
+    else:
+        uv_split_dir = f"{outfile_path}.ms"
 
     os.makedirs(uv_split_dir, exist_ok=True)
 
@@ -82,7 +84,7 @@ def do_ms_transform(transform_data: List[str]) -> None:
     LOG.info(f"spw_range: {spw_range}, width_freq: {CHANNEL_WIDTH}")
     if spw_range.startswith("-1") or spw_range.endswith("-1"):
         LOG.warning(f"The spw_range is {spw_range} which is outside the spectral window")
-        return
+        spw_range = None
 
     if len(spw_range):
         for suffix in ["", ".tmp", ".tar"]:
@@ -117,7 +119,7 @@ def do_ms_transform(transform_data: List[str]) -> None:
         else:
             # Multi-SPW
             tmp_spws = [entry.split(":")[0] for entry in spw_range.split(",")]
-            outfile_tmp = uv_split_dir.replace(".ms", ".ms.tmp")
+            outfile_tmp = f"{uv_split_dir}.tmp"
             LOG.info(f"outfile_tmp: {outfile_tmp}")
 
             if os.path.exists(outfile_tmp):
@@ -168,7 +170,11 @@ def do_ms_transform(transform_data: List[str]) -> None:
             if os.path.exists(outfile_tmp):
                 shutil.rmtree(outfile_tmp)
 
-        # Log SPW info
+    else:
+        LOG.warning("*********\nmstransform spw out of range:\n***********")
+
+    # Final checks on MS split
+    try:
         ms_ = ms()
         ms_.open(thems=uv_split_dir)
         LOG.info(
@@ -178,8 +184,6 @@ def do_ms_transform(transform_data: List[str]) -> None:
         )
         ms_.close()
 
-
-        # Archive output
         create_tar_file(uv_split_dir, suffix="tmp")
         outfile_tar_path = f"{uv_split_dir}.tar"
         os.rename(f"{uv_split_dir}.tar.tmp", f"{outfile_tar_path}")
@@ -187,35 +191,39 @@ def do_ms_transform(transform_data: List[str]) -> None:
 
         size_bytes = os.path.getsize(outfile_tar_path) if os.path.exists(outfile_tar_path) else 0
         size = round(float(size_bytes / (1024 * 1024 * 1024)), 3)
-        bandwidth = int(freq_end) - int(freq_start)
 
-        if size <= 0:
-            size = -1
-            LOG.warning(f"{outfile_tar_path} is not a valid MS. ")
-            try:
-                os.makedirs(os.path.dirname(outfile_tar_path), exist_ok=True)
-                with open(outfile_tar_path, "w"):
-                    pass  # equivalent to touch
-            except Exception as e:
-                LOG.error(f"Failed to create dummy file at {outfile_tar_path}: {e}")
+    except Exception as ee:
+        LOG.error(f"Invalid MS split {uv_split_dir}: {ee}")
+        outfile_tar_path = f"{uv_split_dir}.tar"
+        size = -1
+        LOG.warning(f"{uv_split_dir} is not a valid MS. ")
+        try:
+            os.makedirs(os.path.dirname(outfile_tar_path), exist_ok=True)
+            with open(outfile_tar_path, "w"):
+                LOG.info(f"Created dummy {outfile_tar_path}")
+                remove_file_or_directory(uv_split_dir, trigger=True)
+                pass  # equivalent to touch
+        except Exception as e:
+            LOG.error(f"Failed to create dummy file at {outfile_tar_path}: {e}")
+            remove_file_or_directory(uv_split_dir, trigger=True)
 
-        conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
-        cursor.execute("""
-            INSERT INTO metadata (
-                ms_path, base_name, year,
-                start_freq, end_freq, bandwidth, size
-            ) VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (
-            outfile_tar_path, base_name, year,
-            freq_start, freq_end, bandwidth, size
-        ))
-        conn.commit()
-        conn.close()
+    bandwidth = int(freq_end) - int(freq_start)
 
-        LOG.info(f"Appended {outfile_tar_path} to metadata DB.")
-    else:
-        LOG.warning("*********\nmstransform spw out of range:\n***********")
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("""
+        INSERT INTO metadata (
+            ms_path, base_name, year,
+            start_freq, end_freq, bandwidth, size
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)
+    """, (
+        outfile_tar_path, base_name, year,
+        freq_start, freq_end, bandwidth, size
+    ))
+    conn.commit()
+    conn.close()
+
+    LOG.info(f"Appended {outfile_tar_path} to metadata DB.")
 
     return
 
@@ -253,7 +261,6 @@ if __name__ == "__main__":
         transform_data = destringify_data(raw_args)
         transform_data.append(out_dir)
         transform_data.append(db_path)
-        LOG.info(f"transform_data: {transform_data}")
         main(transform_data)
     except Exception as e:
         LOG.error(json.dumps({"status": "error", "message": str(e)}))

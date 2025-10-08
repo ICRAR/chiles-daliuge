@@ -188,7 +188,10 @@ def do_single_uvsub_dir(
 
     os.makedirs(uv_sub_path, exist_ok=True)
 
-    save_dir = uv_sub_path
+    if uv_sub_path.endswith(".ms"): # should contain .ms by default as specified in dirdrop, if {auto}.ms works
+        save_dir = uv_sub_path
+    else:
+        save_dir = f"{uv_sub_path}.ms"
 
     #uv_sub_path = join(uv_sub_path, basename(tar_file_split)[:-4])
 
