@@ -12,7 +12,7 @@ from casaplotms import plotms
 from casatasks import uvsub, statwt, split, phaseshift
 from casatools import imager, ms, table, quanta, image
 from typing import List, Tuple, Union
-
+from pathlib import Path
 # Set up logging
 LOG = logging.getLogger(f"dlg.{__name__}")
 logging.basicConfig(level=logging.INFO)
@@ -132,76 +132,95 @@ def do_single_uvsub_dir(
         sky_model_location,
         tar_file_split, year, freq_st, freq_en, METADATA_DB, uv_sub_path
 ):
-
     """
-    Performs UV subtraction on a single measurement set using in-beam and outlier models.
+    Run UV subtraction for one Measurement Set (MS) tarball using in-beam and (optionally)
+    HA-binned outlier sky models, then export, QA (optional), and archive the result.
 
-    This function:
-    - Extracts and preprocesses a measurement set tarball.
-    - Applies in-beam and/or outlier sky models to perform UV subtraction.
-    - Generates QA plots if requested.
-    - Handles phase shifting, HA-based model selection, model FT, subtraction, and final measurement set export.
-    - Updates a metadata database to record the UV subtraction result.
+    Workflow
+    --------
+    1) Untars the input MS (``*.ms.tar``) into a temporary working directory.
+    2) If provided, applies in-beam Taylor-term models via CASA ``imager.ft`` and runs ``uvsub``.
+    3) If outlier models are provided, selects time ranges by Hour Angle (HA), phase-shifts to each
+       outlier model phase center, FTs the appropriate HA model, subtracts, phase-shifts back, and
+       accumulates the subtraction.
+    4) Splits to the final output MS, optionally averaging channels.
+    5) Optionally generates QA plots with ``plotms`` (safe, fallback configs).
+    6) Flags baselines with near-zero ``u`` to reduce contamination (if enabled).
+    7) Tars the final MS (``<uv_sub_path>.ms.tar``), cleans temporary artifacts, and records outputs
+       in the metadata database.
 
     Parameters
     ----------
-    taylor_terms : list of str
-        File paths to Taylor term sky models for in-beam sources.
-    outliers : list of str
-        File paths to outlier sky models used for HA-based subtraction.
+    taylor_terms : list[str]
+        File paths to in-beam Taylor-term sky model images (e.g., ``[.../tt0.image, .../tt1.image]``).
+        May be empty to skip in-beam subtraction.
+    outliers : list[str]
+        Base directories or image paths for outlier models organized by HA subfolders
+        (e.g., ``.../Outliers/HA_0/``). May be empty to skip outlier subtraction.
     channel_average : int
-        Number of channels to average in the final output.
+        Channel averaging factor for the final ``split`` output (``width=``). If ``<=0`` or ``>2``,
+        it is reset to ``2``.
     produce_qa : bool
-        Whether to generate QA plots using `plotms`.
+        If ``True``, writes PNGs for ``DATA``, ``MODEL``, and ``CORRECTED`` using safe ``plotms``
+        fallbacks into ``<uv_sub_path>_qa_pngs/`` (and ``_qa_pngs_B/`` for outlier stage).
     w_projection_planes : int
-        Number of W-projection planes to use for FT modeling.
+        Number of W-projection planes for ``imager.setoptions(ftmachine="wproject", wprojplanes=...)``.
     sky_model_location : str
-        Directory containing untarred sky models.
+        Directory containing the untarred sky models; used to rewrite/resolve model paths.
     tar_file_split : str
-        Name of the input tarred measurement set file (e.g., `split_1234.ms.tar`).
+        Path to the input MS tarball (``*.ms.tar``) to process.
     year : str
-        Observation year used for bookkeeping and naming.
+        Observation year used for bookkeeping and DB indexing.
     freq_st : str
-        Start frequency of the sub-band.
+        Start frequency (MHz) of the sub-band; parsed as ``int`` internally.
     freq_en : str
-        End frequency of the sub-band.
-    uv_sub_path : str
-        Path and name for the output MS and tar file after UV subtraction.
+        End frequency (MHz) of the sub-band; parsed as ``int`` internally.
     METADATA_DB : str
-        Path to the SQLite metadata database to be updated after processing.
+        Path to the SQLite metadata database. Updated via
+        ``update_metadata_column(..., "uv_sub_path", <final_tar>)`` for the
+        (``ms_path=tar_file_split``, ``year``, ``freq_st``, ``freq_en``) key.
+    uv_sub_path : str
+        Desired output path stem for the UV-subtracted MS. If it does not end with ``.ms``,
+        ``.ms`` is appended. The final archive is ``<uv_sub_path>.ms.tar``.
+
+    Side Effects
+    ------------
+    - Creates and deletes temporary directories/files.
+    - Writes QA PNGs if ``produce_qa=True``.
+    - Writes the final MS at ``<uv_sub_path>.ms`` and its tar archive at ``<uv_sub_path>.ms.tar``.
+    - Updates the metadata DB in place.
 
     Returns
     -------
     None
-        All outputs are written to disk and the metadata DB is updated in-place.
-        Final result is a `.tar` archive of the UV-subtracted measurement set.
 
     Notes
     -----
-    - HA-based model selection is based on estimated Hour Angle ranges.
-    - Phase shifting is used to align outlier models with the target MS phase center.
-    - Temporary directories are used for intermediate files and cleaned up after execution.
-    - The function also flags baselines with nearly zero `u` values to reduce contamination.
-    - QA plots are written to `qa_pngs/` within the output MS directory if `produce_qa=True`.
+    - Uses CASA tasks/tools: ``imager``, ``ms``, ``table``, ``uvsub``, ``phaseshift``, ``split``,
+      and ``plotms``.
+    - Spectral window index is inferred from the mid-frequency to assist model path resolution.
+    - Exceptions during CASA/IO are logged; the function attempts best-effort cleanup before exit.
     """
     _, split_name = os.path.split(tar_file_split)
 
-    os.makedirs(uv_sub_path, exist_ok=True)
+    split_name = split_name.replace(".ms.tar", "")
 
-    save_dir = uv_sub_path
+    if uv_sub_path.endswith(".ms"): # should contain .ms by default as specified in dirdrop, if {auto}.ms works
+        save_dir = uv_sub_path
+    else:
+        save_dir = f"{uv_sub_path}.ms"
 
-    #uv_sub_path = join(uv_sub_path, basename(tar_file_split)[:-4])
+    temp_uvsub = save_dir.replace(".ms", "")
 
-    #uvsub_name = basename(tar_file_split)[:-4]
-
+    os.makedirs(temp_uvsub, exist_ok=True)
 
     with tempfile.TemporaryDirectory(
-            dir=save_dir, prefix=f"__{split_name}__TEMP__"
+            dir=temp_uvsub, prefix=f"__{split_name}__TEMP__"
     ) as temporary_directory:
         freq_start = int(freq_st)
         freq_end = int(freq_en)
 
-        uv_sub_tar = f"{uv_sub_path}.tar"
+        uv_sub_tar = f"{save_dir}.tar"
 
         LOG.info(f"Untarring file: {tar_file_split}")
         untar_file(str(tar_file_split), temporary_directory)
@@ -213,7 +232,7 @@ def do_single_uvsub_dir(
             taylor_terms, outliers, sky_model_location, spectral_window
         )
 
-        out_ms = basename(uv_sub_path)
+        out_ms = basename(save_dir)
 
         out_rot_data = "no"  # Keep a version of the subtracted data
         sub_uzero = True  # False #or True
@@ -227,9 +246,6 @@ def do_single_uvsub_dir(
         tmp_name = join(temporary_directory, f"{out_ms}.tmp")
         tmp_name1 = f"{tmp_name}.0"
         tmp_name2 = f"{tmp_name}.1"
-
-        # if produce_qa:
-
 
         try:
             im = imager()
@@ -276,7 +292,7 @@ def do_single_uvsub_dir(
                     # Force headless Qt in some CASA builds (harmless if already set)
                     os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
-                    png_directory = uv_sub_path + "_qa_pngs"  # keep one stable suffix
+                    png_directory = save_dir + "_qa_pngs"  # keep one stable suffix
                     os.makedirs(png_directory, exist_ok=True)
 
                     def _safe_plotms(in_ms: str,out_ms: str, ycol: str, xcol: str, suffix: str):
@@ -322,51 +338,7 @@ def do_single_uvsub_dir(
 
                     LOG.info(f"QA plot results: data={ret_d}, model={ret_m}, corrected={ret_c}")
 
-                # if produce_qa:
-                #     png_directory = uv_sub_path + "_qa_pngs_A"  # changed from uv_sub_path to tmp_name
-                #     if not exists(png_directory):
-                #         makedirs(png_directory)
-                #     LOG.info(f"Starting QA plot generation A.")
-                #     ret_d = plotms(
-                #         vis=in_ms,
-                #         xaxis="freq",
-                #         yaxis="real",
-                #         avgtime="43200",
-                #         overwrite=True,
-                #         avgbaseline=True,
-                #         showgui=False,
-                #         ydatacolumn="data",
-                #         xdatacolumn="data",
-                #         plotfile=join(png_directory, in_ms.rsplit("/")[-1] + "_infield_subtraction_data.png")
-                #     )
-                #     ret_m = plotms(
-                #         vis=in_ms,
-                #         xaxis="freq",
-                #         yaxis="real",
-                #         avgtime="43200",
-                #         overwrite=True,
-                #         avgbaseline=True,
-                #         showgui=False,
-                #         ydatacolumn="model",
-                #         xdatacolumn="model",
-                #         plotfile=join(
-                #             png_directory,
-                #             + in_ms.rsplit("/")[-1]
-                #             + "_infield_subtraction_model.png"
-                #         )
-                #     )
-                #     ret_c = plotms(
-                #         vis=in_ms,
-                #         xaxis="freq",
-                #         yaxis="real",
-                #         avgtime="43200",
-                #         overwrite=True,
-                #         avgbaseline=True,
-                #         showgui=False,
-                #         ydatacolumn="corrected",
-                #         xdatacolumn="corrected",
-                #         plotfile=join(png_directory,in_ms.rsplit("/")[-1] + "_infield_subtraction_corrected.png")
-                #     )
+
                     if not (ret_d & ret_c & ret_m):
                         LOG.info(
                             f"Reporting In-field PlotMS Failure! State for Data, Corrected and Model is: {ret_d}&{ret_c}&{ret_m}"
@@ -520,7 +492,7 @@ def do_single_uvsub_dir(
                     )
                     # End of run through outlier models
                 if produce_qa:
-                    png_directory = uv_sub_path + "_qa_pngs_B"  # changed from uv_sub_path to tmp_name
+                    png_directory = save_dir + "_qa_pngs_B"  # changed from uv_sub_path to tmp_name
                     if not exists(png_directory):
                         makedirs(png_directory)
                     LOG.info(f"Starting QA plot generation B.")
@@ -567,14 +539,14 @@ def do_single_uvsub_dir(
                 # Could be a copy
                 split(
                     vis=tmp_name,
-                    outputvis=uv_sub_path,
+                    outputvis=save_dir,
                     datacolumn="data",
                     width=pre_average,
                 )
             else:
                 split(
                     vis=in_ms,
-                    outputvis=uv_sub_path,
+                    outputvis=save_dir,
                     datacolumn="corrected",
                     width=pre_average,
                 )
@@ -593,7 +565,7 @@ def do_single_uvsub_dir(
                     fg = fg_normal.T
                     I = np.where(np.abs(uv[0]) < 50)[0]
                     LOG.info(
-                        f"Flagging {len(I)} baselines on {uv_sub_path}, on which u is ~zero"
+                        f"Flagging {len(I)} baselines on {save_dir}, on which u is ~zero"
                     )
                     fg[I] = True
                     tb.putcol("FLAG", fg.T)
@@ -603,7 +575,7 @@ def do_single_uvsub_dir(
             if calc_stats:
                 statwt(vis=tmp_name, chanbin=1, timebin="64s", datacolumn="data")
                 if produce_qa:
-                    png_directory = uv_sub_path + "_qa_pngs_C"  # changed from uv_sub_path to tmp_name
+                    png_directory = save_dir + "_qa_pngs_C"  # changed from uv_sub_path to tmp_name
                     if not exists(png_directory):
                         makedirs(png_directory)
                     LOG.info(f"Starting QA plot generation C.")
@@ -633,13 +605,8 @@ def do_single_uvsub_dir(
         except Exception:
             LOG.exception("*********\nUVSub exception: \n***********")
 
-        # Clean up the temporary files
-        # tmp_name = join(temporary_directory, f"{out_ms}.tmp")
-        # tmp_name1 = f"{tmp_name}.0"
-        # tmp_name2 = f"{tmp_name}.1"
 
-        from pathlib import Path
-        p = Path(uv_sub_path)
+        p = Path(save_dir)
 
         # --- Preflight checks ---
         if not p.exists():
@@ -656,8 +623,8 @@ def do_single_uvsub_dir(
                         if first is None:
                             LOG.warning(f"Directory is empty, skipping: {p}")
                         else:
-                            LOG.info(f"Tarring file: {uv_sub_path}")
-                            create_tar_file(uv_sub_path, suffix="temp")
+                            LOG.info(f"Tarring file: {save_dir}")
+                            create_tar_file(save_dir, suffix="temp")
 
                             # Clean up the measurement sets
                             if exists(uv_sub_tar):
@@ -669,14 +636,8 @@ def do_single_uvsub_dir(
                                 uv_sub_tar,
                             )
 
-                            if exists(tmp_name):
-                                remove_file_directory(tmp_name)
-
-                            if exists(tmp_name1):
-                                remove_file_directory(tmp_name1)
-
-                            if exists(tmp_name2):
-                                remove_file_directory(tmp_name2)
+                            if exists(temp_uvsub): # The mother dir for all the temp dirs
+                                remove_file_directory(temp_uvsub)
 
                             update_metadata_column(METADATA_DB, "ms_path", tar_file_split, year, freq_st, freq_en, "uv_sub_path", uv_sub_tar)
 
@@ -684,6 +645,7 @@ def do_single_uvsub_dir(
                         LOG.exception(f"Could not iterate directory {p}: {e}")
 
     LOG.info("Finished uvsub")
+    #b = asdf
 
 
 def main(uvsub_data: list) -> None:
