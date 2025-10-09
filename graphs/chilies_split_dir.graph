@@ -1,13 +1,109 @@
 {
-    "activeGraphConfigId": "80a4cabf-acdf-4fa1-8729-e90e201c7cf9",
+    "activeGraphConfigId": "34992cb7-4ee0-4ecc-ad8a-947f3d616480",
     "graphConfigurations": {
+        "34992cb7-4ee0-4ecc-ad8a-947f3d616480": {
+            "id": "34992cb7-4ee0-4ecc-ad8a-947f3d616480",
+            "modelData": {
+                "detailedDescription": "",
+                "generatorCommitHash": "",
+                "generatorName": "",
+                "generatorVersion": "",
+                "graphLocation": {
+                    "commitHash": "",
+                    "downloadUrl": "",
+                    "repositoryBranch": "",
+                    "repositoryFileName": "chilies_split_dir.graph",
+                    "repositoryName": "",
+                    "repositoryPath": "",
+                    "repositoryService": "File"
+                },
+                "lastModifiedDatetime": 0,
+                "lastModifiedEmail": "",
+                "lastModifiedName": "",
+                "location": {
+                    "commitHash": "",
+                    "downloadUrl": "",
+                    "repositoryBranch": "",
+                    "repositoryFileName": "",
+                    "repositoryName": "",
+                    "repositoryPath": "",
+                    "repositoryService": "Unknown"
+                },
+                "name": "setonix",
+                "numLGNodes": 0,
+                "readonly": true,
+                "repositoryUrl": "",
+                "schemaVersion": "Unknown",
+                "shortDescription": "",
+                "signature": "",
+                "type": "GraphConfig"
+            },
+            "nodes": {
+                "6d5bf22b-5a7c-4243-b698-093200bdc892": {
+                    "fields": {
+                        "2c4d3b10-50b3-49d7-b1e6-a7dd498f6396": {
+                            "comment": "",
+                            "value": "/scratch/pawsey0411/chiles-daliuge/db/Chilies_metadata.csv"
+                        },
+                        "cdbf2e14-b9c0-4c45-8ae0-e2f27e506d42": {
+                            "comment": "",
+                            "value": "/scratch/pawsey0411/chiles-daliuge/db/Chilies_metadata.db"
+                        }
+                    }
+                }
+            }
+        },
         "80a4cabf-acdf-4fa1-8729-e90e201c7cf9": {
-            "description": "",
-            "lastModifiedDatetime": 0,
-            "lastModifiedEmail": "",
-            "lastModifiedName": "",
-            "name": "simple",
-            "nodes": {}
+            "id": "80a4cabf-acdf-4fa1-8729-e90e201c7cf9",
+            "modelData": {
+                "detailedDescription": "",
+                "generatorCommitHash": "",
+                "generatorName": "",
+                "generatorVersion": "",
+                "graphLocation": {
+                    "commitHash": "",
+                    "downloadUrl": "",
+                    "repositoryBranch": "",
+                    "repositoryFileName": "chilies_split_dir.graph",
+                    "repositoryName": "",
+                    "repositoryPath": "",
+                    "repositoryService": "File"
+                },
+                "lastModifiedDatetime": 0,
+                "lastModifiedEmail": "",
+                "lastModifiedName": "",
+                "location": {
+                    "commitHash": "",
+                    "downloadUrl": "",
+                    "repositoryBranch": "",
+                    "repositoryFileName": "",
+                    "repositoryName": "",
+                    "repositoryPath": "",
+                    "repositoryService": "Unknown"
+                },
+                "name": "simple",
+                "numLGNodes": 0,
+                "readonly": true,
+                "repositoryUrl": "",
+                "schemaVersion": "Unknown",
+                "shortDescription": "",
+                "signature": "",
+                "type": "GraphConfig"
+            },
+            "nodes": {
+                "6d5bf22b-5a7c-4243-b698-093200bdc892": {
+                    "fields": {
+                        "2c4d3b10-50b3-49d7-b1e6-a7dd498f6396": {
+                            "comment": "",
+                            "value": "$HOME/chiles-daliuge/db/Chilies_metadata.csv"
+                        },
+                        "cdbf2e14-b9c0-4c45-8ae0-e2f27e506d42": {
+                            "comment": "",
+                            "value": "$HOME/chiles-daliuge/db/Chilies_metadata.db"
+                        }
+                    }
+                }
+            }
         }
     },
     "linkDataArray": [
@@ -109,24 +205,6 @@
             "loop_aware": "0",
             "to": "036ff268-7fb4-459e-a300-d7ede4551cdb",
             "toPort": "be39b788-a231-4bd8-9fe2-d941e5192254"
-        },
-        {
-            "closesLoop": false,
-            "comment": "",
-            "from": "3852b90f-e209-439e-90c6-0861a55db49e",
-            "fromPort": "81396f61-89bb-45ea-859a-84abcc9cc697",
-            "loop_aware": "0",
-            "to": "67b014f9-35a5-4809-b47e-532299947c97",
-            "toPort": "4b3b721e-34f1-4af1-92b3-8906cc686015"
-        },
-        {
-            "closesLoop": false,
-            "comment": "",
-            "from": "67b014f9-35a5-4809-b47e-532299947c97",
-            "fromPort": "4b3b721e-34f1-4af1-92b3-8906cc686015",
-            "loop_aware": "0",
-            "to": "7cc15f6a-a37a-44c9-9428-7db034cbc63a",
-            "toPort": "df80137c-ac9c-48eb-badd-e78635a5206e"
         },
         {
             "closesLoop": false,
@@ -320,15 +398,6 @@
         {
             "closesLoop": false,
             "comment": "",
-            "from": "67b014f9-35a5-4809-b47e-532299947c97",
-            "fromPort": "4b3b721e-34f1-4af1-92b3-8906cc686015",
-            "loop_aware": "0",
-            "to": "aca3e912-a12c-4589-b81a-56f92d646ed3",
-            "toPort": "a9c76f30-7aa1-43fa-9ad1-e5a3a198f727"
-        },
-        {
-            "closesLoop": false,
-            "comment": "",
             "from": "c73126f8-db31-43bd-9e73-146ade9e8a0c",
             "fromPort": "cb29e1ad-ce97-4248-a052-ae8c3a42fd25",
             "loop_aware": "0",
@@ -343,25 +412,47 @@
             "loop_aware": "0",
             "to": "76355aa5-4d01-471a-a126-2d2d72541c50",
             "toPort": "d36e7ea2-6af9-4330-8ab0-c4185d4550fd"
+        },
+        {
+            "closesLoop": false,
+            "comment": "",
+            "from": "3852b90f-e209-439e-90c6-0861a55db49e",
+            "fromPort": "d6e7dccb-3ee4-4483-9299-11044183bf2e",
+            "loop_aware": "0",
+            "to": "f83b5e7f-def6-4e39-a27a-f86ccbd5e8c0",
+            "toPort": "d1f141e3-8408-4607-a54a-1bcc1c7a7d53"
+        },
+        {
+            "closesLoop": false,
+            "comment": "",
+            "from": "f83b5e7f-def6-4e39-a27a-f86ccbd5e8c0",
+            "fromPort": "d1f141e3-8408-4607-a54a-1bcc1c7a7d53",
+            "loop_aware": "0",
+            "to": "7cc15f6a-a37a-44c9-9428-7db034cbc63a",
+            "toPort": "de47596e-4552-4793-9aab-2927088f7d09"
+        },
+        {
+            "closesLoop": false,
+            "comment": "",
+            "from": "f83b5e7f-def6-4e39-a27a-f86ccbd5e8c0",
+            "fromPort": "d1f141e3-8408-4607-a54a-1bcc1c7a7d53",
+            "loop_aware": "0",
+            "to": "aca3e912-a12c-4589-b81a-56f92d646ed3",
+            "toPort": "87bbea75-1b20-42f9-85ee-3f53f392b6f1"
         }
     ],
     "modelData": {
-        "commitHash": "",
         "detailedDescription": "",
-        "downloadUrl": "",
         "filePath": "chilies_split_dir.graph",
         "fileType": "Graph",
-        "generatorCommitHash": "8566c0d3db3eb8ddca7b3342a6eecc023269b147",
+        "generatorCommitHash": "242f39c324f9d0576f9995a879e826825461791e",
         "generatorName": "EAGLE",
         "generatorVersion": "v6.8.0",
-        "lastModifiedDatetime": 1759477120.046172,
+        "lastModifiedDatetime": 1759743347.873537,
         "lastModifiedEmail": "",
         "lastModifiedName": "",
-        "numLGNodes": 38,
+        "numLGNodes": 39,
         "readonly": false,
-        "repo": "",
-        "repoBranch": "",
-        "repoService": "Unknown",
         "repositoryUrl": "",
         "schemaVersion": "OJS",
         "shortDescription": "",
@@ -489,7 +580,7 @@
             ],
             "inputApplicationComment": "",
             "inputApplicationDescription": "",
-            "inputApplicationId": "30ffc29b-7a79-4f68-ade7-c831df5112db",
+            "inputApplicationId": "b652e930-0978-42c4-ae7b-0712f6638a93",
             "inputApplicationName": "GenericScatterApp",
             "inputApplicationType": "DALiuGEApp",
             "isGroup": true,
@@ -3176,7 +3267,7 @@
                 {
                     "defaultValue": "false",
                     "description": "",
-                    "encoding": "pickle",
+                    "encoding": "path",
                     "id": "df80137c-ac9c-48eb-badd-e78635a5206e",
                     "name": "trigger_in",
                     "options": [],
@@ -3185,7 +3276,7 @@
                     "precious": false,
                     "readonly": false,
                     "type": "Boolean",
-                    "usage": "InputPort",
+                    "usage": "NoPort",
                     "value": false
                 },
                 {
@@ -3200,7 +3291,7 @@
                     "precious": false,
                     "readonly": false,
                     "type": "String",
-                    "usage": "NoPort",
+                    "usage": "InputPort",
                     "value": "{db_path}"
                 },
                 {
@@ -3736,13 +3827,13 @@
                     "precious": false,
                     "readonly": false,
                     "type": "String",
-                    "usage": "NoPort",
+                    "usage": "OutputPort",
                     "value": "{db_path}"
                 },
                 {
                     "defaultValue": "false",
                     "description": "",
-                    "encoding": "dill",
+                    "encoding": "path",
                     "id": "81396f61-89bb-45ea-859a-84abcc9cc697",
                     "name": "initialized",
                     "options": [],
@@ -3751,7 +3842,7 @@
                     "precious": false,
                     "readonly": false,
                     "type": "Boolean",
-                    "usage": "OutputPort",
+                    "usage": "NoPort",
                     "value": false
                 }
             ],
@@ -3772,159 +3863,8 @@
             "outputApplicationType": "None",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master-template.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
-            "x": -1026.7618889497046,
-            "y": -81.28032942477938
-        },
-        {
-            "category": "Memory",
-            "categoryType": "Data",
-            "color": "#2c2c2c",
-            "comment": "",
-            "commitHash": "117d50e",
-            "dataHash": "9bed977555cc409f02e9a43fe95c5d83fb6c567b5f8cbb30874be66b0c87a5d3",
-            "description": "In-memory storage of intermediate data products",
-            "drawOrderHint": 0,
-            "fields": [
-                {
-                    "defaultValue": "False",
-                    "description": "If set the drop will block a skipping chain until the last producer has finished and is not also skipped.",
-                    "encoding": "pickle",
-                    "id": "653d1cd5-0fa2-4c42-9927-30bf3558c3ec",
-                    "name": "block_skip",
-                    "options": [],
-                    "parameterType": "ComponentParameter",
-                    "positional": false,
-                    "precious": false,
-                    "readonly": false,
-                    "type": "Boolean",
-                    "usage": "NoPort",
-                    "value": false
-                },
-                {
-                    "defaultValue": "False",
-                    "description": "Specifies whether this data component contains data that should not be deleted after execution",
-                    "encoding": "pickle",
-                    "id": "8752eb9a-97c3-4434-959f-ab15a096c32a",
-                    "name": "persist",
-                    "options": [],
-                    "parameterType": "ComponentParameter",
-                    "positional": false,
-                    "precious": false,
-                    "readonly": false,
-                    "type": "Boolean",
-                    "usage": "NoPort",
-                    "value": false
-                },
-                {
-                    "defaultValue": "5",
-                    "description": "Estimated size of the data contained in this node",
-                    "encoding": "pickle",
-                    "id": "1e4bf56a-943e-4ac8-9269-2f55af5e837d",
-                    "name": "data_volume",
-                    "options": [],
-                    "parameterType": "ConstraintParameter",
-                    "positional": false,
-                    "precious": false,
-                    "readonly": false,
-                    "type": "Float",
-                    "usage": "NoPort",
-                    "value": 5
-                },
-                {
-                    "defaultValue": "False",
-                    "description": "Is this node the end of a group?",
-                    "encoding": "pickle",
-                    "id": "9a2440dc-f8d4-4079-b518-21e42ba29ad7",
-                    "name": "group_end",
-                    "options": [],
-                    "parameterType": "ComponentParameter",
-                    "positional": false,
-                    "precious": false,
-                    "readonly": false,
-                    "type": "Boolean",
-                    "usage": "NoPort",
-                    "value": false
-                },
-                {
-                    "defaultValue": "False",
-                    "description": "Specifies whether this data component streams input and output data",
-                    "encoding": "pickle",
-                    "id": "4887cc08-df55-4c01-aaae-60ea5bbb5848",
-                    "name": "streaming",
-                    "options": [],
-                    "parameterType": "ComponentParameter",
-                    "positional": false,
-                    "precious": false,
-                    "readonly": false,
-                    "type": "Boolean",
-                    "usage": "NoPort",
-                    "value": false
-                },
-                {
-                    "defaultValue": "dlg.data.drops.memory.InMemoryDROP",
-                    "description": "Drop class",
-                    "encoding": "pickle",
-                    "id": "cb0d5dde-da8c-4544-860f-a1537829694c",
-                    "name": "dropclass",
-                    "options": [],
-                    "parameterType": "ComponentParameter",
-                    "positional": false,
-                    "precious": false,
-                    "readonly": false,
-                    "type": "String",
-                    "usage": "NoPort",
-                    "value": "dlg.data.drops.memory.InMemoryDROP"
-                },
-                {
-                    "defaultValue": "memory",
-                    "description": "Base name of application class",
-                    "encoding": "pickle",
-                    "id": "c8730db4-1998-4fb8-8413-52a7addc847a",
-                    "name": "base_name",
-                    "options": [],
-                    "parameterType": "ComponentParameter",
-                    "positional": false,
-                    "precious": false,
-                    "readonly": false,
-                    "type": "String",
-                    "usage": "NoPort",
-                    "value": "memory"
-                },
-                {
-                    "defaultValue": "",
-                    "description": "",
-                    "encoding": "pickle",
-                    "id": "4b3b721e-34f1-4af1-92b3-8906cc686015",
-                    "name": "trigger_in",
-                    "options": [],
-                    "parameterType": "ApplicationArgument",
-                    "positional": false,
-                    "precious": false,
-                    "readonly": false,
-                    "type": "Boolean",
-                    "usage": "InputOutput",
-                    "value": false
-                }
-            ],
-            "id": "67b014f9-35a5-4809-b47e-532299947c97",
-            "inputAppFields": [],
-            "inputApplicationComment": "",
-            "inputApplicationDescription": "",
-            "inputApplicationId": null,
-            "inputApplicationName": "",
-            "inputApplicationType": "None",
-            "isGroup": false,
-            "name": "trigger_in",
-            "outputAppFields": [],
-            "outputApplicationComment": "",
-            "outputApplicationDescription": "",
-            "outputApplicationId": null,
-            "outputApplicationName": "",
-            "outputApplicationType": "None",
-            "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
-            "repositoryUrl": "https://github.com/ICRAR/daliuge",
-            "x": -897.1579163587099,
-            "y": -75.67672557635122
+            "x": -1176.268160762512,
+            "y": -72.19404729564634
         },
         {
             "category": "Memory",
@@ -6500,7 +6440,7 @@
                     "readonly": false,
                     "type": "String",
                     "usage": "NoPort",
-                    "value": "/home/00103780/chiles-daliuge/db/Chilies_metadata.db"
+                    "value": "$HOME/chiles-daliuge/db/Chilies_metadata.db"
                 },
                 {
                     "defaultValue": "",
@@ -6515,7 +6455,7 @@
                     "readonly": false,
                     "type": "String",
                     "usage": "NoPort",
-                    "value": "/home/00103780/chiles-daliuge/db/Chilies_metadata.csv"
+                    "value": "$HOME/chiles-daliuge/db/Chilies_metadata.csv"
                 },
                 {
                     "defaultValue": "dlg.data.drops.environmentvar_drop.EnvironmentVarDROP",
@@ -6944,7 +6884,7 @@
                     "precious": false,
                     "readonly": false,
                     "type": "String",
-                    "usage": "NoPort",
+                    "usage": "InputPort",
                     "value": "{db_path}"
                 },
                 {
@@ -6974,7 +6914,7 @@
                     "precious": false,
                     "readonly": false,
                     "type": "Boolean",
-                    "usage": "InputPort",
+                    "usage": "NoPort",
                     "value": false
                 }
             ],
@@ -7178,6 +7118,187 @@
             "repositoryUrl": "daliuge-new",
             "x": -332.56391617560433,
             "y": 9.91997609915705
+        },
+        {
+            "category": "Data",
+            "categoryType": "Data",
+            "color": "#2c2c2c",
+            "comment": "",
+            "commitHash": "0.1",
+            "dataHash": "e3d85b9646b0ce35d7403467e86ac978f986de2406452c48b51413fd80f37846",
+            "description": "A DataDROP that represents a filesystem directory.",
+            "drawOrderHint": 0,
+            "fields": [
+                {
+                    "defaultValue": "dlg.data.drops.directory.DirectoryDROP",
+                    "description": "Drop class",
+                    "encoding": "pickle",
+                    "id": "d415d603-3bd7-4e1d-a0ec-6303c763cacd",
+                    "name": "dropclass",
+                    "options": [],
+                    "parameterType": "ComponentParameter",
+                    "positional": false,
+                    "precious": false,
+                    "readonly": false,
+                    "type": "String",
+                    "usage": "NoPort",
+                    "value": "dlg.data.drops.directory.DirectoryDROP"
+                },
+                {
+                    "defaultValue": "directory",
+                    "description": "Base name of application class",
+                    "encoding": "pickle",
+                    "id": "54211de4-6891-4ca8-94af-63eb6c1c8b71",
+                    "name": "base_name",
+                    "options": [],
+                    "parameterType": "ComponentParameter",
+                    "positional": false,
+                    "precious": false,
+                    "readonly": false,
+                    "type": "String",
+                    "usage": "NoPort",
+                    "value": "directory"
+                },
+                {
+                    "defaultValue": "5",
+                    "description": "Estimated size of the data contained in this node",
+                    "encoding": "pickle",
+                    "id": "3dbc9482-fece-4a86-b707-4948cbb9cd6c",
+                    "name": "data_volume",
+                    "options": [],
+                    "parameterType": "ConstraintParameter",
+                    "positional": false,
+                    "precious": false,
+                    "readonly": false,
+                    "type": "Float",
+                    "usage": "NoPort",
+                    "value": 5
+                },
+                {
+                    "defaultValue": "False",
+                    "description": "Is this node the end of a group?",
+                    "encoding": "pickle",
+                    "id": "dc0bafa3-1a4f-40e8-aea5-2f68a1cd2944",
+                    "name": "group_end",
+                    "options": [],
+                    "parameterType": "ComponentParameter",
+                    "positional": false,
+                    "precious": false,
+                    "readonly": false,
+                    "type": "Boolean",
+                    "usage": "NoPort",
+                    "value": false
+                },
+                {
+                    "defaultValue": "False",
+                    "description": "Perform a check to make sure the file path exists before proceeding with the application",
+                    "encoding": "pickle",
+                    "id": "9299d526-79c2-46c7-a350-f5f742a6fd52",
+                    "name": "check_exists",
+                    "options": [],
+                    "parameterType": "ApplicationArgument",
+                    "positional": false,
+                    "precious": false,
+                    "readonly": false,
+                    "type": "Boolean",
+                    "usage": "NoPort",
+                    "value": false
+                },
+                {
+                    "defaultValue": "",
+                    "description": "",
+                    "encoding": "pickle",
+                    "id": "d1f141e3-8408-4607-a54a-1bcc1c7a7d53",
+                    "name": "dirname",
+                    "options": [],
+                    "parameterType": "ApplicationArgument",
+                    "positional": false,
+                    "precious": false,
+                    "readonly": false,
+                    "type": "String",
+                    "usage": "InputOutput",
+                    "value": ""
+                },
+                {
+                    "defaultValue": "False",
+                    "description": "Create directory if it does not exist",
+                    "encoding": "pickle",
+                    "id": "4ce9dd85-bf13-4b39-ba91-0858ec7b0f4b",
+                    "name": "create_if_missing",
+                    "options": [],
+                    "parameterType": "ApplicationArgument",
+                    "positional": false,
+                    "precious": false,
+                    "readonly": false,
+                    "type": "Boolean",
+                    "usage": "NoPort",
+                    "value": false
+                },
+                {
+                    "defaultValue": "False",
+                    "description": "Overwrite existing directory if exists",
+                    "encoding": "pickle",
+                    "id": "b6831595-2cde-4f01-b2c8-d40373605082",
+                    "name": "overwrite_existing",
+                    "options": [],
+                    "parameterType": "ApplicationArgument",
+                    "positional": false,
+                    "precious": false,
+                    "readonly": false,
+                    "type": "Boolean",
+                    "usage": "NoPort",
+                    "value": false
+                },
+                {
+                    "defaultValue": "False",
+                    "description": "If set the drop will block a skipping chain until the last producer has finished and is not also skipped.",
+                    "encoding": "pickle",
+                    "id": "57808272-b447-453e-bab3-918c0878149f",
+                    "name": "block_skip",
+                    "options": [],
+                    "parameterType": "ComponentParameter",
+                    "positional": false,
+                    "precious": false,
+                    "readonly": false,
+                    "type": "Boolean",
+                    "usage": "NoPort",
+                    "value": false
+                },
+                {
+                    "defaultValue": "",
+                    "description": "Input Output port",
+                    "encoding": "pickle",
+                    "id": "b1252e0a-e881-4618-a56b-30339049ff8a",
+                    "name": "io",
+                    "options": [],
+                    "parameterType": "ApplicationArgument",
+                    "positional": false,
+                    "precious": false,
+                    "readonly": false,
+                    "type": "Object",
+                    "usage": "NoPort",
+                    "value": ""
+                }
+            ],
+            "id": "f83b5e7f-def6-4e39-a27a-f86ccbd5e8c0",
+            "inputAppFields": [],
+            "inputApplicationComment": "",
+            "inputApplicationDescription": "",
+            "inputApplicationId": null,
+            "inputApplicationName": "",
+            "inputApplicationType": "None",
+            "isGroup": false,
+            "name": "db_path",
+            "outputAppFields": [],
+            "outputApplicationComment": "",
+            "outputApplicationDescription": "",
+            "outputApplicationId": null,
+            "outputApplicationName": "",
+            "outputApplicationType": "None",
+            "paletteDownloadUrl": "",
+            "repositoryUrl": "daliuge-new",
+            "x": -965.6070259187381,
+            "y": -100.6824548079712
         }
     ]
 }
