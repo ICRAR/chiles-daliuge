@@ -399,6 +399,8 @@ def verify_db_integrity(db_path: str, trigger_in: bool) -> bool:
     Checked columns (if present):
       ms_path, uv_sub_path, build_concat_all, tclean_all, build_concat_epoch, tclean_epoch
     """
+
+    db_path = expand_path(db_path)
     if not trigger_in:
         return False
 
@@ -541,7 +543,8 @@ def export_metadata_to_csv(db_path: str, csv_path: str, trigger_in: bool) -> Non
     None
     """
 
-
+    db_path = expand_path(db_path)
+    csv_path = expand_path(csv_path)
     def _derive_out_path(base: str, table: str) -> Path:
         p = Path(base)
         # If base looks like a .csv file, insert the table name before the suffix.
@@ -600,6 +603,9 @@ def add_column_if_missing(db_path: str, column_name: str, column_type: str = "TE
     - If the column already exists, the function does nothing.
     - This modifies the existing `metadata` table schema.
     """
+
+    db_path = expand_path(db_path)
+
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
@@ -728,6 +734,7 @@ def update_metadata_column(
         If the target or match column does not exist in the metadata table.
     """
 
+    db_path = expand_path(db_path)
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
@@ -941,6 +948,8 @@ def insert_concat_freq_row(
     bandwidth: str,
     size: str,
 ) -> None:
+
+    db_path = expand_path(db_path)
     sql = """
         INSERT INTO concat_freq (
             concat_freq_path, base_name, year, start_freq, end_freq, bandwidth, size
@@ -966,6 +975,7 @@ def initialize_metadata_environment(db_path: str) -> bool:
     - Creates the SQLite database file and metadata table if not present.
     - Creates the parent directory of `db_path` if it does not exist.
     """
+    db_path = expand_path(db_path)
     # Ensure parent directory exists
     parent_dir = os.path.dirname(db_path)
     if not os.path.exists(parent_dir):
