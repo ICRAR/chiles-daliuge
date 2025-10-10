@@ -178,6 +178,8 @@ def fetch_split_ms(
         List of matching entries formatted as:
         "ms_path;year;start_freq;end_freq"
     """
+    db_path = expand_path(db_path)
+    db_path = str(db_path)
     LOG.info(f"Adding 'uv_sub_path' column to DB.")
     add_column_if_missing(db_path, "uv_sub_path")
 
