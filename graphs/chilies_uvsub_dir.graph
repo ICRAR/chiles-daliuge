@@ -437,7 +437,7 @@
         "generatorCommitHash": "940fe65c5f8544536cd5826d031fad6cef483dc9",
         "generatorName": "EAGLE",
         "generatorVersion": "v6.8.0",
-        "lastModifiedDatetime": 1760084589.107,
+        "lastModifiedDatetime": 1760084691.198213,
         "lastModifiedEmail": "",
         "lastModifiedName": "",
         "numLGNodes": 44,
@@ -1753,7 +1753,7 @@
                     "readonly": false,
                     "type": "Integer",
                     "usage": "NoPort",
-                    "value": 2
+                    "value": 60
                 }
             ],
             "id": "efb14612-3fc8-4079-bfb1-888be7ec5855",
@@ -7726,8 +7726,8 @@
             "outputApplicationType": "None",
             "paletteDownloadUrl": "",
             "repositoryUrl": "daliuge-new",
-            "x": 666.6910629269261,
-            "y": -490.7552966787374
+            "x": -1129.055826869005,
+            "y": -317.32741856886156
         },
         {
             "category": "Memory",
