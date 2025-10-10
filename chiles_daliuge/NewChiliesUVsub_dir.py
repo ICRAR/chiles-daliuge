@@ -2,7 +2,7 @@ import tempfile
 from os.path import join
 import subprocess
 from pathlib import Path
-from chiles_daliuge.common_dir import *
+from chiles_daliuge.common import *
 import logging
 
 process_ms_flag = True
@@ -182,6 +182,7 @@ def fetch_split_ms(
     add_column_if_missing(db_path, "uv_sub_path")
 
     freq_set = {tuple(freq_pair) for freq_pair in frequencies}
+    LOG.info(f"freq_set: {freq_set}")
     query = """
         SELECT ms_path, year, start_freq, end_freq, size
         FROM metadata
@@ -258,30 +259,6 @@ def do_uvsub(names_list, save_dir, sky_model_dir,
 
     for name in names_list:
         tar_file_split, year, freq_st, freq_en = name.split(";")
-        # freq_start = int(freq_st)
-        # freq_end = int(freq_en)
-
-        # LOG.info("#" * 60)
-        # LOG.info("#" * 60)
-        # #LOG.info(f"Processing: {name}")
-        #
-        # #tar_file_split = join(
-        # #    source_dir, split_name
-        # #)
-        # LOG.info(f"Checking: {tar_file_split}")
-        #
-        # uv_sub_name = generate_hashed_ms_name(str(tar_file_split), year, str(freq_start), str(freq_end))
-        # uv_sub_path = join(
-        #     save_dir, uv_sub_name
-        # )
-        # LOG.info(f"uv_sub_path: {uv_sub_path}")
-        # uv_sub_tar_path = f"{uv_sub_path}.tar"
-        # LOG.info(f"uv_sub_tar_path: {uv_sub_tar_path}")
-        # cursor = conn.cursor()
-        # cursor.execute("SELECT 1 FROM metadata WHERE uv_sub_path = ?", (uv_sub_tar_path,))
-        # if cursor.fetchone():
-        #     LOG.info(f"Skipping {uv_sub_tar_path}, already in metadata DB.")
-        #     continue
 
         combined_data = [
             taylor_terms, outliers, channel_average, produce_qa, w_projection_planes,

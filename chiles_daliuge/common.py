@@ -237,17 +237,70 @@ def destringify_data(args: list[str]) -> list[str]:
     return cleaned
 
 
-def get_list_frequency_groups(frequency_width: int, minimum_frequency: int, maximum_frequency: int) -> list[list[int]]:
+def destringify_data_concat(args: list[str]) -> list[str]:
     """
-    Generate frequency ranges based on the given width and bounds.
+    Expect input like:
+        ['[concat_all;944;992;/path/a.ms.tar,/path/b.ms.tar,...]']
+    Return:
+        ['concat_all', '944', '992', '/path/a.ms.tar,/path/b.ms.tar,...']
+    """
+    if not args:
+        raise ValueError("No arguments provided")
 
-    This function divides the frequency range from `minimum_frequency` to `maximum_frequency`
-    into contiguous intervals of width `frequency_width`.
+    input_arg = str(args[3:-4])
+
+    LOG.info(f"input_arg: {input_arg}")
+
+    # # 1) Collapse to a single string
+    # blob = " ".join(a for a in input_arg if a is not None).strip()
+    #
+    # LOG.info(f"blob: {blob}")
+    #
+    # # 2) Remove outermost [ ... ] if present
+    # #    (use first '[' and last ']' so doubled brackets don't confuse us)
+    # if "['[" in blob and "]']" in blob:
+    #     i = blob.find("['[")
+    #     j = blob.rfind("]']")
+    #     if 0 <= i < j:
+    #         blob = blob[i+1:j].strip()
+    #
+    # # 3) Strip one pair of matching outer quotes if present
+    # if len(blob) >= 2 and blob[0] == blob[-1] and blob[0] in ("'", '"'):
+    #     blob = blob[1:-1].strip()
+    #
+    # blob = str(blob)
+    # 4) Split strictly by semicolons into 4 parts
+    parts = [p.strip() for p in input_arg.split(";", 3)]
+    if len(parts) != 4:
+        raise ValueError(f"Expected 4 semicolon-separated parts, got {len(parts)} from: {blob!r}")
+
+    base_name, start_freq, end_freq, paths_combined = parts
+    return [base_name, start_freq, end_freq, paths_combined]
+
+
+
+
+
+def get_list_frequency_groups(
+    frequency_width: int,
+    frequency_step: int,
+    minimum_frequency: int,
+    maximum_frequency: int
+) -> List[List[int]]:
+    """
+    Generate sliding frequency ranges within [minimum_frequency, maximum_frequency).
+
+    The window has width `frequency_width` and advances by `frequency_step` each time:
+      - Overlap if frequency_step < frequency_width
+      - Adjacent bins if frequency_step == frequency_width
+      - Gaps if frequency_step > frequency_width
 
     Parameters
     ----------
     frequency_width : int
-        Width of each frequency bin.
+        Width of each frequency bin (> 0).
+    frequency_step : int
+        Step between successive bin starts (> 0).
     minimum_frequency : int
         Starting frequency of the range (inclusive).
     maximum_frequency : int
@@ -255,20 +308,43 @@ def get_list_frequency_groups(frequency_width: int, minimum_frequency: int, maxi
 
     Returns
     -------
-    list of list of int
-        A list of [start, end] pairs representing the frequency bins.
+    list[list[int]]
+        A list of [start, end] pairs where end = min(start + width, maximum_frequency).
 
     Examples
     --------
-    >>> get_list_frequency_groups(2, 0, 6)
+    >>> get_list_frequency_groups(2, 2, 0, 6)   # adjacent bins
     [[0, 2], [2, 4], [4, 6]]
+
+    >>> get_list_frequency_groups(4, 2, 0, 10)  # overlap (step < width)
+    [[0, 4], [2, 6], [4, 8], [6, 10], [8, 10]]
+
+    >>> get_list_frequency_groups(3, 5, 0, 12)  # gaps (step > width)
+    [[0, 3], [5, 8], [10, 12]]
     """
     frequency_width = int(frequency_width)
-    result = [
-        [start, start + frequency_width]
-        for start in range(minimum_frequency, maximum_frequency, frequency_width)
-    ]
+    frequency_step = int(frequency_step)
+    minimum_frequency = int(minimum_frequency)
+    maximum_frequency = int(maximum_frequency)
+
+    if frequency_width <= 0:
+        raise ValueError("frequency_width must be > 0")
+    if frequency_step <= 0:
+        raise ValueError("frequency_step must be > 0")
+    if minimum_frequency >= maximum_frequency:
+        return []
+
+    result: List[List[int]] = []
+    for start in range(minimum_frequency, maximum_frequency, frequency_step):
+        if start >= maximum_frequency:
+            break
+        end = start + frequency_width
+        if end > maximum_frequency:
+            end = maximum_frequency
+        result.append([start, end])
+
     return result
+
 
 
 def remove_file_or_directory(filename: str, trigger) -> None:
@@ -310,6 +386,7 @@ def remove_file_or_directory(filename: str, trigger) -> None:
     else:
         LOG.info(f"[{trigger}] Nothing to remove, path does not exist: {filename}")
 
+
 def verify_db_integrity(db_path: str, trigger_in: bool) -> bool:
     """
     Verify that file/directory paths stored in the metadata DB actually exist.
@@ -347,82 +424,159 @@ def verify_db_integrity(db_path: str, trigger_in: bool) -> bool:
         q = Path(p).expanduser()
         return q.exists()
 
+    def _table_exists(cur, table_name: str) -> bool:
+        cur.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
+            (table_name,),
+        )
+        return cur.fetchone() is not None
+
+    def _validate_table(cur, table_name: str, candidate_path_cols: list[str]) -> None:
+        """Core validator for a single table."""
+        if not _table_exists(cur, table_name):
+            LOG.info(f"[VERIFY:{table_name}] Table not found; skipping.")
+            return
+
+        # Discover which of the candidate path columns actually exist in the table
+        cur.execute(f"PRAGMA table_info({table_name});")
+        cols_present = {col[1] for col in cur.fetchall()}
+        path_cols = [c for c in candidate_path_cols if c in cols_present]
+
+        if not path_cols:
+            LOG.info(f"[VERIFY:{table_name}] No known path columns found; nothing to check.")
+            return
+
+        select_cols = ["rowid"] + path_cols
+        cur.execute(f"SELECT {', '.join(select_cols)} FROM {table_name}")
+        rows = cur.fetchall()
+
+        for row in rows:
+            rowid = row[0]
+            values_by_col = dict(zip(path_cols, row[1:]))
+
+            existing_any = False
+            missing_cols = []
+
+            for col, val in values_by_col.items():
+                # SQLite may return bytes if the column affinity is BLOB or similar
+                val_str = val if isinstance(val, str) else (val.decode() if isinstance(val, bytes) else "")
+                if _is_real_path(val_str):
+                    existing_any = True
+                else:
+                    # Only mark as missing if the cell is non-empty; empty/NULL stays NULL
+                    if val_str:
+                        missing_cols.append(col)
+
+            if not existing_any:
+                cur.execute(f"DELETE FROM {table_name} WHERE rowid = ?", (rowid,))
+                LOG.info(f"[DELETE:{table_name}] Row {rowid} removed: all path columns invalid/missing.")
+            else:
+                for col in missing_cols:
+                    # Column name comes from PRAGMA (trusted), value parameterized
+                    cur.execute(f"UPDATE {table_name} SET {col} = NULL WHERE rowid = ?", (rowid,))
+                    LOG.info(f"[CLEAN:{table_name}] Cleared '{col}' in row {rowid}: path not found.")
+
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
-    # Discover which of the PATH_COLUMNS actually exist in the table
-    cursor.execute("PRAGMA table_info(metadata);")
-    cols_present = {col[1] for col in cursor.fetchall()}
-    path_cols = [c for c in PATH_COLUMNS if c in cols_present]
+    try:
+        # Single transaction spanning all checks
+        cursor.execute("BEGIN")
+        # Validate metadata table (same columns as your original function)
+        _validate_table(
+            cursor,
+            "metadata",
+            [
+                "ms_path",
+                "uv_sub_path",
+                "build_concat_all",
+                "tclean_all",
+                "build_concat_epoch",
+                "tclean_epoch",
+            ],
+        )
+        # Validate concat_freq table (new)
+        _validate_table(
+            cursor,
+            "concat_freq",
+            ["concat_freq_path"],
+        )
 
-    if not path_cols:
-        LOG.info("[VERIFY] No known path columns found; nothing to check.")
-        conn.close()
+        conn.commit()
+        LOG.info("[VERIFY] DB integrity check complete for 'metadata' and 'concat_freq'.")
         return True
-
-    select_cols = ["rowid"] + path_cols
-    cursor.execute(f"SELECT {', '.join(select_cols)} FROM metadata")
-    rows = cursor.fetchall()
-
-    # Single transaction for speed & consistency
-    cursor.execute("BEGIN")
-    for row in rows:
-        rowid = row[0]
-        values_by_col = dict(zip(path_cols, row[1:]))
-
-        existing_any = False
-        missing_cols = []
-
-        for col, val in values_by_col.items():
-            val_str = val if isinstance(val, str) else (val.decode() if isinstance(val, bytes) else "")
-            if _is_real_path(val_str):
-                existing_any = True
-            else:
-                # Only mark as missing if the cell is non-empty; empty/NULL stays NULL
-                if val_str:
-                    missing_cols.append(col)
-
-        if not existing_any:
-            cursor.execute("DELETE FROM metadata WHERE rowid = ?", (rowid,))
-            LOG.info(f"[DELETE] Row {rowid} removed: all path columns invalid/missing.")
-        else:
-            for col in missing_cols:
-                # Column name comes from PRAGMA (trusted), value parameterized
-                cursor.execute(f"UPDATE metadata SET {col} = NULL WHERE rowid = ?", (rowid,))
-                LOG.info(f"[CLEAN] Cleared '{col}' in row {rowid}: path not found.")
-
-    conn.commit()
-    conn.close()
-    LOG.info("[VERIFY] Metadata DB integrity check complete.")
-    return True
+    except Exception as e:
+        conn.rollback()
+        LOG.exception(f"[VERIFY] Integrity check failed: {e}")
+        return False
+    finally:
+        conn.close()
 
 
 
 def export_metadata_to_csv(db_path: str, csv_path: str, trigger_in: bool) -> None:
     """
-    Export the entire 'metadata' table from a SQLite database to a CSV file.
+    Export the entire 'metadata' and 'concat_freq' tables from a SQLite database to CSV files.
+
+    Behavior
+    --------
+    - If `csv_path` is a file path ending with .csv, append the table name before the extension,
+      e.g., '/tmp/export.csv' -> '/tmp/export_metadata.csv' and '/tmp/export_concat_freq.csv'.
+    - If `csv_path` is a directory (existing or not), writes '/path/metadata.csv' and '/path/concat_freq.csv'.
 
     Parameters
     ----------
-    trigger_in:
-        to make function wait
+    trigger_in : bool
+        If False, the function returns immediately without exporting.
     db_path : str
-        Path to the SQLite database file (e.g., METADATA_DB).
+        Path to the SQLite database file.
     csv_path : str
-        Path to the output CSV file (e.g., METADATA_CSV).
+        Base path for the output CSV(s).
 
     Returns
     -------
     None
     """
+
+
+    def _derive_out_path(base: str, table: str) -> Path:
+        p = Path(base)
+        # If base looks like a .csv file, insert the table name before the suffix.
+        if p.suffix.lower() == ".csv":
+            stem = p.stem
+            return p.with_name(f"{stem}_{table}.csv")
+        # Otherwise treat as a directory
+        return p.joinpath(f"{table}.csv")
+
+    # Ensure parent directory exists for directory-like base
+    base_is_dir = Path(csv_path).suffix.lower() != ".csv"
+    if base_is_dir:
+        Path(csv_path).mkdir(parents=True, exist_ok=True)
+
+    tables = ["metadata", "concat_freq"]
+
     conn = sqlite3.connect(db_path)
     try:
-        df = pd.read_sql_query("SELECT * FROM metadata", conn)
-        df.to_csv(csv_path, index=False)
+        cur = conn.cursor()
+        for table in tables:
+            # Check table existence
+            cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name=?;", (table,))
+            if cur.fetchone() is None:
+                LOG.info(f"[EXPORT] Table '{table}' not found; skipping.")
+                continue
+
+            out_path = _derive_out_path(csv_path, table)
+            # Ensure parent dir exists for file-like base, too
+            out_path.parent.mkdir(parents=True, exist_ok=True)
+
+            df = pd.read_sql_query(f"SELECT * FROM {table}", conn)
+            df.to_csv(out_path, index=False)
+            LOG.info(f"[EXPORT] Wrote {table} -> {out_path}")
     finally:
         conn.close()
 
-    LOG.info(f"Export complete.")
+    LOG.info("Export complete for available tables: metadata, concat_freq.")
+
 
 
 def add_column_if_missing(db_path: str, column_name: str, column_type: str = "TEXT") -> None:
@@ -530,8 +684,6 @@ def log_data(input_data):
 
     return input_data
 
-
-import sqlite3
 
 def update_metadata_column(
     db_path: str,
@@ -776,6 +928,26 @@ def generate_hashed_ms_name(
     hash_str = hashlib.sha256(combined_str.encode()).hexdigest()[:hash_length]
     return f"{prefix}{hash_str}.ms"
 
+def insert_concat_freq_row(
+    db_path: str,
+    concat_freq_path: str,
+    base_name: str,
+    year: str,
+    start_freq: str,
+    end_freq: str,
+    bandwidth: str,
+    size: str,
+) -> None:
+    sql = """
+        INSERT INTO concat_freq (
+            concat_freq_path, base_name, year, start_freq, end_freq, bandwidth, size
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)
+    """
+    with sqlite3.connect(db_path) as conn:
+        conn.execute(sql, (
+            concat_freq_path, base_name, year, start_freq, end_freq, bandwidth, size
+        ))
+        conn.commit()
 
 def initialize_metadata_environment(db_path: str) -> bool:
     """
@@ -802,6 +974,19 @@ def initialize_metadata_environment(db_path: str) -> bool:
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS metadata (
             ms_path TEXT PRIMARY KEY,
+            base_name TEXT,
+            year TEXT,
+            start_freq TEXT,
+            end_freq TEXT,
+            bandwidth TEXT,
+            size TEXT
+        )
+    """)
+    conn.commit()
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS concat_freq (
+            concat_freq_path TEXT PRIMARY KEY,
             base_name TEXT,
             year TEXT,
             start_freq TEXT,
