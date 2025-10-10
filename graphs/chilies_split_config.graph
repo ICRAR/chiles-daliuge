@@ -4,28 +4,62 @@
         "fileType": "Graph",
         "shortDescription": "",
         "detailedDescription": "",
-        "repoService": "GitHub",
-        "repoBranch": "main",
-        "repo": "ICRAR/chiles-daliuge",
         "generatorVersion": "v6.8.0",
-        "generatorCommitHash": "8566c0d3db3eb8ddca7b3342a6eecc023269b147",
+        "generatorCommitHash": "940fe65c5f8544536cd5826d031fad6cef483dc9",
         "generatorName": "EAGLE",
         "schemaVersion": "OJS",
         "readonly": false,
         "repositoryUrl": "",
-        "commitHash": "",
-        "downloadUrl": "",
         "signature": "",
         "lastModifiedName": "",
         "lastModifiedEmail": "",
         "lastModifiedDatetime": 0,
-        "numLGNodes": 38
+        "numLGNodes": 39,
+        "repo": "ICRAR/chiles-daliuge",
+        "repoBranch": "main",
+        "repoService": "GitHub",
+        "commitHash": "",
+        "downloadUrl": ""
     },
     "activeGraphConfigId": "27252bb2-a9bb-4f5c-990c-3685d75b933e",
     "graphConfigurations": {
         "80a4cabf-acdf-4fa1-8729-e90e201c7cf9": {
-            "name": "simple",
-            "description": "",
+            "modelData": {
+                "name": "simple",
+                "shortDescription": "",
+                "detailedDescription": "",
+                "type": "GraphConfig",
+                "schemaVersion": "Unknown",
+                "readonly": true,
+                "location": {
+                    "repositoryService": "Unknown",
+                    "repositoryBranch": "",
+                    "repositoryName": "",
+                    "repositoryPath": "",
+                    "repositoryFileName": "",
+                    "commitHash": "",
+                    "downloadUrl": ""
+                },
+                "generatorVersion": "",
+                "generatorCommitHash": "",
+                "generatorName": "",
+                "repositoryUrl": "",
+                "graphLocation": {
+                    "repositoryService": "Unknown",
+                    "repositoryBranch": "",
+                    "repositoryName": "",
+                    "repositoryPath": "",
+                    "repositoryFileName": "",
+                    "commitHash": "",
+                    "downloadUrl": ""
+                },
+                "signature": "",
+                "lastModifiedName": "",
+                "lastModifiedEmail": "",
+                "lastModifiedDatetime": 0,
+                "numLGNodes": 0
+            },
+            "id": "80a4cabf-acdf-4fa1-8729-e90e201c7cf9",
             "nodes": {
                 "6d5bf22b-5a7c-4243-b698-093200bdc892": {
                     "fields": {
@@ -39,14 +73,45 @@
                         }
                     }
                 }
-            },
-            "lastModifiedName": "",
-            "lastModifiedEmail": "",
-            "lastModifiedDatetime": 0
+            }
         },
         "27252bb2-a9bb-4f5c-990c-3685d75b933e": {
-            "name": "setonix",
-            "description": "",
+            "modelData": {
+                "name": "setonix",
+                "shortDescription": "",
+                "detailedDescription": "",
+                "type": "GraphConfig",
+                "schemaVersion": "Unknown",
+                "readonly": true,
+                "location": {
+                    "repositoryService": "Unknown",
+                    "repositoryBranch": "",
+                    "repositoryName": "",
+                    "repositoryPath": "",
+                    "repositoryFileName": "",
+                    "commitHash": "",
+                    "downloadUrl": ""
+                },
+                "generatorVersion": "",
+                "generatorCommitHash": "",
+                "generatorName": "",
+                "repositoryUrl": "",
+                "graphLocation": {
+                    "repositoryService": "Unknown",
+                    "repositoryBranch": "",
+                    "repositoryName": "",
+                    "repositoryPath": "",
+                    "repositoryFileName": "",
+                    "commitHash": "",
+                    "downloadUrl": ""
+                },
+                "signature": "",
+                "lastModifiedName": "",
+                "lastModifiedEmail": "",
+                "lastModifiedDatetime": 0,
+                "numLGNodes": 0
+            },
+            "id": "27252bb2-a9bb-4f5c-990c-3685d75b933e",
             "nodes": {
                 "6d5bf22b-5a7c-4243-b698-093200bdc892": {
                     "fields": {
@@ -60,10 +125,7 @@
                         }
                     }
                 }
-            },
-            "lastModifiedName": "",
-            "lastModifiedEmail": "",
-            "lastModifiedDatetime": 0
+            }
         }
     },
     "nodeDataArray": [
@@ -71,7 +133,7 @@
             "category": "Scatter",
             "categoryType": "Construct",
             "isGroup": true,
-            "color": "rgb(227 189 100)",
+            "color": "#e3bd64",
             "drawOrderHint": 0,
             "id": "8f81a009-9901-4cd8-ac10-46a3594a90f3",
             "name": "Scatter/GenericScatterApp",
@@ -195,7 +257,7 @@
             "outputAppFields": [],
             "inputApplicationName": "GenericScatterApp",
             "inputApplicationType": "DALiuGEApp",
-            "inputApplicationId": "cee9422a-31d1-4b8c-89ff-fa74418546dd",
+            "inputApplicationId": "9af8f4cb-39b8-40c7-998b-2cf534ef37a7",
             "inputApplicationDescription": "",
             "inputApplicationComment": "",
             "outputApplicationName": "",
@@ -1772,7 +1834,7 @@
             "category": "Loop",
             "categoryType": "Construct",
             "isGroup": true,
-            "color": "rgb(227 189 100)",
+            "color": "#e3bd64",
             "drawOrderHint": 0,
             "id": "0a93ca1b-02c6-48e8-bff3-959d8e8050d2",
             "name": "Loop",
@@ -5473,7 +5535,7 @@
             "category": "EnvironmentVariables",
             "categoryType": "Data",
             "isGroup": false,
-            "color": "#2c2c2c",
+            "color": "#ff66cc",
             "drawOrderHint": 0,
             "id": "6d5bf22b-5a7c-4243-b698-093200bdc892",
             "name": "GlobalVariables",
