@@ -130,4 +130,7 @@ dmypy.json
 
 # templates
 .github/templates/*
+.idea/
 /db/
+
+tests/dlg

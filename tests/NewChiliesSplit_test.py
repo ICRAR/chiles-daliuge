@@ -1,5 +1,6 @@
 import logging
-from NewChiliesSplit import split_ms_list  # Replace with the actual module name
+from chiles_daliuge.NewChiliesSplit import split_ms_list  # Replace with the actual
+# module name
 import numpy as np
 # Setup logger to show debug output in console
 logging.basicConfig(level=logging.DEBUG)
