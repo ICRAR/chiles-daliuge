@@ -306,9 +306,11 @@ def do_concat(
     # Make sure parent exists; do NOT create concat_out itself
     concat(concatvis=str(concat_out), vis=vis_strs)
 
-    # Split
-    timebin='60s'
+    # --- split ---
+    timebin = "60s"
     channel_width = 32
+
+    # nuke old output if present
     if save_dir.exists():
         shutil.rmtree(save_dir)
 
@@ -316,21 +318,45 @@ def do_concat(
         LOG.info(f"[INFO] split -> {save_dir}, timebin={timebin}, width={channel_width}")
         split(
             vis=str(concat_out),
-            outputvis=str(save_dir),
+            outputvis=str(save_dir),   # CASA needs str
             timebin=timebin,
             width=channel_width,
             datacolumn="all",
         )
-        size_bytes = os.path.getsize(save_dir) if os.path.exists(save_dir) else 0
-        size = round(float(size_bytes / (1024 * 1024 * 1024)), 3)
-        insert_concat_freq_row(db_path, save_dir, base_name, "N/A", start_freq, end_freq, bandwidth, size)
+
+        # robust dir-size (in bytes)
+        def dir_size_bytes(p: Path) -> int:
+            total = 0
+            for root, dirs, files in os.walk(p):
+                for fname in files:
+                    try:
+                        total += (Path(root) / fname).stat().st_size
+                    except OSError:
+                        pass
+            return total
+
+        size_bytes = dir_size_bytes(save_dir) if save_dir.exists() else 0
+        size_gb = round(size_bytes / (1024**3), 3)
+
+        # Make sure we pass only DB-friendly types
+        insert_concat_freq_row(
+            db_path=str(db_path),                    # str path
+            concat_freq_path=str(save_dir),          # str path
+            base_name=str(base_name),
+            year="N/A",                              # ensure this matches your schema (TEXT ok)
+            start_freq=str(start_freq),
+            end_freq=str(end_freq),
+            bandwidth=str(bandwidth),
+            size=str(size_gb),
+        )
+
     except Exception as e:
-        LOG.error(f"Split failed in bucket {start_freq}_{end_freq}: {e}")
+        LOG.error(f"Split failed in bucket {start_freq}_{end_freq}: {e}", exc_info=True)
 
     LOG.info(f"[INFO] removing temporary dir {save_dir_temp}.")
     shutil.rmtree(save_dir_temp, ignore_errors=True)
+    LOG.info("[INFO] Done.")
 
-    LOG.info("\n[INFO] Done.")
 
 # def main(concat_data: list) -> None:
 #     LOG.info(f"concat_data (parsed): {concat_data}")

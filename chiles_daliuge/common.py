@@ -5,13 +5,16 @@ from os.path import exists, isfile, basename
 import tarfile
 import shutil
 import hashlib
-import sqlite3
+import sqlite3, os
+from pathlib import Path
+
 from os.path import isdir
 import numpy as np
 import json
 import re
 from typing import List, Any
-from pathlib import Path
+
+sqlite3.register_adapter(Path, os.fspath)
 
 LOG = logging.getLogger(f"dlg.{__name__}")
 logging.basicConfig(level=logging.INFO)
@@ -937,10 +940,9 @@ def generate_hashed_ms_name(
     combined_str = f"{base}_{year}_{start_freq}_{end_freq}"
     hash_str = hashlib.sha256(combined_str.encode()).hexdigest()[:hash_length]
     return f"{prefix}{hash_str}.ms"
-
 def insert_concat_freq_row(
     db_path: str,
-    concat_freq_path: str,
+    concat_freq_path: str,  # keep signature as str to discourage passing Path
     base_name: str,
     year: str,
     start_freq: str,
@@ -948,7 +950,6 @@ def insert_concat_freq_row(
     bandwidth: str,
     size: str,
 ) -> None:
-
     db_path = expand_path(db_path)
     sql = """
         INSERT INTO concat_freq (
@@ -957,9 +958,16 @@ def insert_concat_freq_row(
     """
     with sqlite3.connect(str(db_path)) as conn:
         conn.execute(sql, (
-            concat_freq_path, base_name, year, start_freq, end_freq, bandwidth, size
+            str(concat_freq_path),  # <= ensure str
+            base_name,
+            year,
+            start_freq,
+            end_freq,
+            bandwidth,
+            size,
         ))
         conn.commit()
+
 
 def initialize_metadata_environment(db_path: str) -> bool:
     """
