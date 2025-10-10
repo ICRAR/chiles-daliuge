@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import sys
 from os.path import join
-from chiles_daliuge.common_dir import *
+from chiles_daliuge.common import *
 import json
 import tempfile
 import logging
