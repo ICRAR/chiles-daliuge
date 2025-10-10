@@ -354,7 +354,7 @@
         "generatorCommitHash": "8566c0d3db3eb8ddca7b3342a6eecc023269b147",
         "generatorName": "EAGLE",
         "generatorVersion": "v6.8.0",
-        "lastModifiedDatetime": 1760066411.261713,
+        "lastModifiedDatetime": 1760066778.76779,
         "lastModifiedEmail": "",
         "lastModifiedName": "",
         "numLGNodes": 38,
@@ -391,7 +391,7 @@
                     "readonly": false,
                     "type": "Integer",
                     "usage": "NoPort",
-                    "value": 1
+                    "value": 5
                 }
             ],
             "id": "8f81a009-9901-4cd8-ac10-46a3594a90f3",
@@ -743,8 +743,8 @@
             "outputApplicationType": "None",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master-template.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
-            "x": -361.18373721170514,
-            "y": -395.5143756765146
+            "x": -157.9881970753217,
+            "y": -425.99370669697214
         },
         {
             "category": "PyFuncApp",
@@ -1106,8 +1106,8 @@
             "outputApplicationType": "None",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
-            "x": -191.3502446109062,
-            "y": -399.68328589517125
+            "x": 11.845295525476995,
+            "y": -430.1626169156288
         },
         {
             "category": "Memory",
@@ -1521,8 +1521,8 @@
             "outputApplicationType": "None",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master-template.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
-            "x": -550.7873271143601,
-            "y": -51.40260130315744
+            "x": -141.00965450598733,
+            "y": -95.42830166604043
         },
         {
             "category": "BashShellApp",
@@ -2092,7 +2092,7 @@
                     "readonly": false,
                     "type": "Integer",
                     "usage": "NoPort",
-                    "value": 3
+                    "value": 20
                 }
             ],
             "id": "0a93ca1b-02c6-48e8-bff3-959d8e8050d2",
@@ -3033,8 +3033,8 @@
             "outputApplicationType": "None",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
-            "x": -709.5499669002571,
-            "y": -56.6929262296068
+            "x": -299.77229429188446,
+            "y": -100.71862659248977
         },
         {
             "category": "Memory",
@@ -3857,8 +3857,8 @@
             "outputApplicationType": "None",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
-            "x": 1325.8154704386138,
-            "y": -132.90362478418027
+            "x": 1058.274675925711,
+            "y": -65.17177807205265
         },
         {
             "category": "PyFuncApp",
@@ -4075,8 +4075,8 @@
             "outputApplicationType": "None",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master-template.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
-            "x": 1437.5401800048637,
-            "y": -123.44058202628781
+            "x": 1169.999385491961,
+            "y": -55.70873531416019
         },
         {
             "category": "Memory",
@@ -4226,8 +4226,8 @@
             "outputApplicationType": "None",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
-            "x": 1552.4413079784101,
-            "y": -124.30295337298037
+            "x": 1284.9005134655074,
+            "y": -56.57110666085274
         },
         {
             "category": "PyFuncApp",
@@ -4459,8 +4459,8 @@
             "outputApplicationType": "None",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master-template.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
-            "x": 1694.6568479593113,
-            "y": -126.32406981390085
+            "x": 1427.1160534464086,
+            "y": -58.59222310177323
         },
         {
             "category": "Memory",
@@ -4610,8 +4610,8 @@
             "outputApplicationType": "None",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
-            "x": 1829.3542981839005,
-            "y": -123.98284184044576
+            "x": 1561.8135036709978,
+            "y": -56.25099512831813
         },
         {
             "category": "PyFuncApp",
@@ -4843,8 +4843,8 @@
             "outputApplicationType": "None",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master-template.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
-            "x": 1943.7082200942616,
-            "y": -123.43706480402273
+            "x": 1676.1674255813589,
+            "y": -55.7052180918951
         },
         {
             "category": "Memory",
@@ -5842,8 +5842,8 @@
             "outputApplicationType": "None",
             "paletteDownloadUrl": "",
             "repositoryUrl": "daliuge-new",
-            "x": -672.6420115623913,
-            "y": -401.64327175772144
+            "x": -320.43640865932673,
+            "y": -313.5918710319552
         },
         {
             "category": "Data",
@@ -6205,8 +6205,8 @@
             "outputApplicationType": "None",
             "paletteDownloadUrl": "",
             "repositoryUrl": "daliuge-new",
-            "x": -414.5666838233595,
-            "y": 89.92093766085198
+            "x": -4.789011214986627,
+            "y": 45.895237297968976
         },
         {
             "category": "Memory",
@@ -6371,8 +6371,8 @@
             "outputApplicationType": "None",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
-            "x": -12.550142133586604,
-            "y": -96.49099168446064
+            "x": 95.82081260581774,
+            "y": -99.87758402006702
         },
         {
             "category": "File",
@@ -6537,8 +6537,8 @@
             "outputApplicationType": "None",
             "paletteDownloadUrl": "",
             "repositoryUrl": "daliuge-new",
-            "x": -1031.895243264067,
-            "y": -62.02554294952185
+            "x": -622.1175706556954,
+            "y": -106.05124331240481
         },
         {
             "category": "PyFuncApp",
@@ -6770,8 +6770,8 @@
             "outputApplicationType": "None",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master-template.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
-            "x": -930.5912079702254,
-            "y": 99.15618766100579
+            "x": -520.8135353618538,
+            "y": 55.13048729812281
         },
         {
             "category": "PyFuncApp",
@@ -7003,8 +7003,8 @@
             "outputApplicationType": "None",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master-template.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
-            "x": -1225.916227482875,
-            "y": -57.59898013024624
+            "x": -816.1385548745033,
+            "y": -101.6246804931292
         },
         {
             "category": "PyFuncApp",
@@ -7236,8 +7236,8 @@
             "outputApplicationType": "None",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master-template.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
-            "x": -889.0745591447183,
-            "y": -52.65966715956288
+            "x": -479.2968865363464,
+            "y": -96.68536752244586
         }
     ]
 }

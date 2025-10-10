@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import List
 import json
 import tempfile
+from typing import Iterable, Union
 
 process_ms_flag = True
 
@@ -66,6 +67,7 @@ def fetch_uvsub(
     - Paths are deduplicated and sorted for stable output.
     """
     # Normalize to unique (lo, hi) integer pairs
+    db_path = expand_path(db_path)
     freq_set = {tuple(sorted(map(int, pair))) for pair in frequencies}
     if not freq_set:
         return []
@@ -102,7 +104,7 @@ def fetch_uvsub(
         base, path, yr, sf, ef = row
         return (str(yr or ""), str(sf), str(ef), str(path or ""))
 
-    with sqlite3.connect(db_path) as conn:
+    with sqlite3.connect(str(db_path)) as conn:
         cur = conn.cursor()
 
         exist_sql = """
@@ -163,22 +165,22 @@ def fetch_uvsub(
 
 
 
-def extract_tar(tar_path: Path, dest_dir: Path):
-    """
-    Extract a .tar into dest_dir.
-    Returns the list of top-level items extracted.
-    """
-    with tarfile.open(tar_path, "r") as tf:
-        tf.extractall(dest_dir)
-        names = [dest_dir / m.name.split("/")[0] for m in tf.getmembers() if "/" in m.name or m.name]
-    # De-duplicate and keep existing only
-    unique = []
-    seen = set()
-    for p in names:
-        if p.exists() and p not in seen:
-            unique.append(p)
-            seen.add(p)
-    return unique
+# def extract_tar(tar_path: Path, dest_dir: Path):
+#     """
+#     Extract a .tar into dest_dir.
+#     Returns the list of top-level items extracted.
+#     """
+#     with tarfile.open(tar_path, "r") as tf:
+#         tf.extractall(dest_dir)
+#         names = [dest_dir / m.name.split("/")[0] for m in tf.getmembers() if "/" in m.name or m.name]
+#     # De-duplicate and keep existing only
+#     unique = []
+#     seen = set()
+#     for p in names:
+#         if p.exists() and p not in seen:
+#             unique.append(p)
+#             seen.add(p)
+#     return unique
 
 
 def is_valid_ms(ms_path: Path) -> bool:
@@ -227,7 +229,7 @@ def do_concat(
     save_dir: str,
     db_path: str,
 ):
-    os.makedirs(save_dir, exist_ok=True)
+    #os.makedirs(save_dir, exist_ok=True)
     LOG.info(f"concat_data_in: {concat_data_in}")
     base_name, start_freq, end_freq, paths_combined = destringify_data_concat(concat_data_in)
 
@@ -251,68 +253,82 @@ def do_concat(
         save_dir = f"{save_dir}.ms"
 
     save_dir_temp = f"{save_dir}.tmp"
+    save_dir_temp = Path(save_dir_temp)
+    save_dir = Path(save_dir)
 
     vis = []
-    for tarp in tar_paths:
+    for tarp in map(Path, tar_paths):
         try:
-            extracted = extract_tar(tarp, save_dir_temp)
-            ms_dir_name = tarp.stem  # e.g. "XYZ" from "XYZ.tar"
+            LOG.info(f"Extracting: {tarp}")
+            # If untar_file expects strings, cast here; otherwise pass Path
+            untar_file(str(tarp), str(save_dir_temp))
+
+            ms_dir_name = tarp.with_suffix("").name
             candidate_ms = save_dir_temp / ms_dir_name
+
+            LOG.info(f"Validating: {candidate_ms}")
             if candidate_ms.is_dir() and is_valid_ms(candidate_ms):
-                vis.append(str(candidate_ms))
+                vis.append(candidate_ms)  # keep as Path
             else:
-                # If not found by stem, try any MS dirs extracted
-                for item in extracted:
-                    if item.is_dir() and is_valid_ms(item):
-                        vis.append(str(item))
-                        break
-                else:
-                    LOG.warning(f"[WARN] No valid MS found in {tarp.name}")
+                LOG.warning(f"[WARN] No valid MS found in {candidate_ms}")
         except Exception as e:
-            LOG.error(f"[ERROR] Failed to extract or validate {tarp}: {e}")
+            LOG.error(f"[ERROR] Failed to extract or validate {candidate_ms}: {e}", exc_info=True)
 
     if not vis:
-        LOG.warning(f"[WARN] No valid MeasurementSets to concat in bucket {start_freq}_{end_freq}. Cleaning up and skipping.")
+        LOG.warning(f"[WARN] No valid MeasurementSets to concat in bucket {start_freq}_{end_freq}.")
         shutil.rmtree(save_dir_temp, ignore_errors=True)
+        return
 
-    else:
-        # Concat
-        concat_out = save_dir_temp / f"Accumulated_{start_freq}_{end_freq}.ms"
-        if concat_out.exists():
-            shutil.rmtree(concat_out)
-        LOG.info(f"[INFO] concat -> {concat_out.name} (N={len(vis)})")
-        concat(concatvis=str(concat_out), vis=vis)
+    # Output path (let CASA create it)
+    concat_out = Path(save_dir_temp) / f"Accumulated_{start_freq}_{end_freq}.ms"
+    if concat_out.exists():
+        shutil.rmtree(concat_out)
 
-        # Optionally remove extracted inputs after concat (matches original)
-        for v in vis:
-            try:
-                shutil.rmtree(v, ignore_errors=True)
-            except Exception:
-                pass
+    # Preflight: ensure each MS exists and looks like a CASA MS
+    clean_vis: list[Path] = []
+    for p in vis:
+        exists = p.exists()
+        isdir = p.is_dir()
+        has_table = (p / "table.dat").exists()
+        LOG.info(f"[CHECK] {p} | exists={exists} is_dir={isdir} table.dat={has_table}")
+        if exists and isdir:
+            clean_vis.append(p)
+        else:
+            LOG.warning(f"[SKIP] Not a valid MS path for concat: {p}")
 
-        # Split
-        timebin='60s'
-        channel_width = 32
-        split_out = save_dir
-        if split_out.exists():
-            shutil.rmtree(split_out)
-        try:
-            LOG.info(f"[INFO] split -> {split_out.name}, timebin={timebin}, width={channel_width}")
-            split(
-                vis=str(concat_out),
-                outputvis=str(split_out),
-                timebin=timebin,
-                width=channel_width,
-                datacolumn="all",
-            )
-            size_bytes = os.path.getsize(split_out) if os.path.exists(split_out) else 0
-            size = round(float(size_bytes / (1024 * 1024 * 1024)), 3)
-            insert_concat_freq_row(db_path, save_dir, base_name, "N/A", start_freq, end_freq, bandwidth, size)
-        except Exception as e:
-            LOG.error(f"Split failed in bucket {start_freq}_{end_freq}: {e}")
+    if not clean_vis:
+        raise RuntimeError("No valid MS directories remaining to concat after preflight checks.")
 
-        LOG.info(f"[INFO] removing temporary dir {save_dir_temp}.")
-        shutil.rmtree(save_dir_temp, ignore_errors=True)
+    # CASA wants strings, not Path objects
+    vis_strs = [str(p) for p in clean_vis]
+
+    LOG.info(f"[INFO] concat -> {concat_out} (N={len(vis_strs)})")
+    # Make sure parent exists; do NOT create concat_out itself
+    concat(concatvis=str(concat_out), vis=vis_strs)
+
+    # Split
+    timebin='60s'
+    channel_width = 32
+    if save_dir.exists():
+        shutil.rmtree(save_dir)
+
+    try:
+        LOG.info(f"[INFO] split -> {save_dir}, timebin={timebin}, width={channel_width}")
+        split(
+            vis=str(concat_out),
+            outputvis=str(save_dir),
+            timebin=timebin,
+            width=channel_width,
+            datacolumn="all",
+        )
+        size_bytes = os.path.getsize(save_dir) if os.path.exists(save_dir) else 0
+        size = round(float(size_bytes / (1024 * 1024 * 1024)), 3)
+        insert_concat_freq_row(db_path, save_dir, base_name, "N/A", start_freq, end_freq, bandwidth, size)
+    except Exception as e:
+        LOG.error(f"Split failed in bucket {start_freq}_{end_freq}: {e}")
+
+    LOG.info(f"[INFO] removing temporary dir {save_dir_temp}.")
+    shutil.rmtree(save_dir_temp, ignore_errors=True)
 
     LOG.info("\n[INFO] Done.")
 

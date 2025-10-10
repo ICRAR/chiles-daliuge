@@ -34,7 +34,7 @@ def fetch_original_ms(
     bandwidth = int(end_freq) - int(start_freq)
     name_list = []
 
-    conn = sqlite3.connect(METADATA_DB)
+    conn = sqlite3.connect(str(METADATA_DB))
     cursor = conn.cursor()
 
     result = run(["rclone", "lsf", source_dir, "--dirs-only"], stdout=PIPE, stderr=PIPE, text=True)
@@ -224,7 +224,7 @@ def split_out_frequencies(
 
     LOG.info(f"METADATA_DB: {METADATA_DB}")
 
-    conn = sqlite3.connect(METADATA_DB)
+    conn = sqlite3.connect(str(METADATA_DB))
     cursor = conn.cursor()
     transform_data_all = []
 

@@ -250,7 +250,7 @@ def destringify_data_concat(args: list[str]) -> list[str]:
     if not args:
         raise ValueError("No arguments provided")
 
-    input_arg = str(args[3:-4])
+    input_arg = str(args[3:-3])
 
     LOG.info(f"input_arg: {input_arg}")
 
@@ -481,7 +481,7 @@ def verify_db_integrity(db_path: str, trigger_in: bool) -> bool:
                     cur.execute(f"UPDATE {table_name} SET {col} = NULL WHERE rowid = ?", (rowid,))
                     LOG.info(f"[CLEAN:{table_name}] Cleared '{col}' in row {rowid}: path not found.")
 
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(str(db_path))
     cursor = conn.cursor()
 
     try:
@@ -561,7 +561,7 @@ def export_metadata_to_csv(db_path: str, csv_path: str, trigger_in: bool) -> Non
 
     tables = ["metadata", "concat_freq"]
 
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(str(db_path))
     try:
         cur = conn.cursor()
         for table in tables:
@@ -606,7 +606,7 @@ def add_column_if_missing(db_path: str, column_name: str, column_type: str = "TE
 
     db_path = expand_path(db_path)
 
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(str(db_path))
     cursor = conn.cursor()
 
     # Fetch existing column names
@@ -735,7 +735,7 @@ def update_metadata_column(
     """
 
     db_path = expand_path(db_path)
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(str(db_path))
     cursor = conn.cursor()
 
     # Validate column names
@@ -955,7 +955,7 @@ def insert_concat_freq_row(
             concat_freq_path, base_name, year, start_freq, end_freq, bandwidth, size
         ) VALUES (?, ?, ?, ?, ?, ?, ?)
     """
-    with sqlite3.connect(db_path) as conn:
+    with sqlite3.connect(str(db_path)) as conn:
         conn.execute(sql, (
             concat_freq_path, base_name, year, start_freq, end_freq, bandwidth, size
         ))
@@ -982,7 +982,7 @@ def initialize_metadata_environment(db_path: str) -> bool:
         os.makedirs(parent_dir, exist_ok=True)
 
     # Connect to the DB and create table if needed
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(str(db_path))
     cursor = conn.cursor()
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS metadata (
