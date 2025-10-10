@@ -6,6 +6,8 @@ import sqlite3
 import numpy as np
 from pathlib import Path
 from os.path import join
+import os
+from subprocess import run, PIPE
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -19,12 +21,12 @@ def fetch_original_ms(
         year_list: list[str],
         copy_directory: str,
         trigger_in: bool,
-        METADATA_DB: str,
+        db_path: str,
         process_ms: bool = process_ms_flag,
 ) -> list[str]:
-    import os
-    import sqlite3
-    from subprocess import run, PIPE
+
+
+    METADATA_DB = expand_path(db_path)
 
     make_directory = True
     start_freq = "0944"
@@ -213,11 +215,14 @@ def split_ms_list(ms_list: list[str], parallel_processes: int) -> list[list[str]
 def split_out_frequencies(
         ms_in_list: List[str],
         frequencies: List[List[int]],
-        METADATA_DB: str,
+        db_path: str,
         process_ms: bool = process_ms_flag
 ) -> ndarray:
 
+    METADATA_DB = expand_path(db_path)
     LOG.info(f"Frequencies: {frequencies}")
+
+    LOG.info(f"METADATA_DB: {METADATA_DB}")
 
     conn = sqlite3.connect(METADATA_DB)
     cursor = conn.cursor()

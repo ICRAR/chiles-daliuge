@@ -17,6 +17,9 @@ LOG = logging.getLogger(f"dlg.{__name__}")
 logging.basicConfig(level=logging.INFO)
 
 
+def expand_path(p: str) -> Path:
+    return Path(os.path.expanduser(os.path.expandvars(p))).resolve(strict=False)
+
 def stringify_data(data: list):
     """
     Convert a list of items into a stringified list of strings.
