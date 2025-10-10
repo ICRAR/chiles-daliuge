@@ -209,23 +209,38 @@ def do_ms_transform(transform_data: List[str]) -> None:
 
     bandwidth = int(freq_end) - int(freq_start)
 
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-    cursor.execute("""
-        INSERT INTO metadata (
-            ms_path, base_name, year,
-            start_freq, end_freq, bandwidth, size
-        ) VALUES (?, ?, ?, ?, ?, ?, ?)
-    """, (
-        outfile_tar_path, base_name, year,
-        freq_start, freq_end, bandwidth, size
-    ))
-    conn.commit()
-    conn.close()
+    if update_metadata_column(
+        db_path=db_path,
+        match_column="base_name",
+        match_value=base_name,
+        year=year,
+        start_freq=freq_start,
+        end_freq=freq_end,
+        column_name="ms_path",
+        column_value=outfile_tar_path
+    ):
+        LOG.info(f"Updated {outfile_tar_path} to existing metadata DB row.")
 
-    LOG.info(f"Appended {outfile_tar_path} to metadata DB.")
+        return
 
-    return
+    else:
+        conn = sqlite3.connect(str(db_path))
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO metadata (
+                ms_path, base_name, year,
+                start_freq, end_freq, bandwidth, size
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (
+            outfile_tar_path, base_name, year,
+            freq_start, freq_end, bandwidth, size
+        ))
+        conn.commit()
+        conn.close()
+
+        LOG.info(f"Appended {outfile_tar_path} to metadata DB.")
+
+        return
 
 
 

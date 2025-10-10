@@ -250,7 +250,7 @@ def split_out_frequencies(
             # Only consider rows where ms_path is not NULL/empty
             cursor.execute(
                 """
-                SELECT ms_path
+                SELECT ms_path, base_name
                 FROM metadata
                 WHERE year = ? AND start_freq = ? AND end_freq = ?
                   AND ms_path IS NOT NULL
@@ -262,9 +262,10 @@ def split_out_frequencies(
             row = cursor.fetchone()
 
             existing_ms_path = (row[0].strip() if row and isinstance(row[0], str) else None)
+            existing_base_name = (row[1].strip() if row and isinstance(row[0], str) else None)
 
             if existing_ms_path and Path(existing_ms_path).expanduser().exists():
-                LOG.info(f"Skipping {existing_ms_path}; entry exists for ({year_str}, {start_str}, {end_str}).")
+                LOG.info(f"Skipping {existing_ms_path} as entry exists for {existing_base_name}, {year_str}, {start_str}, {end_str}.")
             else:
                 # queue work (row absent, or ms_path empty/NULL, or path missing on disk)
                 transform_data = [ms_in, base_name, year_str, start_str, end_str]

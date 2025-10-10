@@ -696,6 +696,7 @@ def log_data(input_data):
 
     return input_data
 
+import sqlite3
 
 def update_metadata_column(
     db_path: str,
@@ -706,80 +707,75 @@ def update_metadata_column(
     end_freq: str,
     column_name: str,
     column_value: str
-) -> None:
+) -> bool:
     """
     Update a single column value in the metadata table for all matching rows.
 
-    Supports wildcard '*' in match_value, year, start_freq, or end_freq to match multiple rows.
+    Returns
+    -------
+    bool
+        True if one or more rows matched the criteria (regardless of whether the
+        UPDATE changed the value); False if no rows matched.
 
-    Parameters
-    ----------
-    db_path : str
-        Path to the SQLite metadata database.
-    match_column : str
-        Name of the column to match (e.g., "ms_path", "base_name", etc.).
-    match_value : str
-        Value to match in match_column, or '*' to match all.
-    year : str
-        Value to match for `year`, or '*' to match all.
-    start_freq : str
-        Value to match for `start_freq`, or '*' to match all.
-    end_freq : str
-        Value to match for `end_freq`, or '*' to match all.
-    column_name : str
-        The name of the column to update.
-    column_value : str
-        The value to insert into the specified column.
-
-    Raises
-    ------
-    ValueError
-        If the target or match column does not exist in the metadata table.
+    Notes
+    -----
+    - Supports wildcard '*' in match_value, year, start_freq, and end_freq.
+    - Validates that `column_name` and `match_column` exist to prevent SQL injection.
     """
-
     db_path = expand_path(db_path)
     conn = sqlite3.connect(str(db_path))
-    cursor = conn.cursor()
+    try:
+        cursor = conn.cursor()
 
-    # Validate column names
-    cursor.execute("PRAGMA table_info(metadata);")
-    valid_columns = [row[1] for row in cursor.fetchall()]
-    if column_name not in valid_columns:
+        # Validate column names
+        cursor.execute("PRAGMA table_info(metadata);")
+        valid_columns = [row[1] for row in cursor.fetchall()]
+        if column_name not in valid_columns:
+            raise ValueError(f"Column '{column_name}' does not exist in metadata table.")
+        if match_column not in valid_columns:
+            raise ValueError(f"Match column '{match_column}' does not exist in metadata table.")
+
+        # Build WHERE clause dynamically
+        conditions = []
+        params = []
+
+        if match_value != "*":
+            conditions.append(f"{match_column} = ?")
+            params.append(match_value)
+
+        for field, value in [("year", year), ("start_freq", start_freq), ("end_freq", end_freq)]:
+            if value != "*":
+                conditions.append(f"{field} = ?")
+                params.append(value)
+
+        where_clause = " AND ".join(conditions) if conditions else "1=1"
+
+        # First, check if any rows match
+        cursor.execute(f"SELECT COUNT(1) FROM metadata WHERE {where_clause}", params)
+        match_count = cursor.fetchone()[0]
+
+        if match_count == 0:
+            # No matches -> nothing to update; tell caller to insert
+            print("[INFO] No matching rows found; nothing updated.")
+            return False
+
+        # Perform the update only if there are matches
+        sql = f"UPDATE metadata SET {column_name} = ? WHERE {where_clause}"
+        cursor.execute(sql, [column_value] + params)
+        updated_count = cursor.rowcount  # may be 0 if values were already identical
+
+        conn.commit()
+
+        if updated_count > 0:
+            print(f"[INFO] Updated {updated_count} row(s) in column '{column_name}' with value '{column_value}'.")
+        else:
+            print(f"[INFO] {match_count} row(s) matched but already had '{column_name}' = '{column_value}'. No changes made.")
+
+        # Return True because matches existed (update not needed or succeeded)
+        return True
+
+    finally:
         conn.close()
-        raise ValueError(f"Column '{column_name}' does not exist in metadata table.")
-    if match_column not in valid_columns:
-        conn.close()
-        raise ValueError(f"Match column '{match_column}' does not exist in metadata table.")
-
-    # Build WHERE clause dynamically
-    conditions = []
-    params = []
-
-    if match_value != "*":
-        conditions.append(f"{match_column} = ?")
-        params.append(match_value)
-
-    for field, value in [("year", year), ("start_freq", start_freq), ("end_freq", end_freq)]:
-        if value != "*":
-            conditions.append(f"{field} = ?")
-            params.append(value)
-
-    where_clause = " AND ".join(conditions) if conditions else "1=1"
-
-    # Perform the update
-    sql = f"""
-        UPDATE metadata
-        SET {column_name} = ?
-        WHERE {where_clause}
-    """
-    cursor.execute(sql, [column_value] + params)
-    updated_count = cursor.rowcount
-
-    conn.commit()
-    conn.close()
-
-    print(f"[INFO] Updated {updated_count} row(s) in column '{column_name}' with value '{column_value}'.")
-
 
 
 def remove_temp_dir(trigger_in, base_dir: str, prefix="__SKY_TEMP__"):
