@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+START_DIR=${PWD}
+
 # Setup environment
 
 DEFAULT_INSTALL="/software/projects/pawsey0411/daliuge"
@@ -10,15 +12,15 @@ else
   read -p "Please enter alternate directory: " INSTALL_DIR
 fi
 
-mkdir ${INSTALL_DIR}
-cd $INSTALL_DIR
+mkdir -p ${INSTALL_DIR}
+cd ${INSTALL_DIR}
 
 # Make virtual environment
 python -m venv dlg_env
 source dlg_env/bin/activate
 
 # Install dependencies
-cd ../
+cd ${START_DIR}
 make install
 
 deactivate
@@ -26,6 +28,6 @@ deactivate
 # Setup scratch if not already setup
 
 DEFAULT_SCRATCH="/scratch/pawsey0411/chiles-daliuge"
-mkdir DEFAULT_SCRATCH
+mkdir ${DEFAULT_SCRATCH}
 
 
