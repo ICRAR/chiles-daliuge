@@ -1,0 +1,62 @@
+{
+    "modelData": {
+        "name": "setonix",
+        "shortDescription": "",
+        "detailedDescription": "",
+        "type": "GraphConfig",
+        "schemaVersion": "V4",
+        "readonly": false,
+        "location": {
+            "repositoryService": "Unknown",
+            "repositoryBranch": "",
+            "repositoryName": "",
+            "repositoryPath": "",
+            "repositoryFileName": "",
+            "commitHash": "",
+            "downloadUrl": ""
+        },
+        "generatorVersion": "v6.8.0",
+        "generatorCommitHash": "940fe65c5f8544536cd5826d031fad6cef483dc9",
+        "generatorName": "EAGLE",
+        "repositoryUrl": "",
+        "graphLocation": {
+            "repositoryService": "GitHub",
+            "repositoryBranch": "main",
+            "repositoryName": "ICRAR/chiles-daliuge",
+            "repositoryPath": "graphs",
+            "repositoryFileName": "chilies_split_config.graph",
+            "commitHash": "ff561566dd341f8dc76361a6583c3d0c2f7bf036",
+            "downloadUrl": "https://raw.githubusercontent.com/ICRAR/chiles-daliuge/ff561566dd341f8dc76361a6583c3d0c2f7bf036/graphs/chilies_split_config.graph"
+        },
+        "signature": "",
+        "lastModifiedName": "",
+        "lastModifiedEmail": "",
+        "lastModifiedDatetime": 0,
+        "numLGNodes": 0,
+        "repo": "ICRAR/chiles-daliuge",
+        "repoBranch": "main",
+        "repoService": "GitHub",
+        "filePath": "graphs/setonix.graphConfig",
+        "commitHash": "",
+        "downloadUrl": ""
+    },
+    "id": "f57e0f1d-bbc1-4cc1-bdba-0e21a2f91450",
+    "nodes": {
+        "6d5bf22b-5a7c-4243-b698-093200bdc892": {
+            "fields": {
+                "2c4d3b10-50b3-49d7-b1e6-a7dd498f6396": {
+                    "value": "/scratch/pawsey0411/chiles-daliuge/db/Chilies_metadata.csv",
+                    "comment": ""
+                },
+                "cdbf2e14-b9c0-4c45-8ae0-e2f27e506d42": {
+                    "value": "/scratch/pawsey0411/chiles-daliuge/db/Chilies_metadata.db",
+                    "comment": ""
+                },
+                "650a49d0-85e1-4100-9799-3497545149ff": {
+                    "value": "/software/projects/pawsey0411/git/chiles-daliuge/chiles_daliuge/run_ms_transform.py",
+                    "comment": ""
+                }
+            }
+        }
+    }
+}

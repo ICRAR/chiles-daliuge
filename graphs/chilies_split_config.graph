@@ -50,8 +50,8 @@
                     "repositoryName": "ICRAR/chiles-daliuge",
                     "repositoryPath": "graphs",
                     "repositoryFileName": "chilies_split_config.graph",
-                    "commitHash": "414f1d48a61b2ec146bd9e13f931d1d777ba11e7",
-                    "downloadUrl": "https://raw.githubusercontent.com/ICRAR/chiles-daliuge/414f1d48a61b2ec146bd9e13f931d1d777ba11e7/graphs/chilies_split_config.graph"
+                    "commitHash": "ff561566dd341f8dc76361a6583c3d0c2f7bf036",
+                    "downloadUrl": "https://raw.githubusercontent.com/ICRAR/chiles-daliuge/ff561566dd341f8dc76361a6583c3d0c2f7bf036/graphs/chilies_split_config.graph"
                 },
                 "signature": "",
                 "lastModifiedName": "",
@@ -60,22 +60,39 @@
                 "numLGNodes": 0
             },
             "id": "80a4cabf-acdf-4fa1-8729-e90e201c7cf9",
-            "nodes": {}
+            "nodes": {
+                "6d5bf22b-5a7c-4243-b698-093200bdc892": {
+                    "fields": {
+                        "cdbf2e14-b9c0-4c45-8ae0-e2f27e506d42": {
+                            "value": "$HOME/chiles-daliuge/db/Chilies_metadata.db",
+                            "comment": ""
+                        },
+                        "2c4d3b10-50b3-49d7-b1e6-a7dd498f6396": {
+                            "value": "$HOME/chiles-daliuge/db/Chilies_metadata.csv",
+                            "comment": ""
+                        },
+                        "650a49d0-85e1-4100-9799-3497545149ff": {
+                            "value": "/home/00103780/chiles-daliuge/chiles_daliuge/run_ms_transform.py",
+                            "comment": ""
+                        }
+                    }
+                }
+            }
         },
         "f57e0f1d-bbc1-4cc1-bdba-0e21a2f91450": {
             "modelData": {
-                "name": "setonix",
+                "name": "setonix.graphConfig",
                 "shortDescription": "",
                 "detailedDescription": "",
                 "type": "GraphConfig",
                 "schemaVersion": "V4",
                 "readonly": false,
                 "location": {
-                    "repositoryService": "Unknown",
-                    "repositoryBranch": "",
-                    "repositoryName": "",
-                    "repositoryPath": "",
-                    "repositoryFileName": "",
+                    "repositoryService": "GitHub",
+                    "repositoryBranch": "main",
+                    "repositoryName": "ICRAR/chiles-daliuge",
+                    "repositoryPath": "graphs",
+                    "repositoryFileName": "setonix.graphConfig",
                     "commitHash": "",
                     "downloadUrl": ""
                 },
@@ -89,8 +106,8 @@
                     "repositoryName": "ICRAR/chiles-daliuge",
                     "repositoryPath": "graphs",
                     "repositoryFileName": "chilies_split_config.graph",
-                    "commitHash": "414f1d48a61b2ec146bd9e13f931d1d777ba11e7",
-                    "downloadUrl": "https://raw.githubusercontent.com/ICRAR/chiles-daliuge/414f1d48a61b2ec146bd9e13f931d1d777ba11e7/graphs/chilies_split_config.graph"
+                    "commitHash": "ff561566dd341f8dc76361a6583c3d0c2f7bf036",
+                    "downloadUrl": "https://raw.githubusercontent.com/ICRAR/chiles-daliuge/ff561566dd341f8dc76361a6583c3d0c2f7bf036/graphs/chilies_split_config.graph"
                 },
                 "signature": "",
                 "lastModifiedName": "",
@@ -99,7 +116,24 @@
                 "numLGNodes": 0
             },
             "id": "f57e0f1d-bbc1-4cc1-bdba-0e21a2f91450",
-            "nodes": {}
+            "nodes": {
+                "6d5bf22b-5a7c-4243-b698-093200bdc892": {
+                    "fields": {
+                        "2c4d3b10-50b3-49d7-b1e6-a7dd498f6396": {
+                            "value": "/scratch/pawsey0411/chiles-daliuge/db/Chilies_metadata.csv",
+                            "comment": ""
+                        },
+                        "cdbf2e14-b9c0-4c45-8ae0-e2f27e506d42": {
+                            "value": "/scratch/pawsey0411/chiles-daliuge/db/Chilies_metadata.db",
+                            "comment": ""
+                        },
+                        "650a49d0-85e1-4100-9799-3497545149ff": {
+                            "value": "/software/projects/pawsey0411/git/chiles-daliuge/chiles_daliuge/run_ms_transform.py",
+                            "comment": ""
+                        }
+                    }
+                }
+            }
         }
     },
     "nodeDataArray": [
@@ -231,7 +265,7 @@
             "outputAppFields": [],
             "inputApplicationName": "GenericScatterApp",
             "inputApplicationType": "DALiuGEApp",
-            "inputApplicationId": "977b9c05-a5cd-49e3-9bfc-fed78fc11006",
+            "inputApplicationId": "9b84e967-9359-4b9d-b2f3-971e11deb37d",
             "inputApplicationDescription": "",
             "inputApplicationComment": "",
             "outputApplicationName": "",
@@ -5273,6 +5307,21 @@
                     "positional": false,
                     "encoding": "pickle",
                     "id": "e823ddae-3c13-472d-9e18-c028517dd93f",
+                    "parameterType": "ComponentParameter",
+                    "usage": "NoPort"
+                },
+                {
+                    "name": "script_path",
+                    "value": "",
+                    "defaultValue": "",
+                    "description": "",
+                    "readonly": false,
+                    "type": "String",
+                    "precious": false,
+                    "options": [],
+                    "positional": false,
+                    "encoding": "pickle",
+                    "id": "650a49d0-85e1-4100-9799-3497545149ff",
                     "parameterType": "ComponentParameter",
                     "usage": "NoPort"
                 }
