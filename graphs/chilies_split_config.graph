@@ -50,8 +50,8 @@
                     "repositoryName": "ICRAR/chiles-daliuge",
                     "repositoryPath": "graphs",
                     "repositoryFileName": "chilies_split_config.graph",
-                    "commitHash": "ff561566dd341f8dc76361a6583c3d0c2f7bf036",
-                    "downloadUrl": "https://raw.githubusercontent.com/ICRAR/chiles-daliuge/ff561566dd341f8dc76361a6583c3d0c2f7bf036/graphs/chilies_split_config.graph"
+                    "commitHash": "21cfae42e6e124a4c2e5246e6e5e838856f7b513",
+                    "downloadUrl": "https://raw.githubusercontent.com/ICRAR/chiles-daliuge/21cfae42e6e124a4c2e5246e6e5e838856f7b513/graphs/chilies_split_config.graph"
                 },
                 "signature": "",
                 "lastModifiedName": "",
@@ -106,8 +106,8 @@
                     "repositoryName": "ICRAR/chiles-daliuge",
                     "repositoryPath": "graphs",
                     "repositoryFileName": "chilies_split_config.graph",
-                    "commitHash": "ff561566dd341f8dc76361a6583c3d0c2f7bf036",
-                    "downloadUrl": "https://raw.githubusercontent.com/ICRAR/chiles-daliuge/ff561566dd341f8dc76361a6583c3d0c2f7bf036/graphs/chilies_split_config.graph"
+                    "commitHash": "21cfae42e6e124a4c2e5246e6e5e838856f7b513",
+                    "downloadUrl": "https://raw.githubusercontent.com/ICRAR/chiles-daliuge/21cfae42e6e124a4c2e5246e6e5e838856f7b513/graphs/chilies_split_config.graph"
                 },
                 "signature": "",
                 "lastModifiedName": "",
@@ -129,6 +129,18 @@
                         },
                         "650a49d0-85e1-4100-9799-3497545149ff": {
                             "value": "/software/projects/pawsey0411/git/chiles-daliuge/chiles_daliuge/run_ms_transform.py",
+                            "comment": ""
+                        }
+                    }
+                },
+                "7ad0d741-3c63-485f-8779-b5dd39978ed5": {
+                    "fields": {
+                        "33f69f27-3460-42e5-affd-66639a100bd9": {
+                            "value": 944,
+                            "comment": ""
+                        },
+                        "5aeb76f4-3abd-4067-9aaf-700fd795c358": {
+                            "value": 1000,
                             "comment": ""
                         }
                     }
@@ -156,7 +168,7 @@
             "fields": [
                 {
                     "name": "num_of_copies",
-                    "value": 5,
+                    "value": 2,
                     "defaultValue": "4",
                     "description": "Specifies the number of replications that will be generated of the scatter construct's contents.",
                     "readonly": false,
@@ -265,7 +277,7 @@
             "outputAppFields": [],
             "inputApplicationName": "GenericScatterApp",
             "inputApplicationType": "DALiuGEApp",
-            "inputApplicationId": "9b84e967-9359-4b9d-b2f3-971e11deb37d",
+            "inputApplicationId": "47d5dd3c-5c02-4885-adae-c6693e870691",
             "inputApplicationDescription": "",
             "inputApplicationComment": "",
             "outputApplicationName": "",
@@ -887,8 +899,8 @@
             "name": "fetch_original_ms",
             "description": "Fetches Measurement Set (.ms) directories from a remote directory structure using rclone,\n    and tracks them using metadata stored in an SQLite database.\n\n    The function navigates a remote source directory structured by year/date (e.g., /remote/2013/01/)\n    to locate .ms directories. It either creates placeholder files (if `process_ms=False`) or copies\n    the MS directories locally (if `process_ms=True`) into a destination folder using rclone.\n\n    Metadata such as hashed names, frequency information, and sizes are recorded in a persistent\n    SQLite database. Previously recorded MS entries are skipped.\n\n    Parameters\n    ----------\n    source_dir : str\n        Root remote directory containing year/date subfolders with .ms directories.\n    year_list : list of str\n        List of years to include in the search (e.g., [\"2013\", \"2014\"]).\n    copy_directory : str\n        Local destination where .ms files or placeholders will be stored.\n    trigger_in : bool\n        Currently unused; placeholder for future logic or triggering conditions.\n    METADATA_DB : str\n        Path to the SQLite database used to store and check MS metadata.\n    process_ms : bool, optional\n        If True, rclone will copy full .ms directories to `copy_directory`.\n        If False, only empty placeholder files will be created. Default is taken from `process_ms_flag`.\n\n    Returns\n    -------\n    list of str\n        List of hashed .ms names (real or placeholder) that were processed or already recorded.\n\n    Notes\n    -----\n    - Uses rclone commands (`lsf`, `copy`, `size`) to interact with the remote filesystem.\n    - Assumes MS directories have `.ms/` suffix.\n    - Avoids reprocessing MS sets that already exist in the metadata database.\n    - Logs all significant actions and errors.",
             "comment": "",
-            "x": -129.606163583077,
-            "y": -122.03644715283107,
+            "x": -131.44834846612696,
+            "y": -121.1153547113061,
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "commitHash": "8059e41",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master-template.palette",
@@ -1113,11 +1125,11 @@
                 },
                 {
                     "name": "trigger_in",
-                    "value": false,
+                    "value": "false",
                     "defaultValue": "",
                     "description": "",
                     "readonly": false,
-                    "type": "Boolean",
+                    "type": "String",
                     "precious": false,
                     "options": [],
                     "positional": false,
@@ -1568,7 +1580,7 @@
             "fields": [
                 {
                     "name": "num_of_iter",
-                    "value": 10,
+                    "value": 5,
                     "defaultValue": "2",
                     "description": "Number of iterations",
                     "readonly": false,
@@ -2371,7 +2383,7 @@
             "color": "#2c2c2c",
             "drawOrderHint": 0,
             "id": "036ff268-7fb4-459e-a300-d7ede4551cdb",
-            "name": "verified",
+            "name": "db_path",
             "description": "In-memory storage of intermediate data products",
             "comment": "",
             "x": -303.5734579328546,
@@ -2487,12 +2499,12 @@
                     "usage": "NoPort"
                 },
                 {
-                    "name": "verified",
-                    "value": false,
+                    "name": "db_path",
+                    "value": "false",
                     "defaultValue": "",
                     "description": "",
                     "readonly": false,
-                    "type": "Boolean",
+                    "type": "String",
                     "precious": false,
                     "options": [],
                     "positional": false,
@@ -6044,8 +6056,8 @@
             "name": "export_metadata_to_csv",
             "description": "Export the entire 'metadata' table from a SQLite database to a CSV file.\n\n    Parameters\n    ----------\n    trigger_in:\n        to make function wait\n    db_path : str\n        Path to the SQLite database file (e.g., METADATA_DB).\n    csv_path : str\n        Path to the output CSV file (e.g., METADATA_CSV).\n\n    Returns\n    -------\n    None",
             "comment": "",
-            "x": -477.1001534906976,
-            "y": 41.82641455472745,
+            "x": -200.772421033204,
+            "y": 15.114733750503058,
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "commitHash": "483b909",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master-template.palette",
@@ -6706,11 +6718,11 @@
                 },
                 {
                     "name": "verified",
-                    "value": false,
+                    "value": "false",
                     "defaultValue": "false",
                     "description": "",
                     "readonly": false,
-                    "type": "Boolean",
+                    "type": "String",
                     "precious": false,
                     "options": [],
                     "positional": false,
@@ -7340,15 +7352,6 @@
         },
         {
             "comment": "",
-            "from": "c81d9e35-a951-4f82-bbee-58e5a2ae47b9",
-            "fromPort": "34ca6e31-1ea7-4d04-9cb0-ca08c6831136",
-            "to": "b477550f-dd78-49c9-9d85-284e7f1488bd",
-            "toPort": "d21e26ce-5746-4226-b99a-8062a2fb7a4d",
-            "loop_aware": "0",
-            "closesLoop": false
-        },
-        {
-            "comment": "",
             "from": "4f26f866-0d9b-4c60-8e2b-6612e82ae029",
             "fromPort": "61a3d1e6-cf66-4209-bef3-82b8d4a6432e",
             "to": "036ff268-7fb4-459e-a300-d7ede4551cdb",
@@ -7398,6 +7401,15 @@
             "fromPort": "73c8b7b0-5edf-409e-9615-0dc42e8781a5",
             "to": "0b413c72-0e6d-4e6e-8025-441be4d39e2c",
             "toPort": "1fa23a86-4f1e-44c8-92f8-75a85fe8461a",
+            "loop_aware": "0",
+            "closesLoop": false
+        },
+        {
+            "comment": "",
+            "from": "036ff268-7fb4-459e-a300-d7ede4551cdb",
+            "fromPort": "be39b788-a231-4bd8-9fe2-d941e5192254",
+            "to": "b477550f-dd78-49c9-9d85-284e7f1488bd",
+            "toPort": "d21e26ce-5746-4226-b99a-8062a2fb7a4d",
             "loop_aware": "0",
             "closesLoop": false
         }
