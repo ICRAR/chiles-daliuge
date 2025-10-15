@@ -478,15 +478,6 @@
         {
             "closesLoop": false,
             "comment": "",
-            "from": "1eb3ee5d-e9c5-476b-9e7d-3814a24a6776",
-            "fromPort": "67aa37c5-3755-40db-a71c-c625941f71d4",
-            "loop_aware": "0",
-            "to": "312ba33e-507e-401f-b024-8fd47168728d",
-            "toPort": "741ef31d-0907-41dc-b898-a4f9d48bec52"
-        },
-        {
-            "closesLoop": false,
-            "comment": "",
             "from": "162df633-ca62-43c3-b938-afa34f839565",
             "fromPort": "7a4b8c5e-de18-4c29-a386-7e25775439cd",
             "loop_aware": "0",
@@ -499,8 +490,17 @@
             "from": "22128f57-d4ed-4864-8b26-4205f0c8229b",
             "fromPort": "3bd2ab0a-1904-44c5-b78c-5f9ab0d1ec02",
             "loop_aware": "0",
+            "to": "312ba33e-507e-401f-b024-8fd47168728d",
+            "toPort": "741ef31d-0907-41dc-b898-a4f9d48bec52"
+        },
+        {
+            "closesLoop": false,
+            "comment": "",
+            "from": "22128f57-d4ed-4864-8b26-4205f0c8229b",
+            "fromPort": "3bd2ab0a-1904-44c5-b78c-5f9ab0d1ec02",
+            "loop_aware": "0",
             "to": "176c1c39-028a-4491-8877-b4ea05541a0b",
-            "toPort": "99da4d18-2fbb-40fd-87f5-8f82e4f4b6e7"
+            "toPort": "9b58948a-4b8a-4eb7-be5c-0ca34ca45667"
         }
     ],
     "modelData": {
@@ -510,7 +510,7 @@
         "generatorCommitHash": "940fe65c5f8544536cd5826d031fad6cef483dc9",
         "generatorName": "EAGLE",
         "generatorVersion": "v6.8.0",
-        "lastModifiedDatetime": 1760492958.2489,
+        "lastModifiedDatetime": 1760494122.500714,
         "lastModifiedEmail": "",
         "lastModifiedName": "",
         "numLGNodes": 44,
@@ -708,8 +708,8 @@
                     "precious": false,
                     "readonly": false,
                     "type": "String",
-                    "usage": "NoPort",
-                    "value": "{db_path}"
+                    "usage": "InputPort",
+                    "value": ""
                 },
                 {
                     "defaultValue": "",
@@ -724,21 +724,6 @@
                     "readonly": false,
                     "type": "list",
                     "usage": "OutputPort",
-                    "value": ""
-                },
-                {
-                    "defaultValue": "",
-                    "description": "",
-                    "encoding": "pickle",
-                    "id": "99da4d18-2fbb-40fd-87f5-8f82e4f4b6e7",
-                    "name": "trigger_in",
-                    "options": [],
-                    "parameterType": "ApplicationArgument",
-                    "positional": false,
-                    "precious": false,
-                    "readonly": false,
-                    "type": "Object",
-                    "usage": "InputPort",
                     "value": ""
                 }
             ],
@@ -4438,8 +4423,8 @@
             "outputApplicationType": "None",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master-template.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
-            "x": 1162.0742042768481,
-            "y": 143.08783011377903
+            "x": 1164.745407848255,
+            "y": 136.4098211852621
         },
         {
             "category": "PyFuncApp",
@@ -5547,8 +5532,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "parentId": "f8e48658-8294-4c35-8854-ea27752317b9",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
-            "x": -187.678013089813,
-            "y": -157.22191501700405
+            "x": -154.2710065964645,
+            "y": -57.00089553695858
         },
         {
             "category": "Memory",
@@ -5851,7 +5836,7 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "x": 1013.3928598480455,
-            "y": 142.3424779411044
+            "y": 137.00007079829078
         },
         {
             "category": "PyFuncApp",
@@ -7324,8 +7309,8 @@
             "paletteDownloadUrl": "",
             "parentId": "f8e48658-8294-4c35-8854-ea27752317b9",
             "repositoryUrl": "daliuge-new",
-            "x": -196.1863188789791,
-            "y": -4.700544566207457
+            "x": -221.56275280734368,
+            "y": 100.81199650436102
         },
         {
             "category": "EnvironmentVariables",
@@ -7633,7 +7618,7 @@
                 {
                     "defaultValue": "false",
                     "description": "",
-                    "encoding": "pickle",
+                    "encoding": "path",
                     "id": "7a4b8c5e-de18-4c29-a386-7e25775439cd",
                     "name": "verified",
                     "options": [],
@@ -7641,9 +7626,9 @@
                     "positional": false,
                     "precious": false,
                     "readonly": false,
-                    "type": "Boolean",
+                    "type": "String",
                     "usage": "OutputPort",
-                    "value": false
+                    "value": "false"
                 }
             ],
             "id": "162df633-ca62-43c3-b938-afa34f839565",
@@ -8129,8 +8114,8 @@
             "outputApplicationType": "None",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master-template.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
-            "x": -1030.6701206477885,
-            "y": 229.5656848156746
+            "x": -720.8822832260333,
+            "y": 201.40315414096955
         },
         {
             "category": "File",
@@ -8147,7 +8132,7 @@
                     "description": "",
                     "encoding": "pickle",
                     "id": "67aa37c5-3755-40db-a71c-c625941f71d4",
-                    "name": "db_path",
+                    "name": "filepath",
                     "options": [],
                     "parameterType": "ApplicationArgument",
                     "positional": false,
@@ -8418,15 +8403,15 @@
                     "description": "",
                     "encoding": "pickle",
                     "id": "3bd2ab0a-1904-44c5-b78c-5f9ab0d1ec02",
-                    "name": "trigger_in",
+                    "name": "db_path",
                     "options": [],
                     "parameterType": "ApplicationArgument",
                     "positional": false,
                     "precious": false,
                     "readonly": false,
-                    "type": "Boolean",
+                    "type": "String",
                     "usage": "InputOutput",
-                    "value": false
+                    "value": "false"
                 }
             ],
             "id": "22128f57-d4ed-4864-8b26-4205f0c8229b",
@@ -8437,7 +8422,7 @@
             "inputApplicationName": "",
             "inputApplicationType": "None",
             "isGroup": false,
-            "name": "trigger_in",
+            "name": "db_path",
             "outputAppFields": [],
             "outputApplicationComment": "",
             "outputApplicationDescription": "",

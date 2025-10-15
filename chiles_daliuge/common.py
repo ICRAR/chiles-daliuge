@@ -512,7 +512,7 @@ def verify_db_integrity(db_path: str, trigger_in: bool) -> bool:
 
         conn.commit()
         LOG.info("[VERIFY] DB integrity check complete for 'metadata' and 'concat_freq'.")
-        return True
+        return str(db_path)
     except Exception as e:
         conn.rollback()
         LOG.exception(f"[VERIFY] Integrity check failed: {e}")
