@@ -38,24 +38,7 @@
                 "signature": "",
                 "type": "GraphConfig"
             },
-            "nodes": {
-                "1a10a131-6123-4a35-97a1-7a6678348bc6": {
-                    "fields": {
-                        "235726b6-f4ab-42a5-94d9-0d62828f8803": {
-                            "comment": "",
-                            "value": "$HOME/chiles-daliuge/db/Chilies_metadata.csv"
-                        },
-                        "a934d7c3-9cf9-4527-ae8f-339417d91ec7": {
-                            "comment": "",
-                            "value": "/home/00103780/chiles-daliuge/chiles_daliuge/do_single_uvsub_dir.py"
-                        },
-                        "bcf7ff4e-54fe-4128-b4e5-354adc111362": {
-                            "comment": "",
-                            "value": "$HOME/chiles-daliuge/db/Chilies_metadata.db"
-                        }
-                    }
-                }
-            }
+            "nodes": {}
         },
         "bc8a3452-2b02-492b-9fa3-14a09e5196c1": {
             "id": "bc8a3452-2b02-492b-9fa3-14a09e5196c1",
@@ -94,24 +77,7 @@
                 "signature": "",
                 "type": "GraphConfig"
             },
-            "nodes": {
-                "1a10a131-6123-4a35-97a1-7a6678348bc6": {
-                    "fields": {
-                        "235726b6-f4ab-42a5-94d9-0d62828f8803": {
-                            "comment": "",
-                            "value": "/scratch/pawsey0411/chiles-daliuge/db/Chilies_metadata.csv"
-                        },
-                        "a934d7c3-9cf9-4527-ae8f-339417d91ec7": {
-                            "comment": "",
-                            "value": "/home/00103780/chiles-daliuge/chiles_daliuge/do_single_uvsub_dir.py"
-                        },
-                        "bcf7ff4e-54fe-4128-b4e5-354adc111362": {
-                            "comment": "",
-                            "value": "/scratch/pawsey0411/chiles-daliuge/db/Chilies_metadata.db"
-                        }
-                    }
-                }
-            }
+            "nodes": {}
         }
     },
     "linkDataArray": [
@@ -510,7 +476,7 @@
         "generatorCommitHash": "940fe65c5f8544536cd5826d031fad6cef483dc9",
         "generatorName": "EAGLE",
         "generatorVersion": "v6.8.0",
-        "lastModifiedDatetime": 1760507556.633309,
+        "lastModifiedDatetime": 1760509714.737662,
         "lastModifiedEmail": "",
         "lastModifiedName": "",
         "numLGNodes": 44,
@@ -1858,7 +1824,7 @@
                     "readonly": false,
                     "type": "String",
                     "usage": "NoPort",
-                    "value": "python /home/00103780/chiles-daliuge/chiles_daliuge/do_single_uvsub_dir.py {uvsub_data_in} {uvsub_path_in}"
+                    "value": "python {script_path} {uvsub_data_in} {uvsub_path_in}"
                 },
                 {
                     "defaultValue": "NOTSET",
@@ -7313,112 +7279,6 @@
             "y": 100.81199650436102
         },
         {
-            "category": "EnvironmentVariables",
-            "categoryType": "Data",
-            "color": "#ff66cc",
-            "comment": "",
-            "commitHash": "0.1",
-            "dataHash": "faf1f91cb5195f24bec3989ed30085667618cb1c0bd807c037d06a46f648d3a9",
-            "description": "A Global variable store",
-            "drawOrderHint": 0,
-            "fields": [
-                {
-                    "defaultValue": "",
-                    "description": "",
-                    "encoding": "pickle",
-                    "id": "bcf7ff4e-54fe-4128-b4e5-354adc111362",
-                    "name": "db_path",
-                    "options": [],
-                    "parameterType": "ApplicationArgument",
-                    "positional": false,
-                    "precious": false,
-                    "readonly": false,
-                    "type": "String",
-                    "usage": "NoPort",
-                    "value": "$HOME/chiles-daliuge/db/Chilies_metadata.db"
-                },
-                {
-                    "defaultValue": "",
-                    "description": "",
-                    "encoding": "pickle",
-                    "id": "235726b6-f4ab-42a5-94d9-0d62828f8803",
-                    "name": "csv_path",
-                    "options": [],
-                    "parameterType": "ApplicationArgument",
-                    "positional": false,
-                    "precious": false,
-                    "readonly": false,
-                    "type": "String",
-                    "usage": "NoPort",
-                    "value": "$HOME/chiles-daliuge/db/Chilies_metadata.csv"
-                },
-                {
-                    "defaultValue": "dlg.data.drops.environmentvar_drop.EnvironmentVarDROP",
-                    "description": "",
-                    "encoding": "pickle",
-                    "id": "7a00c8fb-884e-4333-ad40-cc5a4f167bf6",
-                    "name": "dropclass",
-                    "options": [],
-                    "parameterType": "ComponentParameter",
-                    "positional": false,
-                    "precious": false,
-                    "readonly": false,
-                    "type": "String",
-                    "usage": "NoPort",
-                    "value": "dlg.data.drops.environmentvar_drop.EnvironmentVarDROP"
-                },
-                {
-                    "defaultValue": "5",
-                    "description": "",
-                    "encoding": "pickle",
-                    "id": "d9d3c399-f35e-4c5b-b993-9eb1c1861799",
-                    "name": "data_volume",
-                    "options": [],
-                    "parameterType": "ConstraintParameter",
-                    "positional": false,
-                    "precious": false,
-                    "readonly": false,
-                    "type": "Float",
-                    "usage": "NoPort",
-                    "value": 5
-                },
-                {
-                    "defaultValue": "",
-                    "description": "",
-                    "encoding": "pickle",
-                    "id": "a934d7c3-9cf9-4527-ae8f-339417d91ec7",
-                    "name": "script_path",
-                    "options": [],
-                    "parameterType": "ComponentParameter",
-                    "positional": false,
-                    "precious": false,
-                    "readonly": false,
-                    "type": "String",
-                    "usage": "NoPort",
-                    "value": "/home/00103780/chiles-daliuge/chiles_daliuge/do_single_uvsub_dir.py"
-                }
-            ],
-            "id": "1a10a131-6123-4a35-97a1-7a6678348bc6",
-            "inputAppFields": [],
-            "inputApplicationComment": "",
-            "inputApplicationDescription": "",
-            "inputApplicationId": null,
-            "inputApplicationName": "",
-            "inputApplicationType": "None",
-            "isGroup": false,
-            "name": "GlobalVariables",
-            "outputAppFields": [],
-            "outputApplicationComment": "",
-            "outputApplicationDescription": "",
-            "outputApplicationId": null,
-            "outputApplicationName": "",
-            "outputApplicationType": "None",
-            "paletteDownloadUrl": "",
-            "repositoryUrl": "daliuge-new",
-            "x": -1129.055826869005,
-            "y": -317.32741856886156
-        },
-        {
             "category": "PyFuncApp",
             "categoryType": "Application",
             "color": "#0059a5",
@@ -8433,6 +8293,127 @@
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "x": -843.4731472643003,
             "y": 69.73759546850306
+        },
+        {
+            "category": "GlobalVariable",
+            "categoryType": "Global",
+            "color": "#228b22",
+            "comment": "",
+            "commitHash": "0.1",
+            "dataHash": "faf1f91cb5195f24bec3989ed30085667618cb1c0bd807c037d06a46f648d3a9",
+            "description": "A Global variable store",
+            "drawOrderHint": 0,
+            "fields": [
+                {
+                    "defaultValue": "",
+                    "description": "",
+                    "encoding": "pickle",
+                    "id": "006692d3-7de0-426c-bd0f-a0556b25c43c",
+                    "name": "db_path",
+                    "options": [],
+                    "parameterType": "ComponentParameter",
+                    "positional": false,
+                    "precious": false,
+                    "readonly": false,
+                    "type": "String",
+                    "usage": "NoPort",
+                    "value": "$HOME/chiles-daliuge/db/Chilies_metadata.db"
+                },
+                {
+                    "defaultValue": "",
+                    "description": "",
+                    "encoding": "pickle",
+                    "id": "2b580e11-d8cb-4093-b80f-b2b8c7b57e30",
+                    "name": "csv_path",
+                    "options": [],
+                    "parameterType": "ComponentParameter",
+                    "positional": false,
+                    "precious": false,
+                    "readonly": false,
+                    "type": "String",
+                    "usage": "NoPort",
+                    "value": "$HOME/chiles-daliuge/db/Chilies_metadata.csv"
+                },
+                {
+                    "defaultValue": "dlg.data.drops.environmentvar_drop.EnvironmentVarDROP",
+                    "description": "",
+                    "encoding": "pickle",
+                    "id": "e2aa5602-f551-49a1-9204-636eb1475747",
+                    "name": "dropclass",
+                    "options": [],
+                    "parameterType": "ComponentParameter",
+                    "positional": false,
+                    "precious": false,
+                    "readonly": false,
+                    "type": "String",
+                    "usage": "NoPort",
+                    "value": "dlg.data.drops.environmentvar_drop.EnvironmentVarDROP"
+                },
+                {
+                    "defaultValue": "5",
+                    "description": "",
+                    "encoding": "pickle",
+                    "id": "fa6d1371-c005-4b64-b39f-6eae1095953f",
+                    "name": "data_volume",
+                    "options": [],
+                    "parameterType": "ConstraintParameter",
+                    "positional": false,
+                    "precious": false,
+                    "readonly": false,
+                    "type": "Float",
+                    "usage": "NoPort",
+                    "value": 5
+                },
+                {
+                    "defaultValue": "",
+                    "description": "",
+                    "encoding": "pickle",
+                    "id": "41254dfc-a025-4be7-ac02-4b6ba91d2f90",
+                    "name": "source_dir",
+                    "options": [],
+                    "parameterType": "ComponentParameter",
+                    "positional": false,
+                    "precious": false,
+                    "readonly": false,
+                    "type": "String",
+                    "usage": "NoPort",
+                    "value": "acacia-chiles:2025-04-chiles01/originals_short/"
+                },
+                {
+                    "defaultValue": "",
+                    "description": "",
+                    "encoding": "pickle",
+                    "id": "a2400bed-4370-4251-82c5-f775e7fae5c8",
+                    "name": "script_path",
+                    "options": [],
+                    "parameterType": "ComponentParameter",
+                    "positional": false,
+                    "precious": false,
+                    "readonly": false,
+                    "type": "String",
+                    "usage": "NoPort",
+                    "value": "/home/00103780/chiles-daliuge/chiles_daliuge/do_single_uvsub_dir.py"
+                }
+            ],
+            "id": "88d926c3-956a-4657-ac53-59a6b4e74a39",
+            "inputAppFields": [],
+            "inputApplicationComment": "",
+            "inputApplicationDescription": "",
+            "inputApplicationId": null,
+            "inputApplicationName": "",
+            "inputApplicationType": "None",
+            "isGroup": false,
+            "name": "GlobalVariables",
+            "outputAppFields": [],
+            "outputApplicationComment": "",
+            "outputApplicationDescription": "",
+            "outputApplicationId": null,
+            "outputApplicationName": "",
+            "outputApplicationType": "None",
+            "paletteDownloadUrl": "",
+            "repositoryUrl": "daliuge-new",
+            "x": -1032.6549150267322,
+            "y": -340.0387697373364
         }
     ]
 }
