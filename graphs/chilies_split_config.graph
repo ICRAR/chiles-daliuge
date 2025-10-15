@@ -81,7 +81,7 @@
         },
         "f57e0f1d-bbc1-4cc1-bdba-0e21a2f91450": {
             "modelData": {
-                "name": "setonix.graphConfig",
+                "name": "setonix",
                 "shortDescription": "",
                 "detailedDescription": "",
                 "type": "GraphConfig",
