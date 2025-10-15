@@ -393,7 +393,7 @@ def remove_file_or_directory(filename: str, trigger) -> None:
         LOG.info(f"[{trigger}] Nothing to remove, path does not exist: {filename}")
 
 
-def verify_db_integrity(db_path: str, trigger_in: bool) -> bool:
+def verify_db_integrity(db_path: str) -> str:
     """
     Verify that file/directory paths stored in the metadata DB actually exist.
     - Clears invalid path columns to NULL.
@@ -403,13 +403,14 @@ def verify_db_integrity(db_path: str, trigger_in: bool) -> bool:
       ms_path, uv_sub_path, build_concat_all, tclean_all, build_concat_epoch, tclean_epoch
     """
 
-    db_path = expand_path(db_path)
-    if not trigger_in:
-        return False
+    db_path_out = expand_path(db_path)
+    db_path = str(db_path_out)
+
+
 
     if not os.path.exists(db_path):
         LOG.warning(f"[VERIFY] Metadata DB not found at {db_path}. Skipping integrity check.")
-        return False
+        return db_path_out
 
     # Columns we consider as path-bearing (limit to these to avoid nuking non-path fields)
     PATH_COLUMNS = [
@@ -443,7 +444,7 @@ def verify_db_integrity(db_path: str, trigger_in: bool) -> bool:
         """Core validator for a single table."""
         if not _table_exists(cur, table_name):
             LOG.info(f"[VERIFY:{table_name}] Table not found; skipping.")
-            return
+            return db_path_out
 
         # Discover which of the candidate path columns actually exist in the table
         cur.execute(f"PRAGMA table_info({table_name});")
@@ -452,7 +453,7 @@ def verify_db_integrity(db_path: str, trigger_in: bool) -> bool:
 
         if not path_cols:
             LOG.info(f"[VERIFY:{table_name}] No known path columns found; nothing to check.")
-            return
+            return db_path_out
 
         select_cols = ["rowid"] + path_cols
         cur.execute(f"SELECT {', '.join(select_cols)} FROM {table_name}")
@@ -484,7 +485,7 @@ def verify_db_integrity(db_path: str, trigger_in: bool) -> bool:
                     cur.execute(f"UPDATE {table_name} SET {col} = NULL WHERE rowid = ?", (rowid,))
                     LOG.info(f"[CLEAN:{table_name}] Cleared '{col}' in row {rowid}: path not found.")
 
-    conn = sqlite3.connect(str(db_path))
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
     try:
@@ -512,17 +513,19 @@ def verify_db_integrity(db_path: str, trigger_in: bool) -> bool:
 
         conn.commit()
         LOG.info("[VERIFY] DB integrity check complete for 'metadata' and 'concat_freq'.")
-        return str(db_path)
+
+        return db_path_out
     except Exception as e:
         conn.rollback()
         LOG.exception(f"[VERIFY] Integrity check failed: {e}")
-        return False
+
+        return db_path_out
     finally:
         conn.close()
 
 
 
-def export_metadata_to_csv(db_path: str, csv_path: str, trigger_in: bool) -> None:
+def export_metadata_to_csv(db_path: str, csv_path: str) -> None:
     """
     Export the entire 'metadata' and 'concat_freq' tables from a SQLite database to CSV files.
 

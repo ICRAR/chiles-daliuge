@@ -481,14 +481,14 @@
             "from": "162df633-ca62-43c3-b938-afa34f839565",
             "fromPort": "7a4b8c5e-de18-4c29-a386-7e25775439cd",
             "loop_aware": "0",
-            "to": "22128f57-d4ed-4864-8b26-4205f0c8229b",
-            "toPort": "3bd2ab0a-1904-44c5-b78c-5f9ab0d1ec02"
+            "to": "ff6b1f5b-5bb0-4679-9dbd-d9628c33e873",
+            "toPort": "5ccc3c29-5798-4970-be75-4089c3041bda"
         },
         {
             "closesLoop": false,
             "comment": "",
-            "from": "22128f57-d4ed-4864-8b26-4205f0c8229b",
-            "fromPort": "3bd2ab0a-1904-44c5-b78c-5f9ab0d1ec02",
+            "from": "ff6b1f5b-5bb0-4679-9dbd-d9628c33e873",
+            "fromPort": "5ccc3c29-5798-4970-be75-4089c3041bda",
             "loop_aware": "0",
             "to": "312ba33e-507e-401f-b024-8fd47168728d",
             "toPort": "741ef31d-0907-41dc-b898-a4f9d48bec52"
@@ -496,8 +496,8 @@
         {
             "closesLoop": false,
             "comment": "",
-            "from": "22128f57-d4ed-4864-8b26-4205f0c8229b",
-            "fromPort": "3bd2ab0a-1904-44c5-b78c-5f9ab0d1ec02",
+            "from": "ff6b1f5b-5bb0-4679-9dbd-d9628c33e873",
+            "fromPort": "5ccc3c29-5798-4970-be75-4089c3041bda",
             "loop_aware": "0",
             "to": "176c1c39-028a-4491-8877-b4ea05541a0b",
             "toPort": "9b58948a-4b8a-4eb7-be5c-0ca34ca45667"
@@ -510,7 +510,7 @@
         "generatorCommitHash": "940fe65c5f8544536cd5826d031fad6cef483dc9",
         "generatorName": "EAGLE",
         "generatorVersion": "v6.8.0",
-        "lastModifiedDatetime": 1760494122.500714,
+        "lastModifiedDatetime": 1760507556.633309,
         "lastModifiedEmail": "",
         "lastModifiedName": "",
         "numLGNodes": 44,
@@ -699,7 +699,7 @@
                 {
                     "defaultValue": "",
                     "description": "",
-                    "encoding": "path",
+                    "encoding": "pickle",
                     "id": "9b58948a-4b8a-4eb7-be5c-0ca34ca45667",
                     "name": "db_path",
                     "options": [],
@@ -1470,7 +1470,7 @@
             ],
             "inputApplicationComment": "",
             "inputApplicationDescription": "",
-            "inputApplicationId": "eb153386-0cf6-45eb-81b4-ea77bac9fc8b",
+            "inputApplicationId": "a8ae05e5-bec4-42d3-b82b-8533e3307513",
             "inputApplicationName": "GenericScatterApp",
             "inputApplicationType": "DALiuGEApp",
             "isGroup": true,
@@ -1811,7 +1811,7 @@
                     "readonly": false,
                     "type": "Integer",
                     "usage": "NoPort",
-                    "value": 20
+                    "value": 2
                 }
             ],
             "id": "efb14612-3fc8-4079-bfb1-888be7ec5855",
@@ -7586,21 +7586,6 @@
                     "value": 1
                 },
                 {
-                    "defaultValue": "false",
-                    "description": "",
-                    "encoding": "path",
-                    "id": "ae3620d7-0ab8-4244-812c-1b779649155a",
-                    "name": "trigger_in",
-                    "options": [],
-                    "parameterType": "ApplicationArgument",
-                    "positional": false,
-                    "precious": false,
-                    "readonly": false,
-                    "type": "Boolean",
-                    "usage": "NoPort",
-                    "value": false
-                },
-                {
                     "defaultValue": "",
                     "description": "",
                     "encoding": "path",
@@ -7613,14 +7598,14 @@
                     "readonly": false,
                     "type": "String",
                     "usage": "InputPort",
-                    "value": "{db_path}"
+                    "value": ""
                 },
                 {
-                    "defaultValue": "false",
+                    "defaultValue": "",
                     "description": "",
-                    "encoding": "path",
+                    "encoding": "pickle",
                     "id": "7a4b8c5e-de18-4c29-a386-7e25775439cd",
-                    "name": "verified",
+                    "name": "db_path_out",
                     "options": [],
                     "parameterType": "ApplicationArgument",
                     "positional": false,
@@ -7628,7 +7613,7 @@
                     "readonly": false,
                     "type": "String",
                     "usage": "OutputPort",
-                    "value": "false"
+                    "value": ""
                 }
             ],
             "id": "162df633-ca62-43c3-b938-afa34f839565",
@@ -7881,8 +7866,8 @@
             "outputApplicationType": "None",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master-template.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
-            "x": -1341.2634502910516,
-            "y": 55.974603484570245
+            "x": -1340.133656313813,
+            "y": 69.39896084724613
         },
         {
             "category": "PyFuncApp",
@@ -8054,7 +8039,7 @@
                 {
                     "defaultValue": "",
                     "description": "",
-                    "encoding": "path",
+                    "encoding": "pickle",
                     "id": "741ef31d-0907-41dc-b898-a4f9d48bec52",
                     "name": "db_path",
                     "options": [],
@@ -8064,7 +8049,7 @@
                     "readonly": false,
                     "type": "String",
                     "usage": "InputPort",
-                    "value": "{db_path}"
+                    "value": ""
                 },
                 {
                     "defaultValue": "",
@@ -8280,24 +8265,39 @@
             "outputApplicationType": "None",
             "paletteDownloadUrl": "",
             "repositoryUrl": "daliuge-new",
-            "x": -1166.8243783370433,
-            "y": 58.43718007452573
+            "x": -1171.6757621170145,
+            "y": 68.13994763446883
         },
         {
             "category": "Memory",
             "categoryType": "Data",
             "color": "#2c2c2c",
             "comment": "",
-            "commitHash": "117d50e",
-            "dataHash": "9bed977555cc409f02e9a43fe95c5d83fb6c567b5f8cbb30874be66b0c87a5d3",
+            "commitHash": "d266e83",
+            "dataHash": "6a0582245c5a9b27e63fb9ca483146a3e48450c972d2614bccb2bb51e0998aeb",
             "description": "In-memory storage of intermediate data products",
             "drawOrderHint": 0,
             "fields": [
                 {
+                    "defaultValue": "None",
+                    "description": "Data to be loaded into memory",
+                    "encoding": "pickle",
+                    "id": "ffc2527d-040a-4a92-8bc0-5a7481b072cf",
+                    "name": "pydata",
+                    "options": [],
+                    "parameterType": "ApplicationArgument",
+                    "positional": false,
+                    "precious": false,
+                    "readonly": false,
+                    "type": "Object",
+                    "usage": "NoPort",
+                    "value": "None"
+                },
+                {
                     "defaultValue": "False",
                     "description": "If set the drop will block a skipping chain until the last producer has finished and is not also skipped.",
                     "encoding": "pickle",
-                    "id": "0f824cf5-f5e8-4445-b9b2-cc8e7f174ca7",
+                    "id": "6b310afb-617f-4cfc-8605-6f141333402e",
                     "name": "block_skip",
                     "options": [],
                     "parameterType": "ComponentParameter",
@@ -8312,7 +8312,7 @@
                     "defaultValue": "False",
                     "description": "Specifies whether this data component contains data that should not be deleted after execution",
                     "encoding": "pickle",
-                    "id": "a0b55cef-52b1-4701-b831-59cb9c27864c",
+                    "id": "5a711e7d-b29a-4700-b0d4-2dabbf2cf9eb",
                     "name": "persist",
                     "options": [],
                     "parameterType": "ComponentParameter",
@@ -8327,7 +8327,7 @@
                     "defaultValue": "5",
                     "description": "Estimated size of the data contained in this node",
                     "encoding": "pickle",
-                    "id": "935df4c5-f78a-481e-93ea-a57492cbf72b",
+                    "id": "44068af8-be66-4824-9dd5-3d481ae78584",
                     "name": "data_volume",
                     "options": [],
                     "parameterType": "ConstraintParameter",
@@ -8342,7 +8342,7 @@
                     "defaultValue": "False",
                     "description": "Is this node the end of a group?",
                     "encoding": "pickle",
-                    "id": "3d8298c3-5f1b-488d-9932-486bdc44bb90",
+                    "id": "98026c07-40b0-4e27-99d1-c0f9dfac98c9",
                     "name": "group_end",
                     "options": [],
                     "parameterType": "ComponentParameter",
@@ -8357,7 +8357,7 @@
                     "defaultValue": "False",
                     "description": "Specifies whether this data component streams input and output data",
                     "encoding": "pickle",
-                    "id": "701d0713-82d3-42a1-bb28-45be5113fba9",
+                    "id": "974a3310-b3e0-4184-8d1a-33d6f4ed0d2d",
                     "name": "streaming",
                     "options": [],
                     "parameterType": "ComponentParameter",
@@ -8372,7 +8372,7 @@
                     "defaultValue": "dlg.data.drops.memory.InMemoryDROP",
                     "description": "Drop class",
                     "encoding": "pickle",
-                    "id": "6887571d-aa25-4f9c-8a63-baf9640b7ab6",
+                    "id": "0ab6c844-baaf-4445-a1b8-a544dcba48c1",
                     "name": "dropclass",
                     "options": [],
                     "parameterType": "ComponentParameter",
@@ -8387,7 +8387,7 @@
                     "defaultValue": "memory",
                     "description": "Base name of application class",
                     "encoding": "pickle",
-                    "id": "f5e0b1af-d82c-46ca-9ad9-b29e664f02bb",
+                    "id": "03886e97-5a03-494d-a8c3-8479f7cdc582",
                     "name": "base_name",
                     "options": [],
                     "parameterType": "ComponentParameter",
@@ -8402,7 +8402,7 @@
                     "defaultValue": "",
                     "description": "",
                     "encoding": "pickle",
-                    "id": "3bd2ab0a-1904-44c5-b78c-5f9ab0d1ec02",
+                    "id": "5ccc3c29-5798-4970-be75-4089c3041bda",
                     "name": "db_path",
                     "options": [],
                     "parameterType": "ApplicationArgument",
@@ -8411,10 +8411,10 @@
                     "readonly": false,
                     "type": "String",
                     "usage": "InputOutput",
-                    "value": "false"
+                    "value": ""
                 }
             ],
-            "id": "22128f57-d4ed-4864-8b26-4205f0c8229b",
+            "id": "ff6b1f5b-5bb0-4679-9dbd-d9628c33e873",
             "inputAppFields": [],
             "inputApplicationComment": "",
             "inputApplicationDescription": "",
@@ -8431,8 +8431,8 @@
             "outputApplicationType": "None",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
-            "x": -857.1434250899458,
-            "y": 66.11424364312187
+            "x": -843.4731472643003,
+            "y": 69.73759546850306
         }
     ]
 }
