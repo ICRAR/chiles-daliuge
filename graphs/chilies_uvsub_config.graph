@@ -53,6 +53,22 @@
                             "value": "/software/projects/pawsey0411/git/chiles-daliuge/chiles_daliuge/do_single_uvsub_dir.py"
                         }
                     }
+                },
+                "efb14612-3fc8-4079-bfb1-888be7ec5855": {
+                    "fields": {
+                        "aa1c7a37-4e1a-4dd9-81cb-e2b7a40c7a34": {
+                            "comment": "",
+                            "value": 50
+                        }
+                    }
+                },
+                "f8e48658-8294-4c35-8854-ea27752317b9": {
+                    "fields": {
+                        "59e34ee3-ec16-4281-8ecc-8988b7892cd4": {
+                            "comment": "",
+                            "value": 20
+                        }
+                    }
                 }
             }
         },
@@ -106,6 +122,22 @@
                         "a2400bed-4370-4251-82c5-f775e7fae5c8": {
                             "comment": "",
                             "value": "/home/00103780/chiles-daliuge/chiles_daliuge/do_single_uvsub_dir.py"
+                        }
+                    }
+                },
+                "efb14612-3fc8-4079-bfb1-888be7ec5855": {
+                    "fields": {
+                        "aa1c7a37-4e1a-4dd9-81cb-e2b7a40c7a34": {
+                            "comment": "",
+                            "value": 100
+                        }
+                    }
+                },
+                "f8e48658-8294-4c35-8854-ea27752317b9": {
+                    "fields": {
+                        "59e34ee3-ec16-4281-8ecc-8988b7892cd4": {
+                            "comment": "",
+                            "value": 2
                         }
                     }
                 }
@@ -508,7 +540,7 @@
         "generatorCommitHash": "940fe65c5f8544536cd5826d031fad6cef483dc9",
         "generatorName": "EAGLE",
         "generatorVersion": "v6.8.0",
-        "lastModifiedDatetime": 1760586911.381453,
+        "lastModifiedDatetime": 1760590787.392828,
         "lastModifiedEmail": "",
         "lastModifiedName": "",
         "numLGNodes": 44,
@@ -1370,7 +1402,7 @@
                     "readonly": false,
                     "type": "Integer",
                     "usage": "NoPort",
-                    "value": 1
+                    "value": 2
                 }
             ],
             "id": "f8e48658-8294-4c35-8854-ea27752317b9",
@@ -1809,7 +1841,7 @@
                     "readonly": false,
                     "type": "Integer",
                     "usage": "NoPort",
-                    "value": 25
+                    "value": 50
                 }
             ],
             "id": "efb14612-3fc8-4079-bfb1-888be7ec5855",
