@@ -1,5 +1,5 @@
 {
-    "activeGraphConfigId": "80a4cabf-acdf-4fa1-8729-e90e201c7cf9",
+    "activeGraphConfigId": "bc8a3452-2b02-492b-9fa3-14a09e5196c1",
     "graphConfigurations": {
         "80a4cabf-acdf-4fa1-8729-e90e201c7cf9": {
             "id": "80a4cabf-acdf-4fa1-8729-e90e201c7cf9",
@@ -66,7 +66,7 @@
                     "repositoryPath": "",
                     "repositoryService": "Unknown"
                 },
-                "name": "setonix.graphConfig",
+                "name": "setonix",
                 "numLGNodes": 0,
                 "readonly": true,
                 "repositoryUrl": "",
@@ -474,7 +474,7 @@
         "generatorCommitHash": "940fe65c5f8544536cd5826d031fad6cef483dc9",
         "generatorName": "EAGLE",
         "generatorVersion": "v6.8.0",
-        "lastModifiedDatetime": 1760585268.921003,
+        "lastModifiedDatetime": 1760585861.718611,
         "lastModifiedEmail": "",
         "lastModifiedName": "",
         "numLGNodes": 44,
@@ -958,7 +958,7 @@
                     "readonly": false,
                     "type": "Integer",
                     "usage": "NoPort",
-                    "value": 1000
+                    "value": 1100
                 },
                 {
                     "defaultValue": "",
@@ -2934,7 +2934,7 @@
             "inputApplicationName": "",
             "inputApplicationType": "None",
             "isGroup": false,
-            "name": "trigger_in",
+            "name": "verified",
             "outputAppFields": [],
             "outputApplicationComment": "",
             "outputApplicationDescription": "",
@@ -8315,7 +8315,7 @@
                     "readonly": false,
                     "type": "String",
                     "usage": "NoPort",
-                    "value": "$HOME/chiles-daliuge/db/Chilies_metadata.db"
+                    "value": "/scratch/pawsey0411/chiles-daliuge/db/Chilies_metadata.db"
                 },
                 {
                     "defaultValue": "",
@@ -8330,7 +8330,7 @@
                     "readonly": false,
                     "type": "String",
                     "usage": "NoPort",
-                    "value": "$HOME/chiles-daliuge/db/Chilies_metadata.csv"
+                    "value": "/scratch/pawsey0411/chiles-daliuge/db/Chilies_metadata.csv"
                 },
                 {
                     "defaultValue": "dlg.data.drops.environmentvar_drop.EnvironmentVarDROP",
@@ -8390,7 +8390,7 @@
                     "readonly": false,
                     "type": "String",
                     "usage": "NoPort",
-                    "value": "/home/00103780/chiles-daliuge/chiles_daliuge/do_single_uvsub_dir.py"
+                    "value": "/software/projects/pawsey0411/git/chiles-daliuge/chiles_daliuge/do_single_uvsub_dir.py"
                 }
             ],
             "id": "88d926c3-956a-4657-ac53-59a6b4e74a39",

@@ -1,5 +1,5 @@
 {
-    "activeGraphConfigId": "80a4cabf-acdf-4fa1-8729-e90e201c7cf9",
+    "activeGraphConfigId": "e57348fa-0195-42fa-ada3-e9a8863de78a",
     "graphConfigurations": {
         "80a4cabf-acdf-4fa1-8729-e90e201c7cf9": {
             "id": "80a4cabf-acdf-4fa1-8729-e90e201c7cf9",
@@ -29,6 +29,44 @@
                     "repositoryService": "Unknown"
                 },
                 "name": "simple",
+                "numLGNodes": 0,
+                "readonly": true,
+                "repositoryUrl": "",
+                "schemaVersion": "Unknown",
+                "shortDescription": "",
+                "signature": "",
+                "type": "GraphConfig"
+            },
+            "nodes": {}
+        },
+        "e57348fa-0195-42fa-ada3-e9a8863de78a": {
+            "id": "e57348fa-0195-42fa-ada3-e9a8863de78a",
+            "modelData": {
+                "detailedDescription": "",
+                "generatorCommitHash": "",
+                "generatorName": "",
+                "generatorVersion": "",
+                "graphLocation": {
+                    "commitHash": "",
+                    "downloadUrl": "",
+                    "repositoryFileName": "chilies_concat_freq.graph",
+                    "repositoryName": "",
+                    "repositoryPath": "",
+                    "repositoryService": "File"
+                },
+                "lastModifiedDatetime": 0,
+                "lastModifiedEmail": "",
+                "lastModifiedName": "",
+                "location": {
+                    "commitHash": "",
+                    "downloadUrl": "",
+                    "repositoryBranch": "",
+                    "repositoryFileName": "",
+                    "repositoryName": "",
+                    "repositoryPath": "",
+                    "repositoryService": "Unknown"
+                },
+                "name": "setonix",
                 "numLGNodes": 0,
                 "readonly": true,
                 "repositoryUrl": "",
@@ -373,7 +411,7 @@
         "generatorCommitHash": "940fe65c5f8544536cd5826d031fad6cef483dc9",
         "generatorName": "EAGLE",
         "generatorVersion": "v6.8.0",
-        "lastModifiedDatetime": 1760585237.736827,
+        "lastModifiedDatetime": 1760585853.756175,
         "lastModifiedEmail": "",
         "lastModifiedName": "",
         "numLGNodes": 38,
@@ -872,7 +910,7 @@
                     "readonly": false,
                     "type": "Integer",
                     "usage": "NoPort",
-                    "value": 1000
+                    "value": 1100
                 },
                 {
                     "defaultValue": "",
@@ -7028,7 +7066,7 @@
                     "readonly": false,
                     "type": "String",
                     "usage": "NoPort",
-                    "value": "$HOME/chiles-daliuge/db/Chilies_metadata.db"
+                    "value": "/scratch/pawsey0411/chiles-daliuge/db/Chilies_metadata.db"
                 },
                 {
                     "defaultValue": "",
@@ -7043,7 +7081,7 @@
                     "readonly": false,
                     "type": "String",
                     "usage": "NoPort",
-                    "value": "$HOME/chiles-daliuge/db/Chilies_metadata.csv"
+                    "value": "/scratch/pawsey0411/chiles-daliuge/db/Chilies_metadata.csv"
                 },
                 {
                     "defaultValue": "dlg.data.drops.environmentvar_drop.EnvironmentVarDROP",
@@ -7088,7 +7126,7 @@
                     "readonly": false,
                     "type": "String",
                     "usage": "NoPort",
-                    "value": "/home/00103780/chiles-daliuge/chiles_daliuge/chilies_accumulate.py"
+                    "value": "/software/projects/pawsey0411/git/chiles-daliuge/chiles_daliuge/chilies_accumulate.py"
                 }
             ],
             "id": "ae32573d-a4be-47ea-9122-56a64ce2938b",
