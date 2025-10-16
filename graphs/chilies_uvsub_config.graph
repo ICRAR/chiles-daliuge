@@ -1,6 +1,61 @@
 {
-    "activeGraphConfigId": "bc8a3452-2b02-492b-9fa3-14a09e5196c1",
+    "activeGraphConfigId": "80a4cabf-acdf-4fa1-8729-e90e201c7cf9",
     "graphConfigurations": {
+        "040754c2-ab8d-44c5-a16a-8a11da0ffbdc": {
+            "id": "040754c2-ab8d-44c5-a16a-8a11da0ffbdc",
+            "modelData": {
+                "detailedDescription": "",
+                "generatorCommitHash": "",
+                "generatorName": "",
+                "generatorVersion": "",
+                "graphLocation": {
+                    "commitHash": "",
+                    "downloadUrl": "",
+                    "repositoryFileName": "chilies_uvsub_config.graph",
+                    "repositoryName": "",
+                    "repositoryPath": "",
+                    "repositoryService": "File"
+                },
+                "lastModifiedDatetime": 0,
+                "lastModifiedEmail": "",
+                "lastModifiedName": "",
+                "location": {
+                    "commitHash": "",
+                    "downloadUrl": "",
+                    "repositoryBranch": "",
+                    "repositoryFileName": "",
+                    "repositoryName": "",
+                    "repositoryPath": "",
+                    "repositoryService": "Unknown"
+                },
+                "name": "setonix",
+                "numLGNodes": 0,
+                "readonly": true,
+                "repositoryUrl": "",
+                "schemaVersion": "Unknown",
+                "shortDescription": "",
+                "signature": "",
+                "type": "GraphConfig"
+            },
+            "nodes": {
+                "88d926c3-956a-4657-ac53-59a6b4e74a39": {
+                    "fields": {
+                        "006692d3-7de0-426c-bd0f-a0556b25c43c": {
+                            "comment": "",
+                            "value": "/scratch/pawsey0411/chiles-daliuge/db/Chilies_metadata.db"
+                        },
+                        "2b580e11-d8cb-4093-b80f-b2b8c7b57e30": {
+                            "comment": "",
+                            "value": "/scratch/pawsey0411/chiles-daliuge/db/Chilies_metadata.csv"
+                        },
+                        "a2400bed-4370-4251-82c5-f775e7fae5c8": {
+                            "comment": "",
+                            "value": "/software/projects/pawsey0411/git/chiles-daliuge/chiles_daliuge/do_single_uvsub_dir.py"
+                        }
+                    }
+                }
+            }
+        },
         "80a4cabf-acdf-4fa1-8729-e90e201c7cf9": {
             "id": "80a4cabf-acdf-4fa1-8729-e90e201c7cf9",
             "modelData": {
@@ -37,45 +92,24 @@
                 "signature": "",
                 "type": "GraphConfig"
             },
-            "nodes": {}
-        },
-        "bc8a3452-2b02-492b-9fa3-14a09e5196c1": {
-            "id": "bc8a3452-2b02-492b-9fa3-14a09e5196c1",
-            "modelData": {
-                "detailedDescription": "",
-                "generatorCommitHash": "",
-                "generatorName": "",
-                "generatorVersion": "",
-                "graphLocation": {
-                    "commitHash": "",
-                    "downloadUrl": "",
-                    "repositoryFileName": "chilies_uvsub_config.graph",
-                    "repositoryName": "",
-                    "repositoryPath": "",
-                    "repositoryService": "File"
-                },
-                "lastModifiedDatetime": 0,
-                "lastModifiedEmail": "",
-                "lastModifiedName": "",
-                "location": {
-                    "commitHash": "",
-                    "downloadUrl": "",
-                    "repositoryBranch": "",
-                    "repositoryFileName": "",
-                    "repositoryName": "",
-                    "repositoryPath": "",
-                    "repositoryService": "Unknown"
-                },
-                "name": "setonix",
-                "numLGNodes": 0,
-                "readonly": true,
-                "repositoryUrl": "",
-                "schemaVersion": "Unknown",
-                "shortDescription": "",
-                "signature": "",
-                "type": "GraphConfig"
-            },
-            "nodes": {}
+            "nodes": {
+                "88d926c3-956a-4657-ac53-59a6b4e74a39": {
+                    "fields": {
+                        "006692d3-7de0-426c-bd0f-a0556b25c43c": {
+                            "comment": "",
+                            "value": "$HOME/chiles-daliuge/db/Chilies_metadata.db"
+                        },
+                        "2b580e11-d8cb-4093-b80f-b2b8c7b57e30": {
+                            "comment": "",
+                            "value": "$HOME/chiles-daliuge/db/Chilies_metadata.csv"
+                        },
+                        "a2400bed-4370-4251-82c5-f775e7fae5c8": {
+                            "comment": "",
+                            "value": "$HOME/chiles-daliuge/chiles_daliuge/do_single_uvsub_dir.py"
+                        }
+                    }
+                }
+            }
         }
     },
     "linkDataArray": [
@@ -474,7 +508,7 @@
         "generatorCommitHash": "940fe65c5f8544536cd5826d031fad6cef483dc9",
         "generatorName": "EAGLE",
         "generatorVersion": "v6.8.0",
-        "lastModifiedDatetime": 1760585861.718611,
+        "lastModifiedDatetime": 1760586150.532419,
         "lastModifiedEmail": "",
         "lastModifiedName": "",
         "numLGNodes": 44,
