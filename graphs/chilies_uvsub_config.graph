@@ -11,7 +11,6 @@
                 "graphLocation": {
                     "commitHash": "",
                     "downloadUrl": "",
-                    "repositoryBranch": "",
                     "repositoryFileName": "chilies_uvsub_config.graph",
                     "repositoryName": "",
                     "repositoryPath": "",
@@ -50,7 +49,6 @@
                 "graphLocation": {
                     "commitHash": "",
                     "downloadUrl": "",
-                    "repositoryBranch": "",
                     "repositoryFileName": "chilies_uvsub_config.graph",
                     "repositoryName": "",
                     "repositoryPath": "",
@@ -476,7 +474,7 @@
         "generatorCommitHash": "940fe65c5f8544536cd5826d031fad6cef483dc9",
         "generatorName": "EAGLE",
         "generatorVersion": "v6.8.0",
-        "lastModifiedDatetime": 1760509714.737662,
+        "lastModifiedDatetime": 1760585268.921003,
         "lastModifiedEmail": "",
         "lastModifiedName": "",
         "numLGNodes": 44,
@@ -648,7 +646,7 @@
                     "value": ""
                 },
                 {
-                    "defaultValue": "",
+                    "defaultValue": "[\"2013-2014\", \"2015\", \"2016\", \"2017-2018\", \"2019\"]",
                     "description": "",
                     "encoding": "pickle",
                     "id": "a5ffdbe9-375b-4223-a446-da45ae305048",
@@ -1338,7 +1336,7 @@
                     "readonly": false,
                     "type": "Integer",
                     "usage": "NoPort",
-                    "value": 2
+                    "value": 1
                 }
             ],
             "id": "f8e48658-8294-4c35-8854-ea27752317b9",
@@ -1436,7 +1434,7 @@
             ],
             "inputApplicationComment": "",
             "inputApplicationDescription": "",
-            "inputApplicationId": "a8ae05e5-bec4-42d3-b82b-8533e3307513",
+            "inputApplicationId": "8429f4b7-f19c-4528-b20d-4be5e389e8e1",
             "inputApplicationName": "GenericScatterApp",
             "inputApplicationType": "DALiuGEApp",
             "isGroup": true,
@@ -1777,7 +1775,7 @@
                     "readonly": false,
                     "type": "Integer",
                     "usage": "NoPort",
-                    "value": 2
+                    "value": 25
                 }
             ],
             "id": "efb14612-3fc8-4079-bfb1-888be7ec5855",
@@ -2328,8 +2326,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "parentId": "efb14612-3fc8-4079-bfb1-888be7ec5855",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
-            "x": 248.07222833772923,
-            "y": -501.70192581350096
+            "x": 221.64613950389267,
+            "y": -492.3750709309703
         },
         {
             "category": "PyFuncApp",
@@ -3249,8 +3247,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "parentId": "efb14612-3fc8-4079-bfb1-888be7ec5855",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
-            "x": 317.4762591737105,
-            "y": -238.34782351781817
+            "x": 277.05988801607793,
+            "y": -244.56572677283853
         },
         {
             "category": "PyFuncApp",
@@ -3467,8 +3465,8 @@
             "outputApplicationType": "None",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master-template.palette",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
-            "x": 550.8698800906918,
-            "y": 239.89722724049466
+            "x": 543.6471636696599,
+            "y": 242.30479938083857
         },
         {
             "category": "Memory",
@@ -3785,8 +3783,8 @@
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "parentId": "efb14612-3fc8-4079-bfb1-888be7ec5855",
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
-            "x": 45.71120853305323,
-            "y": -343.8172919809996
+            "x": 19.28511969921659,
+            "y": -306.509872450877
         },
         {
             "category": "Memory",

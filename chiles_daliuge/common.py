@@ -276,12 +276,12 @@ def destringify_data_concat(args: list[str]) -> list[str]:
     #
     # blob = str(blob)
     # 4) Split strictly by semicolons into 4 parts
-    parts = [p.strip() for p in input_arg.split(";", 3)]
-    if len(parts) != 4:
-        raise ValueError(f"Expected 4 semicolon-separated parts, got {len(parts)} from: {blob!r}")
+    parts = [p.strip() for p in input_arg.split(";", 4)]
+    if len(parts) != 5:
+        raise ValueError(f"Expected 5 semicolon-separated parts, got {len(parts)} from: {input_arg!r}")
 
-    base_name, start_freq, end_freq, paths_combined = parts
-    return [base_name, start_freq, end_freq, paths_combined]
+    base_name, start_freq, end_freq, years, paths_combined = parts
+    return [base_name, start_freq, end_freq, years, paths_combined]
 
 
 

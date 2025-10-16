@@ -198,7 +198,7 @@ def fetch_split_ms(
         cursor = conn.cursor()
         for row in cursor.execute(query):
             ms_path, year, start_freq, end_freq , size = row
-            print(f"\nChecking row: ms_path={ms_path}, year={year}, start_freq={start_freq}, end_freq={end_freq}")
+            #print(f"\nChecking row: ms_path={ms_path}, year={year}, start_freq={start_freq}, end_freq={end_freq}")
 
             if float(size) > 0:
                 freq_tuple = (int(start_freq), int(end_freq))  # ✅ convert to int
