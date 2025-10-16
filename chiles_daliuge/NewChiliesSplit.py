@@ -14,7 +14,6 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 LOG = logging.getLogger(f"dlg.{__name__}")
 logging.basicConfig(level=logging.INFO)
 
-process_ms_flag = True
 
 def fetch_original_ms(
         source_dir: str,
@@ -22,7 +21,6 @@ def fetch_original_ms(
         copy_directory: str,
         trigger_in: bool,
         db_path: str,
-        process_ms: bool = process_ms_flag,
 ) -> list[str]:
 
 
@@ -216,7 +214,6 @@ def split_out_frequencies(
         ms_in_list: List[str],
         frequencies: List[List[int]],
         db_path: str,
-        process_ms: bool = process_ms_flag
 ) -> ndarray:
 
     METADATA_DB = expand_path(db_path)
@@ -243,29 +240,29 @@ def split_out_frequencies(
             freq_start = freq_pair[0]
             freq_end = freq_pair[1]
 
-            year_str  = str(year)
+            year_str = str(year)
             start_str = str(freq_start)
-            end_str   = str(freq_end)
+            end_str = str(freq_end)
 
             # Only consider rows where ms_path is not NULL/empty
             cursor.execute(
                 """
-                SELECT ms_path, base_name
+                SELECT ms_path 
                 FROM metadata
-                WHERE year = ? AND start_freq = ? AND end_freq = ?
+                WHERE base_name = ? AND year = ? AND start_freq = ? AND end_freq = ?
                   AND ms_path IS NOT NULL
                   AND TRIM(ms_path) <> ''
                 LIMIT 1
                 """,
-                (year_str, start_str, end_str),
+                (base_name, year_str, start_str, end_str),
             )
             row = cursor.fetchone()
 
             existing_ms_path = (row[0].strip() if row and isinstance(row[0], str) else None)
-            existing_base_name = (row[1].strip() if row and isinstance(row[0], str) else None)
+            #existing_base_name = (row[1].strip() if row and isinstance(row[0], str) else None)
 
             if existing_ms_path and Path(existing_ms_path).expanduser().exists():
-                LOG.info(f"Skipping {existing_ms_path} as entry exists for {existing_base_name}, {year_str}, {start_str}, {end_str}.")
+                LOG.info(f"Skipping {existing_ms_path} as entry exists for {base_name}, {year_str}, {start_str}, {end_str}.")
             else:
                 # queue work (row absent, or ms_path empty/NULL, or path missing on disk)
                 transform_data = [ms_in, base_name, year_str, start_str, end_str]
