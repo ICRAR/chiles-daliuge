@@ -49,6 +49,8 @@ def do_ms_transform(transform_data: List[str]) -> None:
         ms_in_path, base_name, year, freq_start, freq_end, outfile_path, db_path
     ) = transform_data
 
+    db_path = str(expand_path(db_path))
+
     if outfile_path.endswith(".ms"): # should contain .ms by default as specified in dirdrop, if {auto}.ms works
         uv_split_dir = outfile_path
     else:
@@ -224,7 +226,7 @@ def do_ms_transform(transform_data: List[str]) -> None:
         return
 
     else:
-        conn = sqlite3.connect(str(db_path))
+        conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
         cursor.execute("""
             INSERT INTO metadata (

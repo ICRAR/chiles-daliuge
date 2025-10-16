@@ -1,44 +1,6 @@
 {
     "activeGraphConfigId": "e57348fa-0195-42fa-ada3-e9a8863de78a",
     "graphConfigurations": {
-        "80a4cabf-acdf-4fa1-8729-e90e201c7cf9": {
-            "id": "80a4cabf-acdf-4fa1-8729-e90e201c7cf9",
-            "modelData": {
-                "detailedDescription": "",
-                "generatorCommitHash": "",
-                "generatorName": "",
-                "generatorVersion": "",
-                "graphLocation": {
-                    "commitHash": "",
-                    "downloadUrl": "",
-                    "repositoryFileName": "chilies_concat_freq.graph",
-                    "repositoryName": "",
-                    "repositoryPath": "",
-                    "repositoryService": "File"
-                },
-                "lastModifiedDatetime": 0,
-                "lastModifiedEmail": "",
-                "lastModifiedName": "",
-                "location": {
-                    "commitHash": "",
-                    "downloadUrl": "",
-                    "repositoryBranch": "",
-                    "repositoryFileName": "",
-                    "repositoryName": "",
-                    "repositoryPath": "",
-                    "repositoryService": "Unknown"
-                },
-                "name": "simple",
-                "numLGNodes": 0,
-                "readonly": true,
-                "repositoryUrl": "",
-                "schemaVersion": "Unknown",
-                "shortDescription": "",
-                "signature": "",
-                "type": "GraphConfig"
-            },
-            "nodes": {}
-        },
         "e57348fa-0195-42fa-ada3-e9a8863de78a": {
             "id": "e57348fa-0195-42fa-ada3-e9a8863de78a",
             "modelData": {
@@ -49,7 +11,8 @@
                 "graphLocation": {
                     "commitHash": "",
                     "downloadUrl": "",
-                    "repositoryFileName": "chilies_concat_freq.graph",
+                    "repositoryBranch": "",
+                    "repositoryFileName": "chilies_uvsub_concat_config.graph",
                     "repositoryName": "",
                     "repositoryPath": "",
                     "repositoryService": "File"
@@ -75,7 +38,80 @@
                 "signature": "",
                 "type": "GraphConfig"
             },
-            "nodes": {}
+            "nodes": {
+                "ae32573d-a4be-47ea-9122-56a64ce2938b": {
+                    "fields": {
+                        "0244c813-3e38-41a8-a5e5-47941f4a3d16": {
+                            "comment": "",
+                            "value": "/software/projects/pawsey0411/git/chiles-daliuge/chiles_daliuge/chilies_accumulate.py"
+                        },
+                        "1bd7aff3-e2bb-49f3-a66d-fd20da9bb7e6": {
+                            "comment": "",
+                            "value": "/scratch/pawsey0411/chiles-daliuge/db/Chilies_metadata.csv"
+                        },
+                        "fbcaddcc-c0dc-4aa6-a93b-c23bdff06ad4": {
+                            "comment": "",
+                            "value": "/scratch/pawsey0411/chiles-daliuge/db/Chilies_metadata.db"
+                        }
+                    }
+                }
+            }
+        },
+        "fda2dd34-2033-4219-a6fb-34d5da7f7416": {
+            "id": "fda2dd34-2033-4219-a6fb-34d5da7f7416",
+            "modelData": {
+                "detailedDescription": "",
+                "generatorCommitHash": "",
+                "generatorName": "",
+                "generatorVersion": "",
+                "graphLocation": {
+                    "commitHash": "",
+                    "downloadUrl": "",
+                    "repositoryBranch": "",
+                    "repositoryFileName": "chilies_uvsub_concat_config.graph",
+                    "repositoryName": "",
+                    "repositoryPath": "",
+                    "repositoryService": "File"
+                },
+                "lastModifiedDatetime": 0,
+                "lastModifiedEmail": "",
+                "lastModifiedName": "",
+                "location": {
+                    "commitHash": "",
+                    "downloadUrl": "",
+                    "repositoryBranch": "",
+                    "repositoryFileName": "",
+                    "repositoryName": "",
+                    "repositoryPath": "",
+                    "repositoryService": "Unknown"
+                },
+                "name": "simple",
+                "numLGNodes": 0,
+                "readonly": true,
+                "repositoryUrl": "",
+                "schemaVersion": "Unknown",
+                "shortDescription": "",
+                "signature": "",
+                "type": "GraphConfig"
+            },
+            "nodes": {
+                "ae32573d-a4be-47ea-9122-56a64ce2938b": {
+                    "fields": {
+                        "0244c813-3e38-41a8-a5e5-47941f4a3d16": {
+                            "comment": "",
+                            "value": "/home/00103780/chiles-daliuge/chiles_daliuge/chilies_accumulate.py"
+                        },
+                        "1bd7aff3-e2bb-49f3-a66d-fd20da9bb7e6": {
+                            "comment": "",
+                            "value": "$HOME/chiles-daliuge/db/Chilies_metadata.csv"
+                        },
+                        "fbcaddcc-c0dc-4aa6-a93b-c23bdff06ad4": {
+                            "comment": "",
+                            "value": "$HOME/chiles-daliuge/db/Chilies_metadata.db"
+                        }
+                    }
+                }
+            }
         }
     },
     "linkDataArray": [
@@ -406,12 +442,12 @@
     ],
     "modelData": {
         "detailedDescription": "",
-        "filePath": "chilies_concat_freq.graph",
+        "filePath": "chilies_uvsub_concat_config.graph",
         "fileType": "Graph",
         "generatorCommitHash": "940fe65c5f8544536cd5826d031fad6cef483dc9",
         "generatorName": "EAGLE",
         "generatorVersion": "v6.8.0",
-        "lastModifiedDatetime": 1760585853.756175,
+        "lastModifiedDatetime": 1760586928.554681,
         "lastModifiedEmail": "",
         "lastModifiedName": "",
         "numLGNodes": 38,
@@ -1266,7 +1302,7 @@
             ],
             "inputApplicationComment": "",
             "inputApplicationDescription": "",
-            "inputApplicationId": "ec7e266e-0849-470d-bc98-559980297413",
+            "inputApplicationId": "f16ea390-6593-44e1-8a07-f20b282f0912",
             "inputApplicationName": "GenericScatterApp",
             "inputApplicationType": "DALiuGEApp",
             "isGroup": true,
