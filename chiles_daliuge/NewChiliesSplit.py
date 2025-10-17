@@ -8,6 +8,7 @@ from pathlib import Path
 from os.path import join
 import os
 from subprocess import run, PIPE
+from typing import Sequence, Union
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -350,12 +351,23 @@ def split_ms_list(ms_list: list[str], parallel_processes: int) -> list[list[str]
     return ms_list_list
 
 
+StrPath = Union[str, Path]
+
+def _normalize_ms_list(ms_in_list: Union[StrPath, Sequence[StrPath]]) -> list[str]:
+    if ms_in_list is None:
+        return []
+    if isinstance(ms_in_list, (str, Path)):
+        return [str(ms_in_list)]
+    # It's some sequence; ensure it's not a string/bytes
+    return [str(x) for x in ms_in_list]
+
 def split_out_frequencies(
-        ms_in_list: List[str],
+        ms_in_list: Union[StrPath, Sequence[StrPath]],
         frequencies: List[List[int]],
         db_path: str,
 ) -> ndarray:
 
+    ms_list = _normalize_ms_list(ms_in_list)
     METADATA_DB = expand_path(db_path)
     LOG.info(f"Frequencies: {frequencies}")
 
@@ -365,7 +377,7 @@ def split_out_frequencies(
     cursor = conn.cursor()
     transform_data_all = []
 
-    for ms_in in ms_in_list:
+    for ms_in in ms_list:
         # Fetch year and base_name from DB
         cursor.execute("SELECT year, base_name FROM metadata WHERE ms_path = ?", (ms_in,))
         row = cursor.fetchone()

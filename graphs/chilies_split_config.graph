@@ -11,10 +11,10 @@
                 "graphLocation": {
                     "commitHash": "",
                     "downloadUrl": "",
-                    "repositoryBranch": "main",
+                    "repositoryBranch": "",
                     "repositoryFileName": "chilies_split_config.graph",
                     "repositoryName": "",
-                    "repositoryPath": "graphs",
+                    "repositoryPath": "",
                     "repositoryService": "File"
                 },
                 "lastModifiedDatetime": 0,
@@ -43,7 +43,7 @@
                     "fields": {
                         "a83bd9be-a996-4322-823b-f129be3ca35f": {
                             "comment": "",
-                            "value": 20
+                            "value": 10
                         }
                     }
                 },
@@ -83,10 +83,10 @@
                 "graphLocation": {
                     "commitHash": "",
                     "downloadUrl": "",
-                    "repositoryBranch": "main",
+                    "repositoryBranch": "",
                     "repositoryFileName": "chilies_split_config.graph",
                     "repositoryName": "",
-                    "repositoryPath": "graphs",
+                    "repositoryPath": "",
                     "repositoryService": "File"
                 },
                 "lastModifiedDatetime": 0,
@@ -488,7 +488,7 @@
         "generatorCommitHash": "940fe65c5f8544536cd5826d031fad6cef483dc9",
         "generatorName": "EAGLE",
         "generatorVersion": "v6.8.0",
-        "lastModifiedDatetime": 1760595655.944288,
+        "lastModifiedDatetime": 1760669311.008329,
         "lastModifiedEmail": "",
         "lastModifiedName": "",
         "numLGNodes": 39,
@@ -620,7 +620,7 @@
             ],
             "inputApplicationComment": "",
             "inputApplicationDescription": "",
-            "inputApplicationId": "8f08ce27-f90d-4d40-959c-d054a021ddaf",
+            "inputApplicationId": "f1673347-2300-4dca-8550-788ba19ddbff",
             "inputApplicationName": "GenericScatterApp",
             "inputApplicationType": "DALiuGEApp",
             "isGroup": true,
@@ -839,7 +839,7 @@
                     "readonly": false,
                     "type": "Integer",
                     "usage": "NoPort",
-                    "value": 1100
+                    "value": 1000
                 },
                 {
                     "defaultValue": "",
