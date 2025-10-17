@@ -11,6 +11,7 @@
                 "graphLocation": {
                     "commitHash": "",
                     "downloadUrl": "",
+                    "repositoryBranch": "",
                     "repositoryFileName": "chilies_uvsub_config.graph",
                     "repositoryName": "",
                     "repositoryPath": "",
@@ -82,6 +83,7 @@
                 "graphLocation": {
                     "commitHash": "",
                     "downloadUrl": "",
+                    "repositoryBranch": "",
                     "repositoryFileName": "chilies_uvsub_config.graph",
                     "repositoryName": "",
                     "repositoryPath": "",
@@ -129,7 +131,7 @@
                     "fields": {
                         "aa1c7a37-4e1a-4dd9-81cb-e2b7a40c7a34": {
                             "comment": "",
-                            "value": 100
+                            "value": 10
                         }
                     }
                 },
@@ -137,7 +139,7 @@
                     "fields": {
                         "59e34ee3-ec16-4281-8ecc-8988b7892cd4": {
                             "comment": "",
-                            "value": 2
+                            "value": 3
                         }
                     }
                 }
@@ -540,7 +542,7 @@
         "generatorCommitHash": "940fe65c5f8544536cd5826d031fad6cef483dc9",
         "generatorName": "EAGLE",
         "generatorVersion": "v6.8.0",
-        "lastModifiedDatetime": 1760590787.392828,
+        "lastModifiedDatetime": 1760667474.621136,
         "lastModifiedEmail": "",
         "lastModifiedName": "",
         "numLGNodes": 44,
@@ -1024,7 +1026,7 @@
                     "readonly": false,
                     "type": "Integer",
                     "usage": "NoPort",
-                    "value": 1100
+                    "value": 1000
                 },
                 {
                     "defaultValue": "",
@@ -1500,7 +1502,7 @@
             ],
             "inputApplicationComment": "",
             "inputApplicationDescription": "",
-            "inputApplicationId": "8429f4b7-f19c-4528-b20d-4be5e389e8e1",
+            "inputApplicationId": "60327083-318a-4552-bdec-6538b9030197",
             "inputApplicationName": "GenericScatterApp",
             "inputApplicationType": "DALiuGEApp",
             "isGroup": true,

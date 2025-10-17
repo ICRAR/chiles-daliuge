@@ -19,7 +19,6 @@ def fetch_original_ms(
         source_dir: str,
         year_list: list[str],
         copy_directory: str,
-        trigger_in: bool,
         db_path: str,
 ) -> list[str]:
 
@@ -153,6 +152,147 @@ def fetch_original_ms(
     return name_list
 
 
+
+def fetch_original_ms_singleMS(
+        source_dir: str,
+        year_list: list[str],
+        copy_directory: str,
+        db_path: str,
+) -> list[str]:
+
+
+    METADATA_DB = expand_path(db_path)
+
+    make_directory = True
+    start_freq = "0944"
+    end_freq = "1420"
+    bandwidth = int(end_freq) - int(start_freq)
+    name_list = []
+
+    conn = sqlite3.connect(str(METADATA_DB))
+    cursor = conn.cursor()
+
+    result = run(["rclone", "lsf", source_dir, "--dirs-only"], stdout=PIPE, stderr=PIPE, text=True)
+    if result.returncode != 0:
+        LOG.error(f"Failed to list {source_dir}: {result.stderr}")
+        return []
+
+    year_dirs = [line.strip("/") for line in result.stdout.strip().splitlines()]
+
+    copy_tasks = []
+
+    for year in year_dirs:
+        if year not in year_list:
+            continue
+
+        year_path = f"{source_dir}{year}/"
+        result = run(["rclone", "lsf", year_path, "--dirs-only"], stdout=PIPE, stderr=PIPE, text=True)
+        if result.returncode != 0:
+            LOG.warning(f"Skipping {year_path}: {result.stderr}")
+            continue
+
+        date_dirs = [line.strip("/") for line in result.stdout.strip().splitlines()]
+
+        for date in date_dirs:
+            date_path = f"{year_path}{date}/"
+            result = run(["rclone", "lsf", date_path, "--dirs-only"], stdout=PIPE, stderr=PIPE, text=True)
+            if result.returncode != 0:
+                LOG.warning(f"Skipping {date_path}: {result.stderr}")
+                continue
+
+            ms_dirs = [f"{date_path}{line.strip('/')}" for line in result.stdout.strip().splitlines() if line.endswith(".ms/")]
+
+            for ms_name in ms_dirs:
+                base_name = os.path.basename(ms_name.strip("/"))
+                dlg_name = generate_hashed_ms_name(ms_name, year, start_freq, end_freq)
+                ms_path = os.path.join(copy_directory, dlg_name)
+
+                cursor.execute("""
+                    SELECT ms_path FROM metadata
+                    WHERE base_name = ? AND year = ? AND start_freq = ? AND end_freq = ?
+                    LIMIT 1
+                """, (base_name, year, start_freq, end_freq))
+
+                row = cursor.fetchone()
+
+                if base_name != "13B-266.sb27243380.eb28501582.56608.36360891204_calibrated_deepfield.ms":
+                    continue
+
+                if row:
+                    ms_path_db = row[0]
+                    LOG.info(f"Skipping fetch of existing MS: {base_name} ({year}, {start_freq}-{end_freq}); already fetched at {ms_path_db}.")
+                    name_list.append(str(ms_path_db))  # keep using the computed destination path
+                    continue
+
+                if make_directory:
+                    os.makedirs(copy_directory, exist_ok=True)
+
+                LOG.info(f"Queued for copy: {ms_name} → {ms_path}")
+                copy_tasks.append({
+                    "base_name": base_name,
+                    "ms_name": ms_name,
+                    "ms_path": ms_path,
+                    "year": year,
+                    "cmd": [
+                        "rclone", "copy", ms_name, ms_path,
+                        "--progress",
+                        "--s3-disable-checksum",
+                        "--s3-chunk-size", "1024M",
+                        "--s3-upload-concurrency", "8",
+                        "--transfers", "4",
+                        "--ignore-times",
+                        "--retries", "1",
+                        "--local-no-set-modtime",
+                        "--log-level", "INFO"
+                    ]
+                })
+
+    # Execute copy tasks in parallel (max 5 at a time)
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        futures = {executor.submit(run, task["cmd"], stdout=PIPE, stderr=PIPE, text=True): task for task in copy_tasks}
+        for future in as_completed(futures):
+            task = futures[future]
+            base_name = task["base_name"]
+            ms_path = task["ms_path"]
+            year = task["year"]
+
+            try:
+                cp_result = future.result()
+            except Exception as e:
+                LOG.error(f"Copy failed for {base_name}: {e}")
+                continue
+
+            size = "Unknown"
+
+            if cp_result.returncode == 0:
+                LOG.info(f"Copied MS to: {ms_path}")
+                size_result = run(["rclone", "size", ms_path], stdout=PIPE, stderr=PIPE, text=True)
+                if size_result.returncode == 0:
+                    for line in size_result.stdout.strip().splitlines():
+                        if line.startswith("Total size:") and "(" in line:
+                            try:
+                                size_bytes_str = line.split("(")[-1].split()[0]
+                                size_bytes = int(size_bytes_str)
+                                size = round(size_bytes / (1024 * 1024 * 1024), 3)  # GB
+                                break
+                            except ValueError:
+                                LOG.warning(f"Could not parse size from line: {line}")
+
+                LOG.info(f"Size of copied MS: {size} GB.")
+                if size != "Unknown" and float(size) > 0:
+                    cursor.execute("""
+                        INSERT INTO metadata (ms_path, base_name, year, start_freq, end_freq, bandwidth, size)
+                        VALUES (?, ?, ?, ?, ?, ?, ?)
+                    """, (ms_path, base_name, year, start_freq, end_freq, str(bandwidth), str(size)))
+                    conn.commit()
+                    name_list.append(str(ms_path))
+            else:
+                LOG.error(f"Failed to copy {task['ms_name']}: {cp_result.stderr}")
+
+    conn.close()
+    LOG.info(f"Complete fetch_original_ms list: {name_list}")
+    return name_list
+
 def split_ms_list(ms_list: list[str], parallel_processes: int) -> list[list[str]]:
     """
     Split a list of measurement set paths into nearly equal-sized sublists.
@@ -259,7 +399,6 @@ def split_out_frequencies(
             row = cursor.fetchone()
 
             existing_ms_path = (row[0].strip() if row and isinstance(row[0], str) else None)
-            #existing_base_name = (row[1].strip() if row and isinstance(row[0], str) else None)
 
             if existing_ms_path and Path(existing_ms_path).expanduser().exists():
                 LOG.info(f"Skipping {existing_ms_path} as entry exists for {base_name}, {year_str}, {start_str}, {end_str}.")
@@ -276,8 +415,6 @@ def split_out_frequencies(
                     )
                 else:
                     LOG.info(f"Queueing {ms_in} for processing of year: {year_str}, st_freq: {start_str}, end_freq: {end_str}.")
-
-
 
     conn.close()
     transform_data_all = np.array(transform_data_all, dtype=str)
