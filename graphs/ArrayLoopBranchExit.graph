@@ -25,7 +25,7 @@
     "graphConfigurations": {
         "3bd09a5d-1e7f-47d1-9d37-ac11b307eb91": {
             "modelData": {
-                "name": "Default Configurationf",
+                "name": "default",
                 "shortDescription": "",
                 "detailedDescription": "",
                 "type": "GraphConfig",
@@ -64,7 +64,7 @@
                 "16c057d0-aa6d-4b9d-afd0-4bb89074467c": {
                     "fields": {
                         "e7f51bb6-9614-49ac-a17f-f4a6005c174b": {
-                            "value": 8,
+                            "value": 50,
                             "comment": ""
                         }
                     }
@@ -72,7 +72,7 @@
                 "561c628f-3b48-47c9-a243-26399ea2ce5c": {
                     "fields": {
                         "9b88af5d-dec2-4783-95d9-f4bfa40b29e3": {
-                            "value": 2,
+                            "value": 4,
                             "comment": ""
                         }
                     }
@@ -80,7 +80,7 @@
                 "fde5eebf-d11c-4847-a30f-72248a836e89": {
                     "fields": {
                         "3bf338a5-f9c7-40c8-956b-6aa60cf65d49": {
-                            "value": 3,
+                            "value": 15,
                             "comment": ""
                         }
                     }
