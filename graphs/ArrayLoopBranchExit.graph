@@ -46,10 +46,10 @@
                 "repositoryUrl": "",
                 "graphLocation": {
                     "repositoryService": "GitHub",
-                    "repositoryBranch": "master",
-                    "repositoryName": "ICRAR/EAGLE-graph-repo",
-                    "repositoryPath": "examples",
-                    "repositoryFileName": "ArrayLoop.graph",
+                    "repositoryBranch": "main",
+                    "repositoryName": "ICRAR/chiles-daliuge",
+                    "repositoryPath": "graphs",
+                    "repositoryFileName": "ArrayLoopBranchExit.graph",
                     "commitHash": "b127441ef5bc08b16e96593003f8a0d439dfb400",
                     "downloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/b127441ef5bc08b16e96593003f8a0d439dfb400/examples/ArrayLoop.graph"
                 },
@@ -64,7 +64,7 @@
                 "16c057d0-aa6d-4b9d-afd0-4bb89074467c": {
                     "fields": {
                         "e7f51bb6-9614-49ac-a17f-f4a6005c174b": {
-                            "value": 80000,
+                            "value": 8,
                             "comment": ""
                         }
                     }
@@ -72,7 +72,7 @@
                 "561c628f-3b48-47c9-a243-26399ea2ce5c": {
                     "fields": {
                         "9b88af5d-dec2-4783-95d9-f4bfa40b29e3": {
-                            "value": 10,
+                            "value": 4,
                             "comment": ""
                         }
                     }
@@ -80,7 +80,7 @@
                 "fde5eebf-d11c-4847-a30f-72248a836e89": {
                     "fields": {
                         "3bf338a5-f9c7-40c8-956b-6aa60cf65d49": {
-                            "value": 2,
+                            "value": 3,
                             "comment": ""
                         }
                     }
