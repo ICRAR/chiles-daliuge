@@ -72,7 +72,7 @@
                 "561c628f-3b48-47c9-a243-26399ea2ce5c": {
                     "fields": {
                         "9b88af5d-dec2-4783-95d9-f4bfa40b29e3": {
-                            "value": 4,
+                            "value": 2,
                             "comment": ""
                         }
                     }
@@ -1183,6 +1183,21 @@
                     "id": "a73a0fc4-e291-4ed3-8e0b-4747b133ec47",
                     "parameterType": "ConstraintParameter",
                     "usage": "NoPort"
+                },
+                {
+                    "name": "pydata",
+                    "value": "None",
+                    "defaultValue": "",
+                    "description": "",
+                    "readonly": false,
+                    "type": "Object",
+                    "precious": false,
+                    "options": [],
+                    "positional": false,
+                    "encoding": "pickle",
+                    "id": "0e9d826d-5ebe-47ed-b4bd-4451733f6dd9",
+                    "parameterType": "ApplicationArgument",
+                    "usage": "NoPort"
                 }
             ],
             "inputAppFields": [],
@@ -1233,7 +1248,7 @@
                 },
                 {
                     "name": "func_code",
-                    "value": "def condition(x): return (x > 0)",
+                    "value": "def condition(x):\n    try:\n        return len(x) < 0\n    except Exception:\n        return False",
                     "defaultValue": "def condition(x): return (x > 0)",
                     "description": "Python function code for the branch condition. Modify as required. Note that func_name above needs to match the defined name here.",
                     "readonly": false,
@@ -1262,7 +1277,7 @@
                     "usage": "InputPort"
                 },
                 {
-                    "name": "true",
+                    "name": "false",
                     "value": "",
                     "defaultValue": "",
                     "description": "If condition is true the input will be copied to this port",
@@ -1277,7 +1292,7 @@
                     "usage": "OutputPort"
                 },
                 {
-                    "name": "false",
+                    "name": "true",
                     "value": "",
                     "defaultValue": "",
                     "description": "If condition is false the input will be copied to this port",
