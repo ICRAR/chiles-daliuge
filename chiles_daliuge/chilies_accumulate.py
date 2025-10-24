@@ -111,6 +111,7 @@ def fetch_uvsub(
             SELECT 1
             FROM concat_freq
             WHERE base_name = ?
+              AND year = ? 
               AND start_freq = ?
               AND end_freq = ?
             LIMIT 1
@@ -131,7 +132,7 @@ def fetch_uvsub(
 
             if concat_time:
                 # Skip if concat_freq already has this (concat_all, lo, hi)
-                cur.execute(exist_sql, ("concat_all", str(lo), str(hi)))
+                cur.execute(exist_sql, ("concat_all", years_all, str(lo), str(hi)))
                 if cur.fetchone():
                     continue
 
@@ -144,20 +145,22 @@ def fetch_uvsub(
                 from collections import defaultdict
                 rows_sorted = sorted(rows, key=_sort_key)
 
-                by_base = defaultdict(set)
+                by_base_year = defaultdict(set)
                 for base_name, uv_path, _year, _sf, _ef in rows_sorted:
                     p = (str(uv_path) or "").strip()
                     if p:
-                        by_base[str(base_name)].add(p)
+                        by_base_year[(str(base_name), str(_year))].add(p)
 
-                for base_name, path_set in sorted(by_base.items(), key=lambda kv: kv[0] or ""):
+                for (base_name, year), path_set in sorted(by_base_year.items(),
+                                          key=lambda kv: (kv[0][0] or "", kv[0][1] or "")):
                     if not path_set:
                         continue
-                    # Skip if concat_freq already has this (base_name, lo, hi)
-                    cur.execute(exist_sql, (base_name, str(lo), str(hi)))
+                    # existence check uses the year from the DB
+                    cur.execute(exist_sql, (base_name, year, str(lo), str(hi)))
                     if cur.fetchone():
                         continue
-                    line = f"{base_name};{lo};{hi};SameAsInput;{','.join(sorted(path_set))}"
+
+                    line = f"{base_name};{lo};{hi};{year};{','.join(sorted(path_set))}"
                     matching_dlg_names.append(line)
 
     return matching_dlg_names
