@@ -4,22 +4,22 @@
         "fileType": "Graph",
         "shortDescription": "Graph using a scatter and a loop construct to distribute elements of of random array and write them to files.",
         "detailedDescription": "This graph generates a random array and splits that array using a scatter into smaller sub-arrays. Each of these scattered branches will then loop through the elements of  its respective sub-array and write a single element to a file. The number of scatter branches as well as the number of loops are user definable parameters, which also means that the total number of individual tasks is pre-defined. In turn that also means that unbounded loops like\n\n    while 1:\n       do_stuff\n\nor\n\n    for i in some_array:\n        do_stuff\n\nwhere the length of some_array is unknown, are not directly supported.",
-        "repoService": "GitHub",
-        "repoBranch": "main",
-        "repo": "icrar/chiles-daliuge",
-        "generatorVersion": "v6.9.0",
-        "generatorCommitHash": "43c986cc3fa198044b9e82107e31bbb327c6eca3",
+        "generatorVersion": "v6.8.0",
+        "generatorCommitHash": "940fe65c5f8544536cd5826d031fad6cef483dc9",
         "generatorName": "EAGLE",
         "schemaVersion": "OJS",
         "readonly": true,
         "repositoryUrl": "",
-        "commitHash": "",
-        "downloadUrl": "",
         "signature": "",
         "lastModifiedName": "",
         "lastModifiedEmail": "",
         "lastModifiedDatetime": 0,
-        "numLGNodes": 15
+        "numLGNodes": 15,
+        "repo": "ICRAR/chiles-daliuge",
+        "repoBranch": "main",
+        "repoService": "GitHub",
+        "commitHash": "",
+        "downloadUrl": ""
     },
     "activeGraphConfigId": "3bd09a5d-1e7f-47d1-9d37-ac11b307eb91",
     "graphConfigurations": {
@@ -47,11 +47,11 @@
                 "graphLocation": {
                     "repositoryService": "GitHub",
                     "repositoryBranch": "main",
-                    "repositoryName": "icrar/chiles-daliuge",
+                    "repositoryName": "ICRAR/chiles-daliuge",
                     "repositoryPath": "graphs",
                     "repositoryFileName": "ArrayLoopBranchExit.graph",
-                    "commitHash": "f3c0cb6c307bd5dbe8515a5151440d8c27f37c57",
-                    "downloadUrl": "https://raw.githubusercontent.com/ICRAR/chiles-daliuge/f3c0cb6c307bd5dbe8515a5151440d8c27f37c57/graphs/ArrayLoopBranchExit.graph"
+                    "commitHash": "157ebe7caa83ef96803662c9b66e239ce19487f5",
+                    "downloadUrl": "https://raw.githubusercontent.com/ICRAR/chiles-daliuge/157ebe7caa83ef96803662c9b66e239ce19487f5/graphs/ArrayLoopBranchExit.graph"
                 },
                 "signature": "",
                 "lastModifiedName": "",
@@ -72,7 +72,7 @@
                 "561c628f-3b48-47c9-a243-26399ea2ce5c": {
                     "fields": {
                         "9b88af5d-dec2-4783-95d9-f4bfa40b29e3": {
-                            "value": 4,
+                            "value": 2,
                             "comment": ""
                         }
                     }
@@ -80,7 +80,7 @@
                 "fde5eebf-d11c-4847-a30f-72248a836e89": {
                     "fields": {
                         "3bf338a5-f9c7-40c8-956b-6aa60cf65d49": {
-                            "value": 15,
+                            "value": 2,
                             "comment": ""
                         }
                     }
@@ -220,8 +220,8 @@
             "name": "Loop",
             "description": "Components inside a Loop will be repeatedly executed for a fixed number of times",
             "comment": "",
-            "x": 1114.5021332225135,
-            "y": 48.94435207151969,
+            "x": 1465.2519002824838,
+            "y": 123.45596061793799,
             "repositoryUrl": "",
             "commitHash": "",
             "paletteDownloadUrl": "",
@@ -282,8 +282,8 @@
             "name": "PickOne",
             "description": "App that picks the first element of an input list, passes that to all outputs, except the first one. The first output is used to pass the remaining array on. This app is useful for a loop.",
             "comment": "",
-            "x": 897.3547441041178,
-            "y": -125.92973783652356,
+            "x": 1168.140833699639,
+            "y": -55.052841902125635,
             "repositoryUrl": "",
             "commitHash": "",
             "paletteDownloadUrl": "",
@@ -434,8 +434,8 @@
             "name": "input",
             "description": "A standard file on a filesystem mounted to the deployment machine",
             "comment": "",
-            "x": 1077.07515271131,
-            "y": -120.91922647047055,
+            "x": 1347.8612423068314,
+            "y": -50.042330536072626,
             "repositoryUrl": "",
             "commitHash": "",
             "paletteDownloadUrl": "",
@@ -631,8 +631,8 @@
             "name": "x",
             "description": "In-memory storage of intermediate data products",
             "comment": "",
-            "x": 968.3931011280519,
-            "y": 44.40499871939447,
+            "x": 1306.8753868150466,
+            "y": 98.35784563092399,
             "repositoryUrl": "",
             "commitHash": "",
             "paletteDownloadUrl": "",
@@ -964,8 +964,8 @@
             "name": "Scatter",
             "description": "A construct that splits inputs into multiple parallel processing instances",
             "comment": "",
-            "x": 1095.812785907355,
-            "y": 35.13054402080169,
+            "x": 1366.5988755028766,
+            "y": 106.00743995519962,
             "repositoryUrl": "",
             "commitHash": "",
             "paletteDownloadUrl": "",
@@ -1082,7 +1082,7 @@
             "outputAppFields": [],
             "inputApplicationName": "GenericScatterApp",
             "inputApplicationType": "DALiuGEApp",
-            "inputApplicationId": "c269eccf-e34d-405d-96c9-3510a731ae8d",
+            "inputApplicationId": "5e81d02f-3f5c-426a-8dd3-523de7af2b20",
             "inputApplicationDescription": "",
             "inputApplicationComment": "",
             "outputApplicationName": "",
@@ -1101,13 +1101,13 @@
             "name": "rest_array",
             "description": "",
             "comment": "",
-            "x": 900.5904658996517,
-            "y": 71.17706050336808,
+            "x": 953.8134740617381,
+            "y": 120.68505819348402,
             "repositoryUrl": "",
             "commitHash": "",
             "paletteDownloadUrl": "",
             "dataHash": "",
-            "parentId": "fde5eebf-d11c-4847-a30f-72248a836e89",
+            "parentId": "561c628f-3b48-47c9-a243-26399ea2ce5c",
             "fields": [
                 {
                     "name": "persist",
@@ -1223,8 +1223,8 @@
             "name": "output",
             "description": "A branch application that copies the input to either the 'true' or the 'false' output depending on the result of the provided conditional function. The conditional function can be specified either in-line or as an external function and has to return a boolean value. The inputs of the application are passed on as arguments to the conditional function. The conditional function needs to return a boolean value, but the application will copy the input data to the true or false output, depending on the result of the conditional function.",
             "comment": "",
-            "x": 1057.2920270963405,
-            "y": 178.10105638519062,
+            "x": 1328.0781166918619,
+            "y": 248.9779523195884,
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "commitHash": "d266e83",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
@@ -1248,7 +1248,7 @@
                 },
                 {
                     "name": "func_code",
-                    "value": "def condition(x):\n    try:\n        return len(x) < 0\n    except Exception:\n        return False",
+                    "value": "def condition(x):\n    try:\n        return len(x) <= 0\n    except Exception:\n        return False",
                     "defaultValue": "def condition(x): return (x > 0)",
                     "description": "Python function code for the branch condition. Modify as required. Note that func_name above needs to match the defined name here.",
                     "readonly": false,
@@ -1277,12 +1277,12 @@
                     "usage": "InputPort"
                 },
                 {
-                    "name": "false",
+                    "name": "true",
                     "value": "",
                     "defaultValue": "",
                     "description": "If condition is true the input will be copied to this port",
                     "readonly": false,
-                    "type": "Object",
+                    "type": "Event",
                     "precious": false,
                     "options": [],
                     "positional": false,
@@ -1292,7 +1292,7 @@
                     "usage": "OutputPort"
                 },
                 {
-                    "name": "true",
+                    "name": "false",
                     "value": "",
                     "defaultValue": "",
                     "description": "If condition is false the input will be copied to this port",
@@ -1442,8 +1442,8 @@
             "name": "false",
             "description": "In-memory storage of intermediate data products",
             "comment": "",
-            "x": 908.9002406164591,
-            "y": 182.63242241043184,
+            "x": 1179.6863302119802,
+            "y": 253.50931834482964,
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "commitHash": "d266e83",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
@@ -1609,8 +1609,8 @@
             "name": "SleepApp",
             "description": "A simple APP that sleeps the specified amount of time (0 by default). This is mainly useful (and used) to test graph translation and structure without executing real algorithms. Very useful for debugging.",
             "comment": "",
-            "x": 1316.6489585409415,
-            "y": -133.7948564889706,
+            "x": 1587.4350481364634,
+            "y": -62.917960554572694,
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "commitHash": "d266e83",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
@@ -1780,11 +1780,11 @@
             "color": "#2c2c2c",
             "drawOrderHint": 0,
             "id": "f7121f10-6064-4f3d-8b85-32ebe3fa92da",
-            "name": "greet",
+            "name": "New Parameter",
             "description": "In-memory storage of intermediate data products",
             "comment": "",
-            "x": 1196.6846579538662,
-            "y": 178.33243574637353,
+            "x": 1494.6225389985543,
+            "y": 252.06741499120992,
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "commitHash": "d266e83",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
@@ -1808,7 +1808,7 @@
                 },
                 {
                     "name": "block_skip",
-                    "value": false,
+                    "value": true,
                     "defaultValue": "False",
                     "description": "If set the drop will block a skipping chain until the last producer has finished and is not also skipped.",
                     "readonly": false,
@@ -1912,12 +1912,12 @@
                     "usage": "NoPort"
                 },
                 {
-                    "name": "greet",
+                    "name": "New Parameter",
                     "value": "",
                     "defaultValue": "",
-                    "description": "What appears after 'Hello '",
+                    "description": "",
                     "readonly": false,
-                    "type": "Object",
+                    "type": "Event",
                     "precious": false,
                     "options": [],
                     "positional": false,
@@ -1950,8 +1950,8 @@
             "name": "HelloWorldApp",
             "description": "A simple APP that implements the standard Hello World in DALiuGE. It allows to change 'World' with some other string and it also permits to connect the single output port to multiple sinks, which will all receive the same message. App does not require any input.",
             "comment": "",
-            "x": 1347.3200252452477,
-            "y": 173.72537447976833,
+            "x": 1618.1061148407691,
+            "y": 244.60227041416613,
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "commitHash": "d266e83",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
@@ -1971,7 +1971,7 @@
                     "encoding": "pickle",
                     "id": "e8e306f5-b411-4f16-8b23-7c66aa2c7539",
                     "parameterType": "ApplicationArgument",
-                    "usage": "InputPort"
+                    "usage": "NoPort"
                 },
                 {
                     "name": "hello",
@@ -1983,7 +1983,7 @@
                     "precious": false,
                     "options": [],
                     "positional": false,
-                    "encoding": "pickle",
+                    "encoding": "utf-8",
                     "id": "0fd84312-c8b5-479c-9e35-5b57a71c8f16",
                     "parameterType": "ApplicationArgument",
                     "usage": "OutputPort"
@@ -2084,6 +2084,21 @@
                     "id": "85c23318-c89b-4d63-aed9-00926e1205d4",
                     "parameterType": "ComponentParameter",
                     "usage": "NoPort"
+                },
+                {
+                    "name": "New Parameter",
+                    "value": "",
+                    "defaultValue": "",
+                    "description": "",
+                    "readonly": false,
+                    "type": "Event",
+                    "precious": false,
+                    "options": [],
+                    "positional": false,
+                    "encoding": "pickle",
+                    "id": "c05eeda9-2f8a-4cd9-9310-0e4556b76fd2",
+                    "parameterType": "ApplicationArgument",
+                    "usage": "InputPort"
                 }
             ],
             "inputAppFields": [],
@@ -2109,8 +2124,8 @@
             "name": "hello",
             "description": "A standard file on a filesystem mounted to the deployment machine",
             "comment": "",
-            "x": 1349.3862994719334,
-            "y": 294.0785693771309,
+            "x": 1620.1723890674546,
+            "y": 364.95546531152866,
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "commitHash": "d266e83",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
@@ -2298,7 +2313,7 @@
             "fromPort": "5cabc52e-ead6-4b92-8987-0b4bd7ba8f3e",
             "to": "2b1fd66a-c203-4c15-b91f-5005aba6b39b",
             "toPort": "055cdf24-e209-408c-86ac-cf769737a366",
-            "loop_aware": "1",
+            "loop_aware": "0",
             "closesLoop": false
         },
         {
@@ -2316,7 +2331,7 @@
             "fromPort": "ef7bb4e2-e75b-493d-938b-81215fa10256",
             "to": "d3be33c9-7bdc-4a0d-b85d-11f372e1dca7",
             "toPort": "5cabc52e-ead6-4b92-8987-0b4bd7ba8f3e",
-            "loop_aware": "0",
+            "loop_aware": "1",
             "closesLoop": false
         },
         {
@@ -2393,19 +2408,19 @@
         },
         {
             "comment": "",
-            "from": "f7121f10-6064-4f3d-8b85-32ebe3fa92da",
-            "fromPort": "a57c815f-72bf-4208-bb65-53e0f548fc7c",
-            "to": "411b5273-d55f-4a84-acac-d1d44c29bb9f",
-            "toPort": "e8e306f5-b411-4f16-8b23-7c66aa2c7539",
+            "from": "411b5273-d55f-4a84-acac-d1d44c29bb9f",
+            "fromPort": "0fd84312-c8b5-479c-9e35-5b57a71c8f16",
+            "to": "1f06a835-17dc-42f2-8fb3-501be4758b40",
+            "toPort": "71a67be9-1c7d-43a9-94e5-676facc3dfb9",
             "loop_aware": "0",
             "closesLoop": false
         },
         {
             "comment": "",
-            "from": "411b5273-d55f-4a84-acac-d1d44c29bb9f",
-            "fromPort": "0fd84312-c8b5-479c-9e35-5b57a71c8f16",
-            "to": "1f06a835-17dc-42f2-8fb3-501be4758b40",
-            "toPort": "71a67be9-1c7d-43a9-94e5-676facc3dfb9",
+            "from": "f7121f10-6064-4f3d-8b85-32ebe3fa92da",
+            "fromPort": "a57c815f-72bf-4208-bb65-53e0f548fc7c",
+            "to": "411b5273-d55f-4a84-acac-d1d44c29bb9f",
+            "toPort": "c05eeda9-2f8a-4cd9-9310-0e4556b76fd2",
             "loop_aware": "0",
             "closesLoop": false
         }
