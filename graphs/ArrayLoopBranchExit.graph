@@ -45,9 +45,9 @@
                 "generatorName": "",
                 "repositoryUrl": "",
                 "graphLocation": {
-                    "repositoryService": "Unknown",
-                    "repositoryBranch": "",
-                    "repositoryName": "",
+                    "repositoryService": "GitHub",
+                    "repositoryBranch": "main",
+                    "repositoryName": "ICRAR/chiles-daliuge",
                     "repositoryPath": "graphs",
                     "repositoryFileName": "ArrayLoopBranchExit.graph",
                     "commitHash": "",
