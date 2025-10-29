@@ -21,7 +21,7 @@
         "commitHash": "",
         "downloadUrl": ""
     },
-    "activeGraphConfigId": "3bd09a5d-1e7f-47d1-9d37-ac11b307eb91",
+    "activeGraphConfigId": "e931188e-1921-4605-87cb-c90c501db397",
     "graphConfigurations": {
         "3bd09a5d-1e7f-47d1-9d37-ac11b307eb91": {
             "modelData": {
@@ -81,6 +81,70 @@
                     "fields": {
                         "3bf338a5-f9c7-40c8-956b-6aa60cf65d49": {
                             "value": 30,
+                            "comment": ""
+                        }
+                    }
+                }
+            }
+        },
+        "e931188e-1921-4605-87cb-c90c501db397": {
+            "modelData": {
+                "name": "setonix",
+                "shortDescription": "",
+                "detailedDescription": "",
+                "type": "GraphConfig",
+                "schemaVersion": "Unknown",
+                "readonly": true,
+                "location": {
+                    "repositoryService": "Unknown",
+                    "repositoryBranch": "",
+                    "repositoryName": "",
+                    "repositoryPath": "",
+                    "repositoryFileName": "",
+                    "commitHash": "",
+                    "downloadUrl": ""
+                },
+                "generatorVersion": "",
+                "generatorCommitHash": "",
+                "generatorName": "",
+                "repositoryUrl": "",
+                "graphLocation": {
+                    "repositoryService": "GitHub",
+                    "repositoryBranch": "main",
+                    "repositoryName": "ICRAR/chiles-daliuge",
+                    "repositoryPath": "graphs",
+                    "repositoryFileName": "ArrayLoopBranchExit.graph",
+                    "commitHash": "",
+                    "downloadUrl": ""
+                },
+                "signature": "",
+                "lastModifiedName": "",
+                "lastModifiedEmail": "",
+                "lastModifiedDatetime": 0,
+                "numLGNodes": 0
+            },
+            "id": "e931188e-1921-4605-87cb-c90c501db397",
+            "nodes": {
+                "16c057d0-aa6d-4b9d-afd0-4bb89074467c": {
+                    "fields": {
+                        "e7f51bb6-9614-49ac-a17f-f4a6005c174b": {
+                            "value": 112,
+                            "comment": ""
+                        }
+                    }
+                },
+                "561c628f-3b48-47c9-a243-26399ea2ce5c": {
+                    "fields": {
+                        "9b88af5d-dec2-4783-95d9-f4bfa40b29e3": {
+                            "value": 5,
+                            "comment": ""
+                        }
+                    }
+                },
+                "fde5eebf-d11c-4847-a30f-72248a836e89": {
+                    "fields": {
+                        "3bf338a5-f9c7-40c8-956b-6aa60cf65d49": {
+                            "value": 25,
                             "comment": ""
                         }
                     }
@@ -769,7 +833,7 @@
             "description": "A testing APP that does not take any input and produces a random array of type int64, if integer is set to True, else of type float64. size indicates the number of elements ranging between the values low and high. The resulting array will be send to all connected output apps. \ninteger: bool [True], generate integer array low: float, lower boundary (will be converted to int for integer arrays) high: float, upper boundary (will be converted to int for integer arrays) size: int, number of array elements",
             "comment": "",
             "x": 227.70718397516373,
-            "y": 77.30442208689767,
+            "y": 79.3919400359057,
             "repositoryUrl": "",
             "commitHash": "",
             "paletteDownloadUrl": "",
