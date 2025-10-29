@@ -1682,7 +1682,7 @@
             "fields": [
                 {
                     "name": "filepath",
-                    "value": "final_auto.out",
+                    "value": "final_{auto}.out",
                     "defaultValue": "",
                     "description": "File path for this file. In many cases this does not need to be specified. If it has a \\/ at the end it will be treated as a directory name and the filename will be generated. If it does not have a \\/, the last part will be treated as a filename. If filepath does not start with \\/ (relative path) then the session directory will be prepended to make the path absolute.\"",
                     "readonly": false,
@@ -2640,7 +2640,7 @@
             "description": "A standard file on a filesystem mounted to the deployment machine",
             "comment": "",
             "x": 1706.7965118580867,
-            "y": -44.91423090133613,
+            "y": -42.82671295232811,
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "commitHash": "d266e83",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
