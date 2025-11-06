@@ -20,8 +20,17 @@ LOG = logging.getLogger(f"dlg.{__name__}")
 logging.basicConfig(level=logging.INFO)
 
 
-def expand_path(p: str) -> Path:
-    return Path(os.path.expanduser(os.path.expandvars(p))).resolve(strict=False)
+# def expand_path(p: str) -> str:
+#     return str(Path(os.path.expanduser(os.path.expandvars(p))).resolve(strict=False))
+
+
+# def expand_path(p: str) -> str:
+#     s = os.path.expandvars(p)
+#     if "$HOME" in s:  # fallback if env var wasn't set
+#         s = s.replace("$HOME", str(Path.home()))
+#     s = os.path.expanduser(s)
+#     return str(Path(s).resolve(strict=False))
+
 
 def stringify_data(data: list):
     """
@@ -392,7 +401,7 @@ def remove_file_or_directory(filename: str, trigger) -> None:
     else:
         LOG.info(f"[{trigger}] Nothing to remove, path does not exist: {filename}")
 
-def verify_db_integrity(db_path: str) -> str:
+def verify_db_integrity(db_path: str) -> None:
     """
     Verify that file/directory paths stored in the metadata DB actually exist.
     - Clears invalid path columns to NULL.
@@ -411,17 +420,17 @@ def verify_db_integrity(db_path: str) -> str:
     SAMPLE_ROWS = 5        # how many row previews to print per table (debug)
     SHOW_SAMPLE_ROWS = True
 
-    db_path_out = expand_path(db_path)
-    db_path = str(db_path_out)
+    # db_path_out = expand_path(db_path)
+    # db_path = str(db_path_out)
 
     LOG.info("[VERIFY] Starting DB integrity check")
-    LOG.info(f"[VERIFY] Input db_path arg: {db_path!r}, expanded: {db_path_out!s}")
-    LOG.info(f"[VERIFY] CWD={os.getcwd()} | PID={os.getpid()} | USER={os.getenv('USER')}")
+    # LOG.info(f"[VERIFY] Input db_path arg: {db_path!r}, expanded: {db_path_out!s}")
+    # LOG.info(f"[VERIFY] CWD={os.getcwd()} | PID={os.getpid()} | USER={os.getenv('USER')}")
     LOG.info(f"[VERIFY] File exists? {os.path.exists(db_path)} | Size(bytes)={os.path.getsize(db_path) if os.path.exists(db_path) else 'N/A'}")
 
     if not os.path.exists(db_path):
-        LOG.warning(f"[VERIFY] Metadata DB not found at {db_path}. Skipping integrity check.")
-        return db_path_out
+        LOG.error(f"[VERIFY] Metadata DB not found at {db_path}")
+        raise ValueError("db_path must be valid.")
 
     def _is_real_path(p: str) -> bool:
         """Return True if p (after strip/expanduser) exists as file or dir."""
@@ -550,12 +559,13 @@ def verify_db_integrity(db_path: str) -> str:
 
         conn.commit()
         LOG.info("[VERIFY] DB integrity check COMPLETE for 'metadata' and 'concat_freq'. (COMMIT)")
-        return db_path_out
+        return
 
     except Exception as e:
         conn.rollback()
         LOG.exception(f"[VERIFY] Integrity check FAILED and was rolled back: {e}")
-        return db_path_out
+        raise ValueError("db_path must be valid.")
+
 
     finally:
         conn.close()
@@ -589,14 +599,14 @@ def export_metadata_to_csv(db_path: str, csv_path: str) -> None:
     None
     """
 
-    db_path = expand_path(db_path)
-    csv_path = expand_path(csv_path)
+    # db_path = expand_path(db_path)
+    # csv_path = expand_path(csv_path)
     def _derive_out_path(base: str, table: str) -> Path:
         p = Path(base)
         # If base looks like a .csv file, insert the table name before the suffix.
         if p.suffix.lower() == ".csv":
             stem = p.stem
-            return p.with_name(f"{stem}_{table}.csv")
+            return p.with_name(f"{stem}/{table}.csv")
         # Otherwise treat as a directory
         return p.joinpath(f"{table}.csv")
 
@@ -607,7 +617,7 @@ def export_metadata_to_csv(db_path: str, csv_path: str) -> None:
 
     tables = ["metadata", "concat_freq"]
 
-    conn = sqlite3.connect(str(db_path))
+    conn = sqlite3.connect(db_path)
     try:
         cur = conn.cursor()
         for table in tables:
@@ -650,9 +660,9 @@ def add_column_if_missing(db_path: str, column_name: str, column_type: str = "TE
     - This modifies the existing `metadata` table schema.
     """
 
-    db_path = expand_path(db_path)
+    # db_path = expand_path(db_path)
 
-    conn = sqlite3.connect(str(db_path))
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
     # Fetch existing column names
@@ -765,8 +775,8 @@ def update_metadata_column(
     - Supports wildcard '*' in match_value, year, start_freq, and end_freq.
     - Validates that `column_name` and `match_column` exist to prevent SQL injection.
     """
-    db_path = expand_path(db_path)
-    conn = sqlite3.connect(str(db_path))
+    # db_path = expand_path(db_path)
+    conn = sqlite3.connect(db_path)
     try:
         cursor = conn.cursor()
 
@@ -989,13 +999,13 @@ def insert_concat_freq_row(
     bandwidth: str,
     size: str,
 ) -> None:
-    db_path = expand_path(db_path)
+    # db_path = expand_path(db_path)
     sql = """
         INSERT INTO concat_freq (
             concat_freq_path, base_name, year, start_freq, end_freq, bandwidth, size
         ) VALUES (?, ?, ?, ?, ?, ?, ?)
     """
-    with sqlite3.connect(str(db_path)) as conn:
+    with sqlite3.connect(db_path) as conn:
         conn.execute(sql, (
             str(concat_freq_path),  # <= ensure str
             base_name,
@@ -1008,13 +1018,13 @@ def insert_concat_freq_row(
         conn.commit()
 
 
-def initialize_metadata_environment(db_path: str) -> bool:
+def initialize_metadata_environment(db_path_in: str) -> None:
     """
     Ensure the metadata database and metadata table exist.
 
     Parameters
     ----------
-    db_path : str
+    db_path_in : str
         Full path to the SQLite database file.
 
     Notes
@@ -1022,14 +1032,16 @@ def initialize_metadata_environment(db_path: str) -> bool:
     - Creates the SQLite database file and metadata table if not present.
     - Creates the parent directory of `db_path` if it does not exist.
     """
-    db_path = expand_path(db_path)
+    # LOG.info(f"[VERIFY] input db_path: {db_path_in}")
+    # db_path_out = expand_path(db_path_in)
+    # LOG.info(f"[VERIFY] output db_path: {db_path_out}")
     # Ensure parent directory exists
-    parent_dir = os.path.dirname(db_path)
+    parent_dir = os.path.dirname(db_path_in)
     if not os.path.exists(parent_dir):
         os.makedirs(parent_dir, exist_ok=True)
 
     # Connect to the DB and create table if needed
-    conn = sqlite3.connect(str(db_path))
+    conn = sqlite3.connect(db_path_in)
     cursor = conn.cursor()
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS metadata (
@@ -1057,5 +1069,4 @@ def initialize_metadata_environment(db_path: str) -> bool:
     """)
     conn.commit()
     conn.close()
-    initialized = True
-    return initialized
+

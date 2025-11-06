@@ -23,8 +23,10 @@ def fetch_original_ms(
         db_path: str,
 ) -> list[str]:
 
+    if db_path == "":
+        raise ValueError("db_path must be valid.")
 
-    METADATA_DB = expand_path(db_path)
+    METADATA_DB = db_path
 
     make_directory = True
     start_freq = "0944"
@@ -162,7 +164,7 @@ def fetch_original_ms_singleMS(
 ) -> list[str]:
 
 
-    METADATA_DB = expand_path(db_path)
+    METADATA_DB = db_path
 
     make_directory = True
     start_freq = "0944"
@@ -368,7 +370,7 @@ def split_out_frequencies(
 ) -> ndarray:
 
     ms_list = _normalize_ms_list(ms_in_list)
-    METADATA_DB = expand_path(db_path)
+    METADATA_DB = db_path
     LOG.info(f"Frequencies: {frequencies}")
 
     LOG.info(f"METADATA_DB: {METADATA_DB}")
