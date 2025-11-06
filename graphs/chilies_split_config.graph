@@ -1,5 +1,5 @@
 {
-    "activeGraphConfigId": "f57e0f1d-bbc1-4cc1-bdba-0e21a2f91450",
+    "activeGraphConfigId": "80a4cabf-acdf-4fa1-8729-e90e201c7cf9",
     "graphConfigurations": {
         "80a4cabf-acdf-4fa1-8729-e90e201c7cf9": {
             "id": "80a4cabf-acdf-4fa1-8729-e90e201c7cf9",
@@ -12,7 +12,7 @@
                     "commitHash": "",
                     "downloadUrl": "",
                     "repositoryBranch": "",
-                    "repositoryFileName": "chilies_split_config_local.graph",
+                    "repositoryFileName": "chilies_split_config.graph",
                     "repositoryName": "",
                     "repositoryPath": "",
                     "repositoryService": "File"
@@ -43,7 +43,7 @@
                     "fields": {
                         "a83bd9be-a996-4322-823b-f129be3ca35f": {
                             "comment": "",
-                            "value": 1
+                            "value": 25
                         }
                     }
                 },
@@ -60,6 +60,10 @@
                         "cdbf2e14-b9c0-4c45-8ae0-e2f27e506d42": {
                             "comment": "",
                             "value": "/home/00103780/chiles-daliuge/db/Chilies_metadata.db"
+                        },
+                        "e823ddae-3c13-472d-9e18-c028517dd93f": {
+                            "comment": "",
+                            "value": "acacia-chiles:2025-04-chiles01/originals_short/"
                         }
                     }
                 },
@@ -67,7 +71,7 @@
                     "fields": {
                         "075deb68-010d-4aff-a42c-d6747f1e9b95": {
                             "comment": "",
-                            "value": 2
+                            "value": 10
                         }
                     }
                 }
@@ -84,7 +88,7 @@
                     "commitHash": "",
                     "downloadUrl": "",
                     "repositoryBranch": "",
-                    "repositoryFileName": "chilies_split_config_local.graph",
+                    "repositoryFileName": "chilies_split_config.graph",
                     "repositoryName": "",
                     "repositoryPath": "",
                     "repositoryService": "File"
@@ -132,6 +136,10 @@
                         "cdbf2e14-b9c0-4c45-8ae0-e2f27e506d42": {
                             "comment": "",
                             "value": "/scratch/pawsey0411/chiles-daliuge/db/Chilies_metadata.db"
+                        },
+                        "e823ddae-3c13-472d-9e18-c028517dd93f": {
+                            "comment": "",
+                            "value": "acacia-chiles:2025-04-chiles01/originals/"
                         }
                     }
                 },
@@ -429,12 +437,12 @@
     ],
     "modelData": {
         "detailedDescription": "It first downloads the MS from acacia. The acacia path is specified in global variables as\n\nsource_path: acacia-chiles:2025-04-chiles01/originals_short/\n\nThis are small test MS. \n\nComplete MS are available at\nacacia-chiles:2025-04-chiles01/originals/\n\n\nA DB is mentained automatically (path in global variables) which keeps track of what has been downloaded/processed already, and graphs resumes operations from that point onwards.\n\nAfter download, it splits the MS into smaller bands, which are defined in parameters of get_list_frequency_groups\n\nThe years to be processed are defined in parameters of fetch_original_ms\n\nThe output splits are saved in daliuge workspace direcories, and their paths and names can be copied from the Db, or the exported CSV of the DB. This CSV is exported at the start of graph run, and at the end of a successful run.",
-        "filePath": "chilies_split_config_local.graph",
+        "filePath": "chilies_split_config.graph",
         "fileType": "Graph",
         "generatorCommitHash": "940fe65c5f8544536cd5826d031fad6cef483dc9",
         "generatorName": "EAGLE",
         "generatorVersion": "v6.8.0",
-        "lastModifiedDatetime": 1762409595.313546,
+        "lastModifiedDatetime": 1762409945.197027,
         "lastModifiedEmail": "",
         "lastModifiedName": "",
         "numLGNodes": 33,
@@ -566,7 +574,7 @@
             ],
             "inputApplicationComment": "",
             "inputApplicationDescription": "",
-            "inputApplicationId": "c0117bbe-180e-47f7-9189-ff98544b50cf",
+            "inputApplicationId": "73b433da-2c63-4475-8a04-595b7af38a71",
             "inputApplicationName": "GenericScatterApp",
             "inputApplicationType": "DALiuGEApp",
             "isGroup": true,
