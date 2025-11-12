@@ -20,8 +20,17 @@ LOG = logging.getLogger(f"dlg.{__name__}")
 logging.basicConfig(level=logging.INFO)
 
 
-def expand_path(p: str) -> Path:
-    return Path(os.path.expanduser(os.path.expandvars(p))).resolve(strict=False)
+# def expand_path(p: str) -> str:
+#     return str(Path(os.path.expanduser(os.path.expandvars(p))).resolve(strict=False))
+
+
+# def expand_path(p: str) -> str:
+#     s = os.path.expandvars(p)
+#     if "$HOME" in s:  # fallback if env var wasn't set
+#         s = s.replace("$HOME", str(Path.home()))
+#     s = os.path.expanduser(s)
+#     return str(Path(s).resolve(strict=False))
+
 
 def stringify_data(data: list):
     """
@@ -276,12 +285,12 @@ def destringify_data_concat(args: list[str]) -> list[str]:
     #
     # blob = str(blob)
     # 4) Split strictly by semicolons into 4 parts
-    parts = [p.strip() for p in input_arg.split(";", 3)]
-    if len(parts) != 4:
-        raise ValueError(f"Expected 4 semicolon-separated parts, got {len(parts)} from: {blob!r}")
+    parts = [p.strip() for p in input_arg.split(";", 4)]
+    if len(parts) != 5:
+        raise ValueError(f"Expected 5 semicolon-separated parts, got {len(parts)} from: {input_arg!r}")
 
-    base_name, start_freq, end_freq, paths_combined = parts
-    return [base_name, start_freq, end_freq, paths_combined]
+    base_name, start_freq, end_freq, years, paths_combined = parts
+    return [base_name, start_freq, end_freq, years, paths_combined]
 
 
 
@@ -392,8 +401,7 @@ def remove_file_or_directory(filename: str, trigger) -> None:
     else:
         LOG.info(f"[{trigger}] Nothing to remove, path does not exist: {filename}")
 
-
-def verify_db_integrity(db_path: str, trigger_in: bool) -> bool:
+def verify_db_integrity(db_path: str) -> None:
     """
     Verify that file/directory paths stored in the metadata DB actually exist.
     - Clears invalid path columns to NULL.
@@ -403,23 +411,26 @@ def verify_db_integrity(db_path: str, trigger_in: bool) -> bool:
       ms_path, uv_sub_path, build_concat_all, tclean_all, build_concat_epoch, tclean_epoch
     """
 
-    db_path = expand_path(db_path)
-    if not trigger_in:
-        return False
+    import time
+
+    t0 = time.perf_counter()
+
+    # --- Configs for logging verbosity ---
+    MAX_PREVIEW = 120      # chars to preview from a path value in logs
+    SAMPLE_ROWS = 5        # how many row previews to print per table (debug)
+    SHOW_SAMPLE_ROWS = True
+
+    # db_path_out = expand_path(db_path)
+    # db_path = str(db_path_out)
+
+    LOG.info("[VERIFY] Starting DB integrity check")
+    # LOG.info(f"[VERIFY] Input db_path arg: {db_path!r}, expanded: {db_path_out!s}")
+    # LOG.info(f"[VERIFY] CWD={os.getcwd()} | PID={os.getpid()} | USER={os.getenv('USER')}")
+    LOG.info(f"[VERIFY] File exists? {os.path.exists(db_path)} | Size(bytes)={os.path.getsize(db_path) if os.path.exists(db_path) else 'N/A'}")
 
     if not os.path.exists(db_path):
-        LOG.warning(f"[VERIFY] Metadata DB not found at {db_path}. Skipping integrity check.")
-        return False
-
-    # Columns we consider as path-bearing (limit to these to avoid nuking non-path fields)
-    PATH_COLUMNS = [
-        "ms_path",
-        "uv_sub_path",
-        "build_concat_all",
-        "tclean_all",
-        "build_concat_epoch",
-        "tclean_epoch",
-    ]
+        LOG.error(f"[VERIFY] Metadata DB not found at {db_path}")
+        raise ValueError("db_path must be valid.")
 
     def _is_real_path(p: str) -> bool:
         """Return True if p (after strip/expanduser) exists as file or dir."""
@@ -441,22 +452,43 @@ def verify_db_integrity(db_path: str, trigger_in: bool) -> bool:
 
     def _validate_table(cur, table_name: str, candidate_path_cols: list[str]) -> None:
         """Core validator for a single table."""
+        t_start = time.perf_counter()
+
         if not _table_exists(cur, table_name):
             LOG.info(f"[VERIFY:{table_name}] Table not found; skipping.")
             return
 
         # Discover which of the candidate path columns actually exist in the table
         cur.execute(f"PRAGMA table_info({table_name});")
-        cols_present = {col[1] for col in cur.fetchall()}
-        path_cols = [c for c in candidate_path_cols if c in cols_present]
+        pragma_rows = cur.fetchall()
+        cols_present = {col[1] for col in pragma_rows}
+        LOG.info(f"[VERIFY:{table_name}] PRAGMA columns ({len(cols_present)}): {sorted(cols_present)}")
 
+        path_cols = [c for c in candidate_path_cols if c in cols_present]
         if not path_cols:
             LOG.info(f"[VERIFY:{table_name}] No known path columns found; nothing to check.")
             return
+        else:
+            LOG.info(f"[VERIFY:{table_name}] Path columns discovered: {path_cols}")
 
         select_cols = ["rowid"] + path_cols
-        cur.execute(f"SELECT {', '.join(select_cols)} FROM {table_name}")
+        query = f"SELECT {', '.join(select_cols)} FROM {table_name}"
+        LOG.info(f"[VERIFY:{table_name}] Executing SELECT -> {query}")
+        cur.execute(query)
         rows = cur.fetchall()
+        total_rows = len(rows)
+        LOG.info(f"[VERIFY:{table_name}] Rows scanned: {total_rows}")
+
+        if SHOW_SAMPLE_ROWS and total_rows:
+            LOG.info(f"[VERIFY:{table_name}] Sample of first {min(SAMPLE_ROWS, total_rows)} rows:")
+            for i, row in enumerate(rows[:SAMPLE_ROWS], 1):
+                rowid = row[0]
+                preview = {c: (str(v)[:MAX_PREVIEW] if v is not None else None) for c, v in zip(path_cols, row[1:])}
+                LOG.info(f"    rowid={rowid} -> {preview}")
+
+        # Counters
+        deleted_rows = 0
+        cleared_cells = 0
 
         for row in rows:
             rowid = row[0]
@@ -468,7 +500,9 @@ def verify_db_integrity(db_path: str, trigger_in: bool) -> bool:
             for col, val in values_by_col.items():
                 # SQLite may return bytes if the column affinity is BLOB or similar
                 val_str = val if isinstance(val, str) else (val.decode() if isinstance(val, bytes) else "")
-                if _is_real_path(val_str):
+                exists = _is_real_path(val_str)
+                LOG.info(f"[VERIFY:{table_name}] rowid={rowid} col={col} exists={exists} value_preview={str(val_str)[:MAX_PREVIEW]!r}")
+                if exists:
                     existing_any = True
                 else:
                     # Only mark as missing if the cell is non-empty; empty/NULL stays NULL
@@ -477,19 +511,32 @@ def verify_db_integrity(db_path: str, trigger_in: bool) -> bool:
 
             if not existing_any:
                 cur.execute(f"DELETE FROM {table_name} WHERE rowid = ?", (rowid,))
+                deleted_rows += 1
                 LOG.info(f"[DELETE:{table_name}] Row {rowid} removed: all path columns invalid/missing.")
             else:
                 for col in missing_cols:
                     # Column name comes from PRAGMA (trusted), value parameterized
                     cur.execute(f"UPDATE {table_name} SET {col} = NULL WHERE rowid = ?", (rowid,))
+                    cleared_cells += 1
                     LOG.info(f"[CLEAN:{table_name}] Cleared '{col}' in row {rowid}: path not found.")
 
-    conn = sqlite3.connect(str(db_path))
+        dt = (time.perf_counter() - t_start) * 1000
+        LOG.info(f"[VERIFY:{table_name}] Summary: rows_scanned={total_rows}, rows_deleted={deleted_rows}, cells_cleared={cleared_cells}, elapsed_ms={dt:.1f}")
+
+    # Connect and run validations
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
     try:
+        # Some environment diagnostics
+        cursor.execute("select sqlite_version()")
+        sqlite_ver = cursor.fetchone()[0]
+        LOG.info(f"[VERIFY] Connected to SQLite {sqlite_ver}; DB={db_path}")
+
         # Single transaction spanning all checks
+        LOG.info("[VERIFY] BEGIN TRANSACTION")
         cursor.execute("BEGIN")
+
         # Validate metadata table (same columns as your original function)
         _validate_table(
             cursor,
@@ -511,18 +558,24 @@ def verify_db_integrity(db_path: str, trigger_in: bool) -> bool:
         )
 
         conn.commit()
-        LOG.info("[VERIFY] DB integrity check complete for 'metadata' and 'concat_freq'.")
-        return True
+        LOG.info("[VERIFY] DB integrity check COMPLETE for 'metadata' and 'concat_freq'. (COMMIT)")
+        return
+
     except Exception as e:
         conn.rollback()
-        LOG.exception(f"[VERIFY] Integrity check failed: {e}")
-        return False
+        LOG.exception(f"[VERIFY] Integrity check FAILED and was rolled back: {e}")
+        raise ValueError("db_path must be valid.")
+
+
     finally:
         conn.close()
+        dt_total = (time.perf_counter() - t0) * 1000
+        LOG.info(f"[VERIFY] Closed connection to {db_path}. Total elapsed: {dt_total:.1f} ms")
 
 
 
-def export_metadata_to_csv(db_path: str, csv_path: str, trigger_in: bool) -> None:
+
+def export_metadata_to_csv(db_path: str, csv_path: str) -> None:
     """
     Export the entire 'metadata' and 'concat_freq' tables from a SQLite database to CSV files.
 
@@ -546,14 +599,14 @@ def export_metadata_to_csv(db_path: str, csv_path: str, trigger_in: bool) -> Non
     None
     """
 
-    db_path = expand_path(db_path)
-    csv_path = expand_path(csv_path)
+    # db_path = expand_path(db_path)
+    # csv_path = expand_path(csv_path)
     def _derive_out_path(base: str, table: str) -> Path:
         p = Path(base)
         # If base looks like a .csv file, insert the table name before the suffix.
         if p.suffix.lower() == ".csv":
             stem = p.stem
-            return p.with_name(f"{stem}_{table}.csv")
+            return p.with_name(f"{stem}/{table}.csv")
         # Otherwise treat as a directory
         return p.joinpath(f"{table}.csv")
 
@@ -564,7 +617,7 @@ def export_metadata_to_csv(db_path: str, csv_path: str, trigger_in: bool) -> Non
 
     tables = ["metadata", "concat_freq"]
 
-    conn = sqlite3.connect(str(db_path))
+    conn = sqlite3.connect(db_path)
     try:
         cur = conn.cursor()
         for table in tables:
@@ -607,9 +660,9 @@ def add_column_if_missing(db_path: str, column_name: str, column_type: str = "TE
     - This modifies the existing `metadata` table schema.
     """
 
-    db_path = expand_path(db_path)
+    # db_path = expand_path(db_path)
 
-    conn = sqlite3.connect(str(db_path))
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
     # Fetch existing column names
@@ -696,6 +749,7 @@ def log_data(input_data):
 
     return input_data
 
+import sqlite3
 
 def update_metadata_column(
     db_path: str,
@@ -706,80 +760,75 @@ def update_metadata_column(
     end_freq: str,
     column_name: str,
     column_value: str
-) -> None:
+) -> bool:
     """
     Update a single column value in the metadata table for all matching rows.
 
-    Supports wildcard '*' in match_value, year, start_freq, or end_freq to match multiple rows.
+    Returns
+    -------
+    bool
+        True if one or more rows matched the criteria (regardless of whether the
+        UPDATE changed the value); False if no rows matched.
 
-    Parameters
-    ----------
-    db_path : str
-        Path to the SQLite metadata database.
-    match_column : str
-        Name of the column to match (e.g., "ms_path", "base_name", etc.).
-    match_value : str
-        Value to match in match_column, or '*' to match all.
-    year : str
-        Value to match for `year`, or '*' to match all.
-    start_freq : str
-        Value to match for `start_freq`, or '*' to match all.
-    end_freq : str
-        Value to match for `end_freq`, or '*' to match all.
-    column_name : str
-        The name of the column to update.
-    column_value : str
-        The value to insert into the specified column.
-
-    Raises
-    ------
-    ValueError
-        If the target or match column does not exist in the metadata table.
+    Notes
+    -----
+    - Supports wildcard '*' in match_value, year, start_freq, and end_freq.
+    - Validates that `column_name` and `match_column` exist to prevent SQL injection.
     """
+    # db_path = expand_path(db_path)
+    conn = sqlite3.connect(db_path)
+    try:
+        cursor = conn.cursor()
 
-    db_path = expand_path(db_path)
-    conn = sqlite3.connect(str(db_path))
-    cursor = conn.cursor()
+        # Validate column names
+        cursor.execute("PRAGMA table_info(metadata);")
+        valid_columns = [row[1] for row in cursor.fetchall()]
+        if column_name not in valid_columns:
+            raise ValueError(f"Column '{column_name}' does not exist in metadata table.")
+        if match_column not in valid_columns:
+            raise ValueError(f"Match column '{match_column}' does not exist in metadata table.")
 
-    # Validate column names
-    cursor.execute("PRAGMA table_info(metadata);")
-    valid_columns = [row[1] for row in cursor.fetchall()]
-    if column_name not in valid_columns:
+        # Build WHERE clause dynamically
+        conditions = []
+        params = []
+
+        if match_value != "*":
+            conditions.append(f"{match_column} = ?")
+            params.append(match_value)
+
+        for field, value in [("year", year), ("start_freq", start_freq), ("end_freq", end_freq)]:
+            if value != "*":
+                conditions.append(f"{field} = ?")
+                params.append(value)
+
+        where_clause = " AND ".join(conditions) if conditions else "1=1"
+
+        # First, check if any rows match
+        cursor.execute(f"SELECT COUNT(1) FROM metadata WHERE {where_clause}", params)
+        match_count = cursor.fetchone()[0]
+
+        if match_count == 0:
+            # No matches -> nothing to update; tell caller to insert
+            print("[INFO] No matching rows found; nothing updated.")
+            return False
+
+        # Perform the update only if there are matches
+        sql = f"UPDATE metadata SET {column_name} = ? WHERE {where_clause}"
+        cursor.execute(sql, [column_value] + params)
+        updated_count = cursor.rowcount  # may be 0 if values were already identical
+
+        conn.commit()
+
+        if updated_count > 0:
+            print(f"[INFO] Updated {updated_count} row(s) in column '{column_name}' with value '{column_value}'.")
+        else:
+            print(f"[INFO] {match_count} row(s) matched but already had '{column_name}' = '{column_value}'. No changes made.")
+
+        # Return True because matches existed (update not needed or succeeded)
+        return True
+
+    finally:
         conn.close()
-        raise ValueError(f"Column '{column_name}' does not exist in metadata table.")
-    if match_column not in valid_columns:
-        conn.close()
-        raise ValueError(f"Match column '{match_column}' does not exist in metadata table.")
-
-    # Build WHERE clause dynamically
-    conditions = []
-    params = []
-
-    if match_value != "*":
-        conditions.append(f"{match_column} = ?")
-        params.append(match_value)
-
-    for field, value in [("year", year), ("start_freq", start_freq), ("end_freq", end_freq)]:
-        if value != "*":
-            conditions.append(f"{field} = ?")
-            params.append(value)
-
-    where_clause = " AND ".join(conditions) if conditions else "1=1"
-
-    # Perform the update
-    sql = f"""
-        UPDATE metadata
-        SET {column_name} = ?
-        WHERE {where_clause}
-    """
-    cursor.execute(sql, [column_value] + params)
-    updated_count = cursor.rowcount
-
-    conn.commit()
-    conn.close()
-
-    print(f"[INFO] Updated {updated_count} row(s) in column '{column_name}' with value '{column_value}'.")
-
 
 
 def remove_temp_dir(trigger_in, base_dir: str, prefix="__SKY_TEMP__"):
@@ -950,13 +999,13 @@ def insert_concat_freq_row(
     bandwidth: str,
     size: str,
 ) -> None:
-    db_path = expand_path(db_path)
+    # db_path = expand_path(db_path)
     sql = """
         INSERT INTO concat_freq (
             concat_freq_path, base_name, year, start_freq, end_freq, bandwidth, size
         ) VALUES (?, ?, ?, ?, ?, ?, ?)
     """
-    with sqlite3.connect(str(db_path)) as conn:
+    with sqlite3.connect(db_path) as conn:
         conn.execute(sql, (
             str(concat_freq_path),  # <= ensure str
             base_name,
@@ -969,13 +1018,13 @@ def insert_concat_freq_row(
         conn.commit()
 
 
-def initialize_metadata_environment(db_path: str) -> bool:
+def initialize_metadata_environment(db_path_in: str) -> None:
     """
     Ensure the metadata database and metadata table exist.
 
     Parameters
     ----------
-    db_path : str
+    db_path_in : str
         Full path to the SQLite database file.
 
     Notes
@@ -983,14 +1032,16 @@ def initialize_metadata_environment(db_path: str) -> bool:
     - Creates the SQLite database file and metadata table if not present.
     - Creates the parent directory of `db_path` if it does not exist.
     """
-    db_path = expand_path(db_path)
+    # LOG.info(f"[VERIFY] input db_path: {db_path_in}")
+    # db_path_out = expand_path(db_path_in)
+    # LOG.info(f"[VERIFY] output db_path: {db_path_out}")
     # Ensure parent directory exists
-    parent_dir = os.path.dirname(db_path)
+    parent_dir = os.path.dirname(db_path_in)
     if not os.path.exists(parent_dir):
         os.makedirs(parent_dir, exist_ok=True)
 
     # Connect to the DB and create table if needed
-    conn = sqlite3.connect(str(db_path))
+    conn = sqlite3.connect(db_path_in)
     cursor = conn.cursor()
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS metadata (
@@ -1018,5 +1069,4 @@ def initialize_metadata_environment(db_path: str) -> bool:
     """)
     conn.commit()
     conn.close()
-    initialized = True
-    return initialized
+

@@ -44,7 +44,6 @@ def fetch_uvsub(
         frequencies: List[List[int]],
         db_path: str,
         concat_time: bool,
-        trigger_in: bool,
 ) -> List[str]:
     """
     Build a list of strings describing uv_sub_paths grouped by frequency ranges, and optionally by base_name.
@@ -67,7 +66,7 @@ def fetch_uvsub(
     - Paths are deduplicated and sorted for stable output.
     """
     # Normalize to unique (lo, hi) integer pairs
-    db_path = expand_path(db_path)
+    db_path = str(expand_path(db_path))
     freq_set = {tuple(sorted(map(int, pair))) for pair in frequencies}
     if not freq_set:
         return []
@@ -84,6 +83,7 @@ def fetch_uvsub(
     ]
     if year_list_str:
         placeholders = ",".join("?" for _ in year_list_str)
+        years_all = ",".join(year for year in year_list_str)
         where_clauses.append(f"year IN ({placeholders})")
 
     where_sql = " AND ".join(where_clauses)
@@ -104,13 +104,14 @@ def fetch_uvsub(
         base, path, yr, sf, ef = row
         return (str(yr or ""), str(sf), str(ef), str(path or ""))
 
-    with sqlite3.connect(str(db_path)) as conn:
+    with sqlite3.connect(db_path) as conn:
         cur = conn.cursor()
 
         exist_sql = """
             SELECT 1
             FROM concat_freq
             WHERE base_name = ?
+              AND year = ? 
               AND start_freq = ?
               AND end_freq = ?
             LIMIT 1
@@ -124,40 +125,42 @@ def fetch_uvsub(
 
             cur.execute(query_sql, params)
             rows = cur.fetchall()  # [(base_name, uv_sub_path, year, sf, ef), ...]
-            LOG.info(f"[RANGE {lo}-{hi}] fetched {len(rows)} rows")
+            LOG.info(f"[RANGE {lo}-{hi}] fetched {len(rows)} rows for {years_all}")
 
             if not rows:
                 continue
 
             if concat_time:
                 # Skip if concat_freq already has this (concat_all, lo, hi)
-                cur.execute(exist_sql, ("concat_all", str(lo), str(hi)))
+                cur.execute(exist_sql, ("concat_all", years_all, str(lo), str(hi)))
                 if cur.fetchone():
                     continue
 
                 paths = sorted({(str(r[1]) or "").strip() for r in rows if (str(r[1]) or "").strip()})
                 if not paths:
                     continue
-                line = f"concat_all;{lo};{hi};{','.join(paths)}"
+                line = f"concat_all;{lo};{hi};{years_all};{','.join(paths)}"
                 matching_dlg_names.append(line)
             else:
                 from collections import defaultdict
                 rows_sorted = sorted(rows, key=_sort_key)
 
-                by_base = defaultdict(set)
+                by_base_year = defaultdict(set)
                 for base_name, uv_path, _year, _sf, _ef in rows_sorted:
                     p = (str(uv_path) or "").strip()
                     if p:
-                        by_base[str(base_name)].add(p)
+                        by_base_year[(str(base_name), str(_year))].add(p)
 
-                for base_name, path_set in sorted(by_base.items(), key=lambda kv: kv[0] or ""):
+                for (base_name, year), path_set in sorted(by_base_year.items(),
+                                          key=lambda kv: (kv[0][0] or "", kv[0][1] or "")):
                     if not path_set:
                         continue
-                    # Skip if concat_freq already has this (base_name, lo, hi)
-                    cur.execute(exist_sql, (base_name, str(lo), str(hi)))
+                    # existence check uses the year from the DB
+                    cur.execute(exist_sql, (base_name, year, str(lo), str(hi)))
                     if cur.fetchone():
                         continue
-                    line = f"{base_name};{lo};{hi};{','.join(sorted(path_set))}"
+
+                    line = f"{base_name};{lo};{hi};{year};{','.join(sorted(path_set))}"
                     matching_dlg_names.append(line)
 
     return matching_dlg_names
@@ -203,13 +206,6 @@ def prep_concat(names_list):
     concat_data_all = []
 
     for name in names_list:
-        # base_name, start_freq, end_freq, paths_blob = name.split(";")
-        #
-        # if not base_name:
-        #     raise ValueError("base_name is empty in concat_data_in")
-        # if not start_freq or not end_freq:
-        #     raise ValueError("start_freq/end_freq cannot be empty in concat_data_in")
-
         combined_data = [name]
 
         concat_data_all.append(stringify_data(combined_data))
@@ -231,19 +227,15 @@ def do_concat(
 ):
     #os.makedirs(save_dir, exist_ok=True)
     LOG.info(f"concat_data_in: {concat_data_in}")
-    base_name, start_freq, end_freq, paths_combined = destringify_data_concat(concat_data_in)
+    base_name, start_freq, end_freq, years, paths_combined = destringify_data_concat(concat_data_in)
 
     LOG.info(f"base_name: {base_name}")
     LOG.info(f"start_freq: {start_freq}")
     LOG.info(f"end_freq: {end_freq}")
+    LOG.info(f"years: {years}")
     LOG.info(f"paths_combined: {paths_combined}")
     tar_paths = paths_combined.split(",")
 
-    # if len(concat_data) < 4:
-    #     raise ValueError(
-    #         "concat_data must have 4 segments separated by semicolons: "
-    #         "<base_name>;<start_freq>;<end_freq>;<path1;path2;...>"
-    #     )
 
     bandwidth = int(end_freq) - int(start_freq)
 
@@ -343,7 +335,7 @@ def do_concat(
             db_path=str(db_path),                    # str path
             concat_freq_path=str(save_dir),          # str path
             base_name=str(base_name),
-            year="N/A",                              # ensure this matches your schema (TEXT ok)
+            year=years,                              # ensure this matches your schema (TEXT ok)
             start_freq=str(start_freq),
             end_freq=str(end_freq),
             bandwidth=str(bandwidth),
