@@ -109,7 +109,7 @@ def fetch_original_ms(
                 })
 
     # Execute copy tasks in parallel (max 5 at a time)
-    with ThreadPoolExecutor(max_workers=5) as executor:
+    with ThreadPoolExecutor(max_workers=10) as executor:
         futures = {executor.submit(run, task["cmd"], stdout=PIPE, stderr=PIPE, text=True): task for task in copy_tasks}
         for future in as_completed(futures):
             task = futures[future]
