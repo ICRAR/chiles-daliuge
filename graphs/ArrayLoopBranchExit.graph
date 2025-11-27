@@ -2775,11 +2775,11 @@
                 },
                 {
                     "name": "n",
-                    "value": "3",
+                    "value": 3,
                     "defaultValue": "",
                     "description": "Number of strings produced in alphalist",
                     "readonly": false,
-                    "type": "String",
+                    "type": "Integer",
                     "precious": false,
                     "options": [],
                     "positional": false,
