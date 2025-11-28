@@ -719,7 +719,7 @@
                 },
                 {
                     "name": "group_end",
-                    "value": true,
+                    "value": false,
                     "defaultValue": "false",
                     "description": "Is this node the end of a group?",
                     "readonly": false,
@@ -749,7 +749,7 @@
                 },
                 {
                     "name": "Group end",
-                    "value": true,
+                    "value": false,
                     "defaultValue": "false",
                     "description": "Is this node the end of a group?",
                     "readonly": false,
@@ -934,7 +934,7 @@
             "outputAppFields": [],
             "inputApplicationName": "GenericScatterApp",
             "inputApplicationType": "DALiuGEApp",
-            "inputApplicationId": "902e864a-b0fe-4279-a31b-fd1fbc9c3e80",
+            "inputApplicationId": "319f26ac-bfe2-4bac-ac59-c514b75464e6",
             "inputApplicationDescription": "",
             "inputApplicationComment": "",
             "outputApplicationName": "",
@@ -2027,12 +2027,13 @@
             "name": "false",
             "description": "In-memory storage of intermediate data products",
             "comment": "",
-            "x": 1992.4259167821494,
-            "y": 251.58626831528244,
+            "x": 1857.205915025724,
+            "y": 249.10516736562323,
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "commitHash": "d266e83",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "dataHash": "6a0582245c5a9b27e63fb9ca483146a3e48450c972d2614bccb2bb51e0998aeb",
+            "parentId": "561c628f-3b48-47c9-a243-26399ea2ce5c",
             "fields": [
                 {
                     "name": "pydata",
