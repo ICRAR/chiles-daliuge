@@ -49,9 +49,7 @@
                     "repositoryBranch": "main",
                     "repositoryName": "ICRAR/chiles-daliuge",
                     "repositoryPath": "graphs",
-                    "repositoryFileName": "ArrayLoopBranchExit.graph",
-                    "commitHash": "72ab6d1bd637235b91dac05bc1d40ab1752bb9a8",
-                    "downloadUrl": "https://raw.githubusercontent.com/ICRAR/chiles-daliuge/72ab6d1bd637235b91dac05bc1d40ab1752bb9a8/graphs/ArrayLoopBranchExit.graph"
+                    "repositoryFileName": "ArrayLoopBranchExit.graph"
                 },
                 "signature": "",
                 "lastModifiedName": "",
@@ -105,9 +103,7 @@
                     "repositoryBranch": "main",
                     "repositoryName": "ICRAR/chiles-daliuge",
                     "repositoryPath": "graphs",
-                    "repositoryFileName": "ArrayLoopBranchExit.graph",
-                    "commitHash": "72ab6d1bd637235b91dac05bc1d40ab1752bb9a8",
-                    "downloadUrl": "https://raw.githubusercontent.com/ICRAR/chiles-daliuge/72ab6d1bd637235b91dac05bc1d40ab1752bb9a8/graphs/ArrayLoopBranchExit.graph"
+                    "repositoryFileName": "ArrayLoopBranchExit.graph"
                 },
                 "signature": "",
                 "lastModifiedName": "",
@@ -120,7 +116,7 @@
                 "561c628f-3b48-47c9-a243-26399ea2ce5c": {
                     "fields": {
                         "9b88af5d-dec2-4783-95d9-f4bfa40b29e3": {
-                            "value": 5,
+                            "value": 3,
                             "comment": ""
                         }
                     }
@@ -1134,7 +1130,7 @@
                     "defaultValue": "",
                     "description": "If condition is true the input will be copied to this port",
                     "readonly": false,
-                    "type": "Event",
+                    "type": "Object.Array",
                     "precious": false,
                     "options": [],
                     "positional": false,
@@ -1809,7 +1805,7 @@
             "name": "PyFuncApp",
             "description": "An application that wraps a python function. The inputs of the application are treated as the arguments of the function. Conversely, the output of the function is treated as the output of the application. If the application has more than one output, the result of calling the function is treated as an iterable, with each individual object being written to its corresponding output.",
             "comment": "",
-            "x": 2305.3326415654997,
+            "x": 2230.302892843244,
             "y": 319.769557415282,
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "commitHash": "d266e83",
@@ -1994,7 +1990,7 @@
                     "defaultValue": "",
                     "description": "",
                     "readonly": false,
-                    "type": "Event",
+                    "type": "Object",
                     "precious": false,
                     "options": [],
                     "positional": false,
@@ -2027,13 +2023,12 @@
             "name": "false",
             "description": "In-memory storage of intermediate data products",
             "comment": "",
-            "x": 1857.205915025724,
-            "y": 249.10516736562323,
+            "x": 1948.9089412418136,
+            "y": 291.97930949262684,
             "repositoryUrl": "https://github.com/ICRAR/daliuge",
             "commitHash": "d266e83",
             "paletteDownloadUrl": "https://raw.githubusercontent.com/ICRAR/EAGLE-graph-repo/master/daliuge/daliuge-master.palette",
             "dataHash": "6a0582245c5a9b27e63fb9ca483146a3e48450c972d2614bccb2bb51e0998aeb",
-            "parentId": "561c628f-3b48-47c9-a243-26399ea2ce5c",
             "fields": [
                 {
                     "name": "pydata",
@@ -2161,7 +2156,7 @@
                     "defaultValue": "",
                     "description": "If condition is true the input will be copied to this port",
                     "readonly": false,
-                    "type": "Event",
+                    "type": "Object.Array",
                     "precious": false,
                     "options": [],
                     "positional": false,
@@ -2776,7 +2771,7 @@
                 },
                 {
                     "name": "n",
-                    "value": 3,
+                    "value": 7,
                     "defaultValue": "",
                     "description": "Number of strings produced in alphalist",
                     "readonly": false,
